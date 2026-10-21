@@ -16,6 +16,7 @@ export default function Sidebar() {
     { path: '/prestataires', label: '👥 Prestataires', adminSeul: false },
     { path: '/destinations', label: '📍 Destinations', adminSeul: false },
     { path: '/lieux', label: '📌 Lieux', adminSeul: false },
+    { path: '/utilisateurs', label: '👤 Utilisateurs', adminSeul: true },
     { path: '/trajets', label: '🚐 Trajets', adminSeul: false }
   ];
 

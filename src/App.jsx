@@ -15,6 +15,7 @@ import Destinations from './pages/Destinations';
 import Lieux from './pages/Lieux';
 import Trajets from './pages/Trajets';
 import Prestataires from './pages/Prestataires';
+import Utilisateurs from './pages/Utilisateurs';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
             <Route path="destinations" element={<Destinations />} />
             <Route path="lieux" element={<Lieux />} />
             <Route path="trajets" element={<Trajets />} />
+            <Route path="utilisateurs" element={<Utilisateurs />} />
           </Route>
         </Routes>
       </BrowserRouter>
