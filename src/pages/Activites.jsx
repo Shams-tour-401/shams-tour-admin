@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { activitesService } from '../services/activites';
 import { lieuxService } from '../services/lieux';
+import { photosService } from '../services/photos'; // Import du service photos
 import { useAuth } from '../context/AuthContext';
 
 export default function Activites() {
@@ -11,8 +12,9 @@ export default function Activites() {
   const [erreur, setErreur] = useState('');
   const [modalOuvert, setModalOuvert] = useState(false);
   const [activiteEnEdition, setActiviteEnEdition] = useState(null);
+  const [photoModal, setPhotoModal] = useState(null); // Stocke l'ID de l'activité pour les photos
   const { user } = useAuth();
-const estAdmin = user?.role === 'administrateur';
+  const estAdmin = user?.role === 'administrateur';
 
   useEffect(() => {
     chargerDonnees();
@@ -87,10 +89,10 @@ const estAdmin = user?.role === 'administrateur';
           <p style={styles.sousTitre}>Catalogue des activités disponibles</p>
         </div>
         {estAdmin && (
-  <button onClick={ouvrirModalCreation} style={styles.btnPrimaire}>
-    ➕ Nouvelle activité
-  </button>
-)}
+          <button onClick={ouvrirModalCreation} style={styles.btnPrimaire}>
+            ➕ Nouvelle activité
+          </button>
+        )}
       </div>
 
       {/* Tableau */}
@@ -124,19 +126,23 @@ const estAdmin = user?.role === 'administrateur';
                   <td style={styles.td}>{a.age_min} ans</td>
                   <td style={styles.td}>{a.effectif_min} - {a.effectif_max}</td>
                   <td style={styles.td}>
-  {estAdmin ? (
-    <>
-      <button onClick={() => ouvrirModalEdition(a)} style={styles.btnIcone} title="Modifier">
-        ✏️
-      </button>
-      <button onClick={() => desactiver(a)} style={styles.btnIcone} title="Désactiver">
-        🗑️
-      </button>
-    </>
-  ) : (
-    <span style={styles.lectureSeule}>👁️ Consultation</span>
-  )}
-</td>
+                    {estAdmin ? (
+                      <>
+                        {/* Bouton pour gérer les photos */}
+                        <button onClick={() => setPhotoModal(a.id)} style={styles.btnIcone} title="Gérer les photos">
+                          📸
+                        </button>
+                        <button onClick={() => ouvrirModalEdition(a)} style={styles.btnIcone} title="Modifier">
+                          ✏️
+                        </button>
+                        <button onClick={() => desactiver(a)} style={styles.btnIcone} title="Désactiver">
+                          🗑️
+                        </button>
+                      </>
+                    ) : (
+                      <span style={styles.lectureSeule}>👁️ Consultation</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -144,7 +150,7 @@ const estAdmin = user?.role === 'administrateur';
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modal Activité */}
       {modalOuvert && (
         <ModalActivite
           activite={activiteEnEdition}
@@ -153,10 +159,19 @@ const estAdmin = user?.role === 'administrateur';
           onClose={fermerModal}
         />
       )}
+
+      {/* Modal Photos */}
+      {photoModal && (
+        <ModalPhotos 
+          activiteId={photoModal} 
+          onClose={() => setPhotoModal(null)} 
+        />
+      )}
     </div>
   );
 }
 
+// ============ MODAL ACTIVITE (Inchangé) ============
 function ModalActivite({ activite, lieux, onSave, onClose }) {
   const [form, setForm] = useState({
     nom: activite?.nom || '',
@@ -199,98 +214,41 @@ function ModalActivite({ activite, lieux, onSave, onClose }) {
           <div style={styles.formGrid}>
             <div style={styles.field}>
               <label style={styles.label}>Nom *</label>
-              <input
-                type="text"
-                name="nom"
-                value={form.nom}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              />
+              <input type="text" name="nom" value={form.nom} onChange={handleChange} required style={styles.input} />
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Catégorie</label>
-              <select
-                name="categorie"
-                value={form.categorie}
-                onChange={handleChange}
-                style={styles.input}
-              >
+              <select name="categorie" value={form.categorie} onChange={handleChange} style={styles.input}>
                 <option value="Nature">Nature</option>
                 <option value="Aventure">Aventure</option>
                 <option value="Culture">Culture</option>
               </select>
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Lieu *</label>
-              <select
-                name="lieu_id"
-                value={form.lieu_id}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              >
-                {lieux.map(l => (
-                  <option key={l.id} value={l.id}>{l.nom}</option>
-                ))}
+              <select name="lieu_id" value={form.lieu_id} onChange={handleChange} required style={styles.input}>
+                {lieux.map(l => <option key={l.id} value={l.id}>{l.nom}</option>)}
               </select>
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Durée (minutes) *</label>
-              <input
-                type="number"
-                name="duree_min"
-                value={form.duree_min}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              />
+              <input type="number" name="duree_min" value={form.duree_min} onChange={handleChange} required style={styles.input} />
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Âge minimum</label>
-              <input
-                type="number"
-                name="age_min"
-                value={form.age_min}
-                onChange={handleChange}
-                style={styles.input}
-              />
+              <input type="number" name="age_min" value={form.age_min} onChange={handleChange} style={styles.input} />
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Effectif min</label>
-              <input
-                type="number"
-                name="effectif_min"
-                value={form.effectif_min}
-                onChange={handleChange}
-                style={styles.input}
-              />
+              <input type="number" name="effectif_min" value={form.effectif_min} onChange={handleChange} style={styles.input} />
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Effectif max</label>
-              <input
-                type="number"
-                name="effectif_max"
-                value={form.effectif_max}
-                onChange={handleChange}
-                style={styles.input}
-              />
+              <input type="number" name="effectif_max" value={form.effectif_max} onChange={handleChange} style={styles.input} />
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>
-                <input
-                  type="checkbox"
-                  name="dependance_meteo"
-                  checked={form.dependance_meteo === 1}
-                  onChange={handleChange}
-                />
+                <input type="checkbox" name="dependance_meteo" checked={form.dependance_meteo === 1} onChange={handleChange} />
                 {' '}Dépend de la météo
               </label>
             </div>
@@ -298,48 +256,23 @@ function ModalActivite({ activite, lieux, onSave, onClose }) {
 
           <div style={styles.field}>
             <label style={styles.label}>Description</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              rows="3"
-              style={styles.textarea}
-            />
+            <textarea name="description" value={form.description} onChange={handleChange} rows="3" style={styles.textarea} />
           </div>
 
           <div style={styles.formGrid}>
             <div style={styles.field}>
               <label style={styles.label}>Inclus</label>
-              <textarea
-                name="inclus"
-                value={form.inclus}
-                onChange={handleChange}
-                rows="2"
-                placeholder="Guide, transport, entrée..."
-                style={styles.textarea}
-              />
+              <textarea name="inclus" value={form.inclus} onChange={handleChange} rows="2" placeholder="Guide, transport..." style={styles.textarea} />
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Non inclus</label>
-              <textarea
-                name="non_inclus"
-                value={form.non_inclus}
-                onChange={handleChange}
-                rows="2"
-                placeholder="Repas, boissons..."
-                style={styles.textarea}
-              />
+              <textarea name="non_inclus" value={form.non_inclus} onChange={handleChange} rows="2" placeholder="Repas, boissons..." style={styles.textarea} />
             </div>
           </div>
 
           <div style={styles.modalFooter}>
-            <button type="button" onClick={onClose} style={styles.btnSecondaire}>
-              Annuler
-            </button>
-            <button type="submit" style={styles.btnPrimaire}>
-              {activite ? 'Enregistrer' : 'Créer'}
-            </button>
+            <button type="button" onClick={onClose} style={styles.btnSecondaire}>Annuler</button>
+            <button type="submit" style={styles.btnPrimaire}>{activite ? 'Enregistrer' : 'Créer'}</button>
           </div>
         </form>
       </div>
@@ -347,150 +280,222 @@ function ModalActivite({ activite, lieux, onSave, onClose }) {
   );
 }
 
+// ============ MODAL PHOTOS (VERSION GRANDE TAILLE) ============
+function ModalPhotos({ activiteId, onClose }) {
+  const [photosExistantes, setPhotosExistantes] = useState([]); // Photos déjà en base
+  const [photosNouvelles, setPhotosNouvelles] = useState([]); // Photos sélectionnées à envoyer
+  const [uploading, setUploading] = useState(false);
+
+  const chargerPhotos = async () => {
+    try {
+      const data = await photosService.getByActivite(activiteId);
+      setPhotosExistantes(data);
+    } catch (error) { console.error(error); }
+  };
+
+  useEffect(() => { chargerPhotos(); }, [activiteId]);
+
+  const handleSelectionFichiers = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    const nouvellesPhotos = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    setPhotosNouvelles(prev => [...prev, ...nouvellesPhotos]);
+  };
+
+  const retirerPhotoNouvelle = (index) => {
+    setPhotosNouvelles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const supprimerPhotoExistante = async (id) => {
+    if (!confirm('Supprimer définitivement cette photo ?')) return;
+    await photosService.delete(id);
+    await chargerPhotos();
+  };
+
+  const enregistrerPhotos = async () => {
+    if (photosNouvelles.length === 0) return;
+    const formData = new FormData();
+    photosNouvelles.forEach(photo => {
+      formData.append('photos', photo.file);
+    });
+
+    try {
+      setUploading(true);
+      await photosService.upload(activiteId, formData);
+      setPhotosNouvelles([]); // Vider la file d'attente
+      await chargerPhotos(); // Recharger la liste depuis le serveur
+    } catch (error) {
+      alert('Erreur lors de l\'enregistrement des photos');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div style={styles.modalOverlay}>
+      {/* On augmente la taille max à 1000px pour avoir de la place */}
+      <div style={{...styles.modal, maxWidth: '1000px', width: '95%'}}>
+        
+        <div style={styles.modalHeader}>
+          <h3>📸 Galerie de l'activité</h3>
+          <button onClick={onClose} style={styles.btnFermer}>✕</button>
+        </div>
+
+        <div style={{ padding: '30px' }}>
+          
+          {/* --- ZONE DE SÉLECTION --- */}
+          <div style={{ marginBottom: '30px', textAlign: 'center' }}>
+            <label style={{ 
+              ...styles.btnSecondaire, 
+              display: 'inline-block', 
+              cursor: 'pointer', 
+              border: '2px dashed #C0392B', 
+              color: '#C0392B',
+              padding: '15px 30px',
+              fontSize: '16px'
+            }}>
+              ➕ Cliquez ici pour sélectionner des photos
+              <input type="file" multiple accept="image/*" onChange={handleSelectionFichiers} style={{ display: 'none' }} />
+            </label>
+          </div>
+
+          {/* --- PRÉVISUALISATION DES PHOTOS À ENVOYER --- */}
+          {photosNouvelles.length > 0 && (
+            <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: '#FEF5E7', borderRadius: '8px' }}>
+              <h4 style={{ marginBottom: '15px', color: '#E67E22', fontSize: '18px' }}>
+                Photos en attente d'enregistrement ({photosNouvelles.length})
+              </h4>
+              
+              {/* Grille 3 colonnes pour les grandes images */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px', marginBottom: '20px' }}>
+                {photosNouvelles.map((p, index) => (
+                  <div key={index} style={{ position: 'relative' }}>
+                    <img 
+                      src={p.preview} 
+                      alt="preview" 
+                      style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} 
+                    />
+                    <button 
+                      onClick={() => retirerPhotoNouvelle(index)}
+                      style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                onClick={enregistrerPhotos} 
+                disabled={uploading}
+                style={{ ...styles.btnPrimaire, width: '100%', backgroundColor: '#27AE60', padding: '15px', fontSize: '16px' }}
+              >
+                {uploading ? '⏳ Enregistrement en cours...' : '💾 Enregistrer toutes ces photos'}
+              </button>
+            </div>
+          )}
+
+          {/* --- PHOTOS DÉJÀ ENREGISTRÉES --- */}
+          <h4 style={{ marginBottom: '15px', borderBottom: '2px solid #ecf0f1', paddingBottom: '10px', fontSize: '18px' }}>
+            Photos actuelles ({photosExistantes.length})
+          </h4>
+          
+          {photosExistantes.length === 0 ? (
+            <p style={{...styles.lectureSeule, textAlign: 'center', padding: '20px'}}>Aucune photo enregistrée pour cette activité.</p>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
+              {photosExistantes.map(p => (
+                <div key={p.id} style={{ position: 'relative' }}>
+                  <img 
+                    src={p.url} 
+                    alt="activité" 
+                    style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} 
+                  />
+                  <button 
+                    onClick={() => supprimerPhotoExistante(p.id)}
+                    style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+// ============ STYLES ============
 const styles = {
   loading: { padding: '40px', textAlign: 'center', color: '#7f8c8d' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
   barreActions: {
-    backgroundColor: 'white',
-    padding: '20px 24px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    backgroundColor: 'white', padding: '20px 24px', borderRadius: '8px',
+    marginBottom: '16px', display: 'flex', justifyContent: 'space-between',
+    alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
   },
   titre: { fontSize: '20px', color: '#2C3E50' },
   sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
   btnPrimaire: {
-    padding: '10px 20px',
-    backgroundColor: '#C0392B',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer'
+    padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
+    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   btnSecondaire: {
-    padding: '10px 20px',
-    backgroundColor: '#ECF0F1',
-    color: '#2C3E50',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer'
+    padding: '10px 20px', backgroundColor: '#ECF0F1', color: '#2C3E50',
+    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   tableContainer: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    overflow: 'hidden',
+    backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden',
     boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
   },
   aucune: { padding: '60px 20px', textAlign: 'center', color: '#95A5A6' },
   table: { width: '100%', borderCollapse: 'collapse' },
   thead: { backgroundColor: '#f8f9fa' },
   th: {
-    padding: '12px',
-    textAlign: 'left',
-    fontSize: '12px',
-    color: '#7f8c8d',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    borderBottom: '2px solid #ecf0f1'
+    padding: '12px', textAlign: 'left', fontSize: '12px', color: '#7f8c8d',
+    fontWeight: '600', textTransform: 'uppercase', borderBottom: '2px solid #ecf0f1'
   },
   tr: { borderBottom: '1px solid #ecf0f1' },
   td: { padding: '12px', fontSize: '13px', color: '#2C3E50' },
   categorie: {
-    display: 'inline-block',
-    padding: '3px 10px',
-    backgroundColor: '#ECF0F1',
-    borderRadius: '12px',
-    fontSize: '11px',
-    fontWeight: '600'
+    display: 'inline-block', padding: '3px 10px', backgroundColor: '#ECF0F1',
+    borderRadius: '12px', fontSize: '11px', fontWeight: '600'
   },
   btnIcone: {
-    padding: '6px 10px',
-    marginRight: '4px',
-    backgroundColor: 'transparent',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px'
+    padding: '6px 10px', marginRight: '4px', backgroundColor: 'transparent',
+    border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer', fontSize: '14px'
   },
   modalOverlay: {
-    position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    padding: '20px'
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px'
   },
   modal: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    width: '100%',
-    maxWidth: '700px',
-    maxHeight: '90vh',
-    overflowY: 'auto'
+    backgroundColor: 'white', borderRadius: '8px', width: '100%',
+    maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto'
   },
   modalHeader: {
-    padding: '20px 24px',
-    borderBottom: '1px solid #ecf0f1',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    padding: '20px 24px', borderBottom: '1px solid #ecf0f1',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
   },
-  btnFermer: {
-    background: 'none',
-    border: 'none',
-    fontSize: '20px',
-    cursor: 'pointer',
-    color: '#7f8c8d'
-  },
+  btnFermer: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#7f8c8d' },
   form: { padding: '24px' },
-  formGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '16px',
-    marginBottom: '16px'
-  },
+  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' },
   field: { display: 'flex', flexDirection: 'column' },
-  label: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: '6px'
-  },
-  input: {
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '14px',
-    outline: 'none'
-  },
+  label: { fontSize: '13px', fontWeight: '600', color: '#2C3E50', marginBottom: '6px' },
+  input: { padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', outline: 'none' },
   textarea: {
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '14px',
-    outline: 'none',
-    fontFamily: 'inherit',
-    resize: 'vertical'
+    padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
+    fontSize: '14px', outline: 'none', fontFamily: 'inherit', resize: 'vertical'
   },
   modalFooter: {
-    padding: '16px 24px',
-    borderTop: '1px solid #ecf0f1',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '12px'
+    padding: '16px 24px', borderTop: '1px solid #ecf0f1',
+    display: 'flex', justifyContent: 'flex-end', gap: '12px'
   },
-  lectureSeule: {
-  fontSize: '12px',
-  color: '#95A5A6',
-  fontStyle: 'italic'
-},
+  lectureSeule: { fontSize: '12px', color: '#95A5A6', fontStyle: 'italic' }
 };
