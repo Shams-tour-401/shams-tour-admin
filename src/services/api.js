@@ -4,6 +4,9 @@ import axios from 'axios';
 // URL de base de l'API Node.js (sur Render)
 const API_URL = 'https://shams-tour-api.onrender.com/api';
 
+// 👇 LOG DE DIAGNOSTIC
+console.log("🔍 URL DE L'API UTILISÉE :", API_URL);
+
 // Créer une instance axios
 const api = axios.create({
   baseURL: API_URL,
@@ -19,6 +22,10 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // 👇 LOG DE DIAGNOSTIC POUR CHAQUE REQUÊTE
+    console.log(`🚀 Envoi requête vers : ${config.baseURL}${config.url}`);
+    
     return config;
   },
   (error) => Promise.reject(error)
