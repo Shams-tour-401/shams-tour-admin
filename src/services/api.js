@@ -1,8 +1,8 @@
 // src/services/api.js
 import axios from 'axios';
 
-// URL de base de l'API Node.js
-const API_URL = 'http://localhost:3000/api';
+// URL de base de l'API Node.js (sur Render)
+const API_URL = 'https://shams-tour-api.onrender.com/api';
 
 // Créer une instance axios
 const api = axios.create({
