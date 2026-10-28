@@ -12,7 +12,7 @@ import {
   Tag,
   Route,
   ListChecks,
-  ArrowRight,
+  ChevronRight,
   Loader2,
   Inbox
 } from 'lucide-react';
@@ -80,10 +80,15 @@ export default function Dashboard() {
 
   return (
     <Page>
+      <PageHeader>
+        <PageTitle>Tableau de bord</PageTitle>
+        <PageSub>Suivre les demandes clients et les points à traiter</PageSub>
+      </PageHeader>
+
       {/* Cartes de statistiques */}
       <StatsGrid>
-        <StatCard titre="Total demandes" valeur={stats.total} tone="neutral" Icon={ClipboardList} />
-        <StatCard titre="Nouvelles" valeur={stats.demande_recue} tone="accent" Icon={Bell} />
+        <StatCard titre="Total demandes" valeur={stats.total} tone="neutral" Icon={ClipboardList} featured />
+        <StatCard titre="Nouvelles" valeur={stats.demande_recue} tone="blue" Icon={Bell} />
         <StatCard titre="À contacter" valeur={stats.a_contacter} tone="amber" Icon={Phone} />
         <StatCard titre="Confirmées" valeur={stats.confirmee} tone="green" Icon={CheckCircle2} />
       </StatsGrid>
@@ -93,7 +98,7 @@ export default function Dashboard() {
         <AlertesSection>
           <AlertesTitre>
             <AlertTriangle size={18} />
-            Alertes
+            À traiter
             <AlertesTotal>{alertes.total}</AlertesTotal>
           </AlertesTitre>
 
@@ -185,7 +190,7 @@ export default function Dashboard() {
         <SectionHeader>
           <SectionTitle>Dernières demandes</SectionTitle>
           <VoirTout to="/demandes">
-            Voir tout <ArrowRight size={14} />
+            Tout voir <ChevronRight size={14} />
           </VoirTout>
         </SectionHeader>
 
@@ -212,7 +217,7 @@ export default function Dashboard() {
                     <Td>
                       <RefLink to={`/demandes/${d.id}`}>{d.reference}</RefLink>
                     </Td>
-                    <Td>{d.nom_client}</Td>
+                    <Td $strong>{d.nom_client}</Td>
                     <Td>{d.destination_nom}</Td>
                     <Td>
                       <StatutBadge statut={d.statut} />
@@ -229,14 +234,16 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ titre, valeur, tone, Icon }) {
+function StatCard({ titre, valeur, tone, Icon, featured }) {
   return (
-    <StatCardBox>
-      <StatIcon $tone={tone}>
-        <Icon size={18} />
-      </StatIcon>
+    <StatCardBox $featured={featured}>
+      <StatTop>
+        <StatTitre>{titre}</StatTitre>
+        <StatIcon $tone={tone}>
+          <Icon size={16} />
+        </StatIcon>
+      </StatTop>
       <StatValeur>{valeur}</StatValeur>
-      <StatTitre>{titre}</StatTitre>
     </StatCardBox>
   );
 }
@@ -249,7 +256,7 @@ function AlerteCard({ tone, Icon, titre, description, count, children }) {
           <Icon size={15} />
         </AlerteIcone>
         <AlerteNom>{titre}</AlerteNom>
-        <AlerteCount>{count}</AlerteCount>
+        <AlerteCount $tone={tone}>{count}</AlerteCount>
       </AlerteHeader>
       <AlerteDesc>{description}</AlerteDesc>
       <AlerteListe>{children}</AlerteListe>
@@ -269,12 +276,7 @@ function StatutBadge({ statut }) {
 
   const c = config[statut] || { label: statut, tone: 'neutral' };
 
-  return (
-    <Badge $tone={c.tone}>
-      <BadgeDot />
-      {c.label}
-    </Badge>
-  );
+  return <Badge $tone={c.tone}>{c.label}</Badge>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -282,14 +284,13 @@ function StatutBadge({ statut }) {
 /* ------------------------------------------------------------------ */
 
 const TONES = {
-  neutral: { fg: '#404040', bg: '#f5f5f5' },
-  accent: { fg: '#1e3a8a', bg: '#eaeffd' },
-  blue: { fg: '#1d4ed8', bg: '#eff4ff' },
-  green: { fg: '#15803d', bg: '#ecfdf3' },
-  amber: { fg: '#b45309', bg: '#fff6ed' },
-  yellow: { fg: '#a16207', bg: '#fefbe8' },
-  red: { fg: '#b42318', bg: '#fef3f2' },
-  violet: { fg: '#6d28d9', bg: '#f5f3ff' }
+  neutral: { fg: '#4b5d70', bg: '#eef2f6' },
+  blue: { fg: '#1d5fbf', bg: '#e6f0ff' },
+  green: { fg: '#0f7a3d', bg: '#e3f8ea' },
+  amber: { fg: '#b45309', bg: '#fff1e0' },
+  yellow: { fg: '#a16207', bg: '#fef7d6' },
+  red: { fg: '#c0182b', bg: '#ffe8ea' },
+  violet: { fg: '#7a1fc4', bg: '#f3e8ff' }
 };
 
 const toneFg = ({ $tone }) => (TONES[$tone] || TONES.neutral).fg;
@@ -300,16 +301,17 @@ const spin = keyframes`
 `;
 
 const Page = styled.div`
-  --accent: #1e3a8a;
-  --accent-hover: #1e40af;
-  --ink: #0a0a0a;
-  --text: #404040;
-  --muted: #737373;
-  --border: #e5e5e5;
+  --navy: #1f4e79;
+  --accent: #2f6fd6;
+  --accent-hover: #2760bf;
+  --ink: #1b2a3a;
+  --text: #3d4f63;
+  --muted: #6b7c8f;
+  --border: #dbe5f0;
   --surface: #ffffff;
-  --bg: #fafafa;
+  --soft: #f4f8fc;
 
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
 
@@ -325,6 +327,24 @@ const Page = styled.div`
   }
 `;
 
+const PageHeader = styled.div`
+  margin-bottom: 20px;
+`;
+
+const PageTitle = styled.h1`
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+`;
+
+const PageSub = styled.p`
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+`;
+
 /* ---------- Chargement ---------- */
 const Loading = styled.div`
   display: flex;
@@ -333,7 +353,7 @@ const Loading = styled.div`
   gap: 8px;
   padding: 64px 16px;
   font-size: 14px;
-  color: #737373;
+  color: #6b7c8f;
 `;
 
 const Spinner = styled(Loader2)`
@@ -349,9 +369,9 @@ const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 
-  @media (min-width: 640px) {
+  @media (min-width: 900px) {
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
@@ -361,17 +381,17 @@ const StatCardBox = styled.div`
   padding: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border-left: 3px solid ${({ $featured }) => ($featured ? 'var(--accent)' : 'var(--border)')};
+  border-radius: 12px;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+    box-shadow: 0 8px 22px rgba(31, 78, 121, 0.1);
     transform: translateY(-1px);
   }
 
-  @media (min-width: 640px) {
-    padding: 20px;
+  @media (min-width: 900px) {
+    padding: 18px 20px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -382,40 +402,47 @@ const StatCardBox = styled.div`
   }
 `;
 
-const StatIcon = styled.div`
-  width: 36px;
-  height: 36px;
+const StatTop = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 14px;
-  color: ${toneFg};
-  background: ${toneBg};
-  border-radius: 10px;
-`;
-
-const StatValeur = styled.div`
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-
-  @media (min-width: 640px) {
-    font-size: 32px;
-  }
+  justify-content: space-between;
+  gap: 8px;
 `;
 
 const StatTitre = styled.div`
-  margin-top: 6px;
   font-size: 13px;
   color: var(--muted);
 `;
 
+const StatIcon = styled.div`
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: ${toneFg};
+  background: ${toneBg};
+  border-radius: 8px;
+`;
+
+const StatValeur = styled.div`
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+
+  @media (min-width: 900px) {
+    font-size: 32px;
+  }
+`;
+
 /* ---------- Alertes ---------- */
 const AlertesSection = styled.section`
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 `;
 
 const AlertesTitre = styled.h2`
@@ -423,10 +450,9 @@ const AlertesTitre = styled.h2`
   align-items: center;
   gap: 8px;
   margin: 0 0 12px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ink);
+  color: var(--navy);
 
   svg {
     color: #b45309;
@@ -436,10 +462,9 @@ const AlertesTitre = styled.h2`
 const AlertesTotal = styled.span`
   padding: 1px 8px;
   font-size: 11px;
-  font-weight: 600;
-  color: #b42318;
-  background: #fef3f2;
-  border: 1px solid #fecdca;
+  font-weight: 700;
+  color: #fff;
+  background: #e5283c;
   border-radius: 999px;
 `;
 
@@ -460,10 +485,9 @@ const AlertesGrid = styled.div`
 
 const AlerteBox = styled.div`
   padding: 16px;
-  background: var(--surface);
+  background: var(--soft);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
 `;
 
 const AlerteHeader = styled.div`
@@ -485,7 +509,7 @@ const AlerteIcone = styled.span`
 `;
 
 const AlerteNom = styled.strong`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ink);
 `;
@@ -495,16 +519,16 @@ const AlerteCount = styled.span`
   min-width: 24px;
   padding: 2px 8px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
-  color: var(--text);
-  background: #f5f5f5;
+  color: ${toneFg};
+  background: ${toneBg};
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
 `;
 
 const AlerteDesc = styled.p`
-  margin: 8px 0 12px;
+  margin: 8px 0 10px;
   font-size: 12px;
   color: var(--muted);
 `;
@@ -522,7 +546,7 @@ const AlerteItem = styled.li`
   justify-content: space-between;
   gap: 12px;
   padding: 8px 0;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border);
 `;
 
 const AlerteLink = styled(Link)`
@@ -549,8 +573,7 @@ const AlerteMeta = styled.small`
 const Section = styled.section`
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
   overflow: hidden;
 `;
 
@@ -559,32 +582,30 @@ const SectionHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid var(--border);
 
   @media (min-width: 640px) {
-    padding: 18px 20px;
+    padding: 16px 20px;
   }
 `;
 
 const SectionTitle = styled.h2`
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--ink);
+  color: var(--navy);
 `;
 
 const VoirTout = styled(Link)`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   font-size: 13px;
   font-weight: 500;
   color: var(--accent);
   transition: gap 0.15s ease, color 0.15s ease;
 
   &:hover {
-    gap: 7px;
+    gap: 5px;
     color: var(--accent-hover);
   }
 `;
@@ -595,7 +616,7 @@ const Empty = styled.div`
   align-items: center;
   gap: 8px;
   padding: 48px 16px;
-  color: #a3a3a3;
+  color: #9db0c4;
 
   p {
     margin: 0;
@@ -623,13 +644,20 @@ const Th = styled.th`
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
-  background: var(--bg);
+  background: var(--soft);
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+
+  @media (min-width: 640px) {
+    &:first-child {
+      padding-left: 20px;
+    }
+  }
 `;
 
 const Tr = styled.tr`
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #edf2f8;
   transition: background-color 0.12s ease;
 
   &:last-child {
@@ -637,20 +665,28 @@ const Tr = styled.tr`
   }
 
   &:hover {
-    background: var(--bg);
+    background: var(--soft);
   }
 `;
 
 const Td = styled.td`
   padding: 14px 16px;
   font-size: 14px;
-  color: ${({ $muted }) => ($muted ? 'var(--muted)' : 'var(--text)')};
+  font-weight: ${({ $strong }) => ($strong ? 600 : 400)};
+  color: ${({ $muted, $strong }) =>
+    $muted ? 'var(--muted)' : $strong ? 'var(--ink)' : 'var(--text)'};
   white-space: nowrap;
+
+  @media (min-width: 640px) {
+    &:first-child {
+      padding-left: 20px;
+    }
+  }
 `;
 
 const RefLink = styled(Link)`
   font-weight: 600;
-  color: var(--ink);
+  color: var(--navy);
   font-variant-numeric: tabular-nums;
   transition: color 0.15s ease;
 
@@ -661,20 +697,11 @@ const RefLink = styled(Link)`
 
 /* ---------- Badges ---------- */
 const Badge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: inline-block;
   padding: 3px 10px;
   font-size: 12px;
   font-weight: 500;
   color: ${toneFg};
   background: ${toneBg};
   border-radius: 999px;
-`;
-
-const BadgeDot = styled.span`
-  width: 6px;
-  height: 6px;
-  background: currentColor;
-  border-radius: 50%;
 `;
