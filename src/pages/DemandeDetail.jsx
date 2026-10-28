@@ -1,8 +1,35 @@
 // src/pages/DemandeDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import styled from 'styled-components';
+import {
+  ArrowLeft,
+  User,
+  Phone,
+  PhoneCall,
+  PhoneOff,
+  Compass,
+  AlertTriangle,
+  MessageSquare,
+  StickyNote,
+  Settings,
+  FileText,
+  History,
+  Plus,
+  X,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
+  TrendingUp,
+  ClipboardCheck
+} from 'lucide-react';
 import { demandesService } from '../services/demandes';
 import { propositionsService } from '../services/propositions';
+
+/* ------------------------------------------------------------------ */
+/* Composant principal                                                */
+/* ------------------------------------------------------------------ */
 
 export default function DemandeDetail() {
   const { id } = useParams();
@@ -115,9 +142,9 @@ export default function DemandeDetail() {
     }
   };
 
-  if (loading) return <div style={styles.loading}>Chargement...</div>;
-  if (erreur) return <div style={styles.erreur}>{erreur}</div>;
-  if (!demande) return <div style={styles.erreur}>Demande non trouvée</div>;
+  if (loading) return <Page><Loading>Chargement...</Loading></Page>;
+  if (erreur) return <Page><ErreurBox>{erreur}</ErreurBox></Page>;
+  if (!demande) return <Page><ErreurBox>Demande non trouvée</ErreurBox></Page>;
 
   const statutsDisponibles = [
     { value: 'demande_recue', label: 'Demande reçue' },
@@ -129,24 +156,27 @@ export default function DemandeDetail() {
   ];
 
   return (
-    <div>
+    <Page>
       {/* En-tête */}
-      <div style={styles.header}>
+      <Header>
         <div>
-          <Link to="/demandes" style={styles.retour}>← Retour aux demandes</Link>
-          <h2 style={styles.reference}>{demande.reference}</h2>
-          <p style={styles.client}>
-            👤 {demande.nom_client} — 📞 {demande.telephone}
-          </p>
+          <Retour to="/demandes">
+            <ArrowLeft size={14} /> Retour aux demandes
+          </Retour>
+          <Reference>{demande.reference}</Reference>
+          <ClientLine>
+            <span><User size={14} /> {demande.nom_client}</span>
+            <span><Phone size={14} /> {demande.telephone}</span>
+          </ClientLine>
         </div>
         <StatutBadge statut={demande.statut} />
-      </div>
+      </Header>
 
-      <div style={styles.grid}>
+      <Grid>
         {/* Colonne gauche */}
-        <div style={styles.colonne}>
+        <Colonne>
           {/* Critères du voyage */}
-          <Card titre="🎒 Critères du voyage">
+          <Card titre="Critères du voyage" Icon={Compass}>
             <Info label="Destination" valeur={demande.destination_nom} />
             <Info
               label="Date de départ"
@@ -169,307 +199,325 @@ export default function DemandeDetail() {
           </Card>
 
           {/* Alerte doublon */}
-{demande.doublons && demande.doublons.length > 0 && (
-  <Card titre="⚠️ Doublon possible détecté">
-    <p style={styles.alerteDoublon}>
-      Ce client a {demande.doublons.length} autre(s) demande(s) similaire(s) :
-    </p>
-    {demande.doublons.map((d) => (
-      <div key={d.id} style={styles.doublonItem}>
-        <Link to={`/demandes/${d.id}`} style={styles.doublonLink}>
-          {d.reference}
-        </Link>
-        <small>
-          {' '}— {new Date(d.date_depart).toLocaleDateString('fr-FR')}
-          {' '}({d.statut})
-        </small>
-      </div>
-    ))}
-  </Card>
-)}
+          {demande.doublons && demande.doublons.length > 0 && (
+            <Card titre="Doublon possible détecté" Icon={AlertTriangle} warning>
+              <AlerteDoublon>
+                Ce client a {demande.doublons.length} autre(s) demande(s) similaire(s) :
+              </AlerteDoublon>
+              {demande.doublons.map((d) => (
+                <DoublonItem key={d.id}>
+                  <DoublonLink to={`/demandes/${d.id}`}>{d.reference}</DoublonLink>
+                  <small>
+                    {' '}— {new Date(d.date_depart).toLocaleDateString('fr-FR')}
+                    {' '}({d.statut})
+                  </small>
+                </DoublonItem>
+              ))}
+            </Card>
+          )}
 
           {/* Commentaire */}
           {demande.commentaire && (
-            <Card titre="💬 Commentaire du client">
-              <p style={styles.commentaire}>{demande.commentaire}</p>
+            <Card titre="Commentaire du client" Icon={MessageSquare}>
+              <Commentaire>{demande.commentaire}</Commentaire>
             </Card>
           )}
 
           {/* Notes internes */}
-          <Card titre="📝 Notes internes">
-            <div style={styles.noteForm}>
-              <textarea
+          <Card titre="Notes internes" Icon={StickyNote}>
+            <NoteForm>
+              <Textarea
                 value={nouvelleNote}
                 onChange={(e) => setNouvelleNote(e.target.value)}
                 placeholder="Ajouter une note interne..."
                 rows="2"
-                style={styles.noteInput}
               />
-              <button
+              <Btn
+                type="button"
+                $block
                 onClick={ajouterNote}
                 disabled={!nouvelleNote.trim() || ajoutNoteEnCours}
-                style={{
-                  ...styles.btnAjouterNote,
-                  opacity: (!nouvelleNote.trim() || ajoutNoteEnCours) ? 0.5 : 1
-                }}
               >
-                {ajoutNoteEnCours ? '...' : '➕ Ajouter la note'}
-              </button>
-            </div>
+                <Plus size={16} />
+                {ajoutNoteEnCours ? '...' : 'Ajouter la note'}
+              </Btn>
+            </NoteForm>
 
             {demande.notes && demande.notes.length > 0 ? (
               demande.notes.map((n) => (
-                <div key={n.id} style={styles.note}>
-                  <div style={styles.noteHeader}>
+                <LogItem key={n.id}>
+                  <LogHeader>
                     <strong>{n.auteur_nom || 'Système'}</strong>
-                    <small>
-                      {new Date(n.date_creation).toLocaleString('fr-FR')}
-                    </small>
-                  </div>
+                    <small>{new Date(n.date_creation).toLocaleString('fr-FR')}</small>
+                  </LogHeader>
                   <p>{n.texte}</p>
-                </div>
+                </LogItem>
               ))
             ) : (
-              <p style={styles.vide}>Aucune note</p>
+              <Vide>Aucune note</Vide>
             )}
           </Card>
-        </div>
+        </Colonne>
 
         {/* Colonne droite */}
-        <div style={styles.colonne}>
+        <Colonne>
           {/* Actions */}
-          <Card titre="⚙️ Actions">
-            <label style={styles.label}>Changer le statut :</label>
-            <select
+          <Card titre="Actions" Icon={Settings}>
+            <Label>Changer le statut :</Label>
+            <Select
               value={demande.statut}
               onChange={(e) => changerStatut(e.target.value)}
               disabled={changementEnCours}
-              style={styles.selectStatut}
             >
               {statutsDisponibles.map((s) => (
                 <option key={s.value} value={s.value}>
                   {s.label}
                 </option>
               ))}
-            </select>
-{/* Compteur d'appels */}
-{demande.stats_appels && demande.stats_appels.total > 0 && (
-  <div style={styles.compteurAppels}>
-    <div style={styles.compteurItem}>
-      <strong>{demande.stats_appels.total}</strong>
-      <span>tentative(s)</span>
-    </div>
-    <div style={styles.compteurItem}>
-      <strong>{demande.stats_appels.aboutis}</strong>
-      <span>aboutie(s)</span>
-    </div>
-    <div style={styles.compteurItem}>
-      <strong>{demande.stats_appels.aujourd_hui}</strong>
-      <span>aujourd'hui</span>
-    </div>
-  </div>
-)}
+            </Select>
+
+            {/* Compteur d'appels */}
+            {demande.stats_appels && demande.stats_appels.total > 0 && (
+              <CompteurAppels>
+                <CompteurItem>
+                  <strong>{demande.stats_appels.total}</strong>
+                  <span>tentative(s)</span>
+                </CompteurItem>
+                <CompteurItem>
+                  <strong>{demande.stats_appels.aboutis}</strong>
+                  <span>aboutie(s)</span>
+                </CompteurItem>
+                <CompteurItem>
+                  <strong>{demande.stats_appels.aujourd_hui}</strong>
+                  <span>aujourd'hui</span>
+                </CompteurItem>
+              </CompteurAppels>
+            )}
+
             {/* Bouton appel */}
-            <button
-              onClick={() => setModalAppel(true)}
-              style={styles.btnAppel}
-            >
-              📞 Enregistrer un appel
-            </button>
+            <Btn type="button" $block $variant="outline" onClick={() => setModalAppel(true)}>
+              <PhoneCall size={16} />
+              Enregistrer un appel
+            </Btn>
 
             {/* Actions rapides selon le statut */}
-            <div style={styles.actionsRapides}>
+            <ActionsRapides>
               {demande.statut === 'demande_recue' && (
-                <button
+                <Btn
+                  type="button"
+                  $block
                   onClick={() => changerStatut('a_contacter')}
-                  style={styles.btnAction}
                   disabled={changementEnCours}
                 >
-                  📞 Marquer "à contacter"
-                </button>
+                  <Phone size={16} />
+                  Marquer "à contacter"
+                </Btn>
               )}
 
               {demande.statut === 'a_contacter' && (
-                <button
+                <Btn
+                  type="button"
+                  $block
                   onClick={() => changerStatut('disponibilites_a_verifier')}
-                  style={styles.btnAction}
                   disabled={changementEnCours}
                 >
-                  ✅ Vérifier disponibilités
-                </button>
+                  <ClipboardCheck size={16} />
+                  Vérifier disponibilités
+                </Btn>
               )}
 
               {demande.statut === 'disponibilites_a_verifier' && (
-                <button
+                <Btn
+                  type="button"
+                  $block
+                  $variant="success"
                   onClick={() => changerStatut('confirmee')}
-                  style={styles.btnActionVert}
                   disabled={changementEnCours}
                 >
-                  ✅ Confirmer directement
-                </button>
+                  <CheckCircle2 size={16} />
+                  Confirmer directement
+                </Btn>
               )}
 
               {demande.statut === 'proposition_a_valider' && (
-                <button
+                <Btn
+                  type="button"
+                  $block
+                  $variant="success"
                   onClick={() => changerStatut('confirmee')}
-                  style={styles.btnActionVert}
                   disabled={changementEnCours}
                 >
-                  ✅ Confirmer la réservation
-                </button>
+                  <CheckCircle2 size={16} />
+                  Confirmer la réservation
+                </Btn>
               )}
 
               {demande.statut !== 'annulee' && demande.statut !== 'confirmee' && (
-                <button
+                <Btn
+                  type="button"
+                  $block
+                  $variant="danger"
                   onClick={() => changerStatut('annulee')}
-                  style={styles.btnActionRouge}
                   disabled={changementEnCours}
                 >
-                  ❌ Annuler la demande
-                </button>
+                  <XCircle size={16} />
+                  Annuler la demande
+                </Btn>
               )}
-              {demande.statut !== 'annulee' && 
- demande.statut !== 'confirmee' &&
- demande.stats_appels &&
- demande.stats_appels.total >= 3 && (
-  <button
-    onClick={() => {
-      const motif = prompt(
-        'Motif :\n\n' +
-        '⚠️ Conditions remplies : ' + demande.stats_appels.total + ' tentatives\n\n' +
-        'Tapez "injoignable" pour confirmer l\'annulation :'
-      );
-      if (motif && motif.toLowerCase().includes('injoignable')) {
-        changerStatut('annulee', 'injoignable');
-      }
-    }}
-    style={styles.btnActionOrange}
-    disabled={changementEnCours}
-  >
-    📵 Marquer "injoignable"
-  </button>
-)}
+
+              {demande.statut !== 'annulee' &&
+                demande.statut !== 'confirmee' &&
+                demande.stats_appels &&
+                demande.stats_appels.total >= 3 && (
+                  <Btn
+                    type="button"
+                    $block
+                    $variant="warning"
+                    onClick={() => {
+                      const motif = prompt(
+                        'Motif :\n\n' +
+                        '⚠️ Conditions remplies : ' + demande.stats_appels.total + ' tentatives\n\n' +
+                        'Tapez "injoignable" pour confirmer l\'annulation :'
+                      );
+                      if (motif && motif.toLowerCase().includes('injoignable')) {
+                        changerStatut('annulee', 'injoignable');
+                      }
+                    }}
+                    disabled={changementEnCours}
+                  >
+                    <PhoneOff size={16} />
+                    Marquer "injoignable"
+                  </Btn>
+                )}
 
               {demande.statut === 'confirmee' && (
-                <button
+                <Btn
+                  type="button"
+                  $block
+                  $variant="danger"
                   onClick={() => changerStatut('annulee')}
-                  style={styles.btnActionRouge}
                   disabled={changementEnCours}
                 >
-                  ❌ Annuler (admin)
-                </button>
+                  <XCircle size={16} />
+                  Annuler (admin)
+                </Btn>
               )}
 
               {demande.statut === 'annulee' && (
-                <button
+                <Btn
+                  type="button"
+                  $block
                   onClick={() => changerStatut('a_contacter')}
-                  style={styles.btnAction}
                   disabled={changementEnCours}
                 >
-                  🔄 Réouvrir la demande
-                </button>
+                  <RotateCcw size={16} />
+                  Réouvrir la demande
+                </Btn>
               )}
-            </div>
+            </ActionsRapides>
           </Card>
 
           {/* Propositions */}
-          <Card titre="📄 Propositions">
+          <Card titre="Propositions" Icon={FileText}>
             {(demande.statut === 'disponibilites_a_verifier' ||
               demande.statut === 'proposition_a_valider') && (
-              <button
-                onClick={() => setModalProposition(true)}
-                style={styles.btnCreerProposition}
-              >
-                ➕ Créer une nouvelle version
-              </button>
+              <CreerWrap>
+                <Btn
+                  type="button"
+                  $block
+                  $variant="violet"
+                  onClick={() => setModalProposition(true)}
+                >
+                  <Plus size={16} />
+                  Créer une nouvelle version
+                </Btn>
+              </CreerWrap>
             )}
 
             {propositions.length === 0 ? (
-              <p style={styles.vide}>Aucune proposition</p>
+              <Vide>Aucune proposition</Vide>
             ) : (
               propositions.map((p) => (
-                <div key={p.id} style={styles.propositionCard}>
-                  <div style={styles.propositionHeader}>
+                <PropositionCard key={p.id}>
+                  <PropositionHeader>
                     <strong>Version {p.numero_version}</strong>
-                    <span style={styles.propositionTotal}>
-                      {p.total.toLocaleString('fr-FR')} Ar
-                    </span>
-                  </div>
-                  <div style={styles.propositionMeta}>
-                    <small>
-                      Créée le {new Date(p.date_creation).toLocaleDateString('fr-FR')}
-                      {p.auteur_nom && ` par ${p.auteur_nom}`}
-                    </small>
-                  </div>
+                    <PropositionTotal>{p.total.toLocaleString('fr-FR')} Ar</PropositionTotal>
+                  </PropositionHeader>
+                  <PropositionMeta>
+                    Créée le {new Date(p.date_creation).toLocaleDateString('fr-FR')}
+                    {p.auteur_nom && ` par ${p.auteur_nom}`}
+                  </PropositionMeta>
                   {p.ecarts && (
-                    <div style={styles.propositionEcarts}>
-                      📊 {p.ecarts}
-                    </div>
+                    <PropositionEcarts>
+                      <TrendingUp size={14} />
+                      <span>{p.ecarts}</span>
+                    </PropositionEcarts>
                   )}
 
                   {/* Accord */}
                   {p.accord_date ? (
-                    <div style={styles.accordOk}>
-                      ✅ Accord client le {new Date(p.accord_date).toLocaleDateString('fr-FR')}
-                      {' '}({p.accord_mode})
-                      {p.accord_recueilli_par_nom && ` — ${p.accord_recueilli_par_nom}`}
-                    </div>
+                    <AccordOk>
+                      <CheckCircle2 size={15} />
+                      <span>
+                        Accord client le {new Date(p.accord_date).toLocaleDateString('fr-FR')}
+                        {' '}({p.accord_mode})
+                        {p.accord_recueilli_par_nom && ` — ${p.accord_recueilli_par_nom}`}
+                      </span>
+                    </AccordOk>
                   ) : (
-                    <button
+                    <Btn
+                      type="button"
+                      $block
+                      $variant="success"
+                      $small
                       onClick={() => setModalAccord(p)}
-                      style={styles.btnAccord}
                     >
-                      📝 Enregistrer l'accord client
-                    </button>
+                      <ClipboardCheck size={15} />
+                      Enregistrer l'accord client
+                    </Btn>
                   )}
 
                   {/* Éléments */}
                   {p.elements && p.elements.length > 0 && (
-                    <details style={styles.propositionDetails}>
-                      <summary style={styles.propositionSummary}>
-                        Voir les {p.elements.length} élément(s)
-                      </summary>
-                      <ul style={styles.elementListe}>
+                    <Details>
+                      <summary>Voir les {p.elements.length} élément(s)</summary>
+                      <ElementListe>
                         {p.elements.map((el) => (
-                          <li key={el.id} style={styles.elementItem}>
-                            <span style={styles.elementJour}>J{el.jour}</span>
-                            <span style={styles.elementLibelle}>
+                          <ElementItem key={el.id}>
+                            <ElementJour>J{el.jour}</ElementJour>
+                            <ElementLibelle>
                               {el.libelle}
                               {el.activite_nom && ` — ${el.activite_nom}`}
-                            </span>
-                            <span style={styles.elementPrix}>
-                              {el.prix.toLocaleString('fr-FR')} Ar
-                            </span>
-                          </li>
+                            </ElementLibelle>
+                            <ElementPrix>{el.prix.toLocaleString('fr-FR')} Ar</ElementPrix>
+                          </ElementItem>
                         ))}
-                      </ul>
-                    </details>
+                      </ElementListe>
+                    </Details>
                   )}
-                </div>
+                </PropositionCard>
               ))
             )}
           </Card>
 
           {/* Historique */}
-          <Card titre="📅 Historique">
+          <Card titre="Historique" Icon={History}>
             {demande.evenements && demande.evenements.length > 0 ? (
               demande.evenements.map((e) => (
-                <div key={e.id} style={styles.evenement}>
-                  <div style={styles.evenementHeader}>
+                <LogItem key={e.id}>
+                  <LogHeader>
                     <strong>{e.auteur_nom || 'Système'}</strong>
-                    <small>
-                      {new Date(e.date_evenement).toLocaleString('fr-FR')}
-                    </small>
-                  </div>
+                    <small>{new Date(e.date_evenement).toLocaleString('fr-FR')}</small>
+                  </LogHeader>
                   <p>{e.detail}</p>
-                </div>
+                </LogItem>
               ))
             ) : (
-              <p style={styles.vide}>Aucun événement</p>
+              <Vide>Aucun événement</Vide>
             )}
           </Card>
-        </div>
-      </div>
+        </Colonne>
+      </Grid>
 
       {/* Modal appel */}
       {modalAppel && (
@@ -495,42 +543,64 @@ export default function DemandeDetail() {
           onClose={() => setModalAccord(null)}
         />
       )}
-    </div>
+    </Page>
   );
 }
 
-function Card({ titre, children }) {
+/* ------------------------------------------------------------------ */
+/* Sous-composants                                                    */
+/* ------------------------------------------------------------------ */
+
+function Card({ titre, Icon, warning, children }) {
   return (
-    <div style={styles.card}>
-      <h3 style={styles.cardTitre}>{titre}</h3>
-      <div style={styles.cardContenu}>{children}</div>
-    </div>
+    <CardBox $warning={warning}>
+      <CardTitre $warning={warning}>
+        {Icon && <Icon size={17} />}
+        {titre}
+      </CardTitre>
+      <div>{children}</div>
+    </CardBox>
   );
 }
 
 function Info({ label, valeur }) {
   return (
-    <div style={styles.info}>
-      <span style={styles.infoLabel}>{label} :</span>
-      <span style={styles.infoValeur}>{valeur}</span>
-    </div>
+    <InfoRow>
+      <InfoLabel>{label}</InfoLabel>
+      <InfoValeur>{valeur}</InfoValeur>
+    </InfoRow>
   );
 }
 
 function StatutBadge({ statut }) {
   const config = {
-    'demande_recue': { label: 'Demande reçue', bg: '#3498DB' },
-    'a_contacter': { label: 'À contacter', bg: '#E67E22' },
-    'disponibilites_a_verifier': { label: 'Dispo. à vérifier', bg: '#F39C12' },
-    'proposition_a_valider': { label: 'Prop. à valider', bg: '#9B59B6' },
-    'confirmee': { label: 'Confirmée', bg: '#27AE60' },
-    'annulee': { label: 'Annulée', bg: '#95A5A6' }
+    'demande_recue': { label: 'Demande reçue', tone: 'blue' },
+    'a_contacter': { label: 'À contacter', tone: 'amber' },
+    'disponibilites_a_verifier': { label: 'Dispo. à vérifier', tone: 'yellow' },
+    'proposition_a_valider': { label: 'Prop. à valider', tone: 'violet' },
+    'confirmee': { label: 'Confirmée', tone: 'green' },
+    'annulee': { label: 'Annulée', tone: 'neutral' }
   };
-  const c = config[statut] || { label: statut, bg: '#95A5A6' };
+  const c = config[statut] || { label: statut, tone: 'neutral' };
+  return <Badge $tone={c.tone}>{c.label}</Badge>;
+}
+
+function ModalShell({ titre, Icon, onClose, wide, narrow, children }) {
   return (
-    <span style={{ ...styles.badge, backgroundColor: c.bg }}>
-      {c.label}
-    </span>
+    <ModalOverlay>
+      <ModalBox $wide={wide} $narrow={narrow} role="dialog" aria-modal="true">
+        <ModalHeader>
+          <ModalTitre>
+            {Icon && <Icon size={18} />}
+            {titre}
+          </ModalTitre>
+          <BtnFermer type="button" onClick={onClose} aria-label="Fermer">
+            <X size={18} />
+          </BtnFermer>
+        </ModalHeader>
+        {children}
+      </ModalBox>
+    </ModalOverlay>
   );
 }
 
@@ -544,51 +614,37 @@ function ModalAppel({ onSave, onClose }) {
   };
 
   return (
-    <div style={styles.modalOverlay}>
-      <div style={styles.modal}>
-        <div style={styles.modalHeader}>
-          <h3>📞 Enregistrer un appel</h3>
-          <button onClick={onClose} style={styles.btnFermer}>✕</button>
-        </div>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.field}>
-            <label style={styles.label}>Résultat de l'appel *</label>
-            <select
-              value={resultat}
-              onChange={(e) => setResultat(e.target.value)}
-              required
-              style={styles.input}
-            >
-              <option value="abouti">✅ Abouti (client joint)</option>
-              <option value="pas_de_reponse">📵 Pas de réponse</option>
-              <option value="occupe">⏸️ Occupé</option>
-              <option value="numero_invalide">❌ Numéro invalide</option>
-              <option value="rappel_demande">🔄 Rappel demandé</option>
-            </select>
-          </div>
+    <ModalShell titre="Enregistrer un appel" Icon={PhoneCall} onClose={onClose}>
+      <Form onSubmit={handleSubmit}>
+        <Field>
+          <Label>Résultat de l'appel *</Label>
+          <Select value={resultat} onChange={(e) => setResultat(e.target.value)} required>
+            <option value="abouti">Abouti (client joint)</option>
+            <option value="pas_de_reponse">Pas de réponse</option>
+            <option value="occupe">Occupé</option>
+            <option value="numero_invalide">Numéro invalide</option>
+            <option value="rappel_demande">Rappel demandé</option>
+          </Select>
+        </Field>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Résumé (optionnel)</label>
-            <textarea
-              value={resume}
-              onChange={(e) => setResume(e.target.value)}
-              placeholder="Ex: Client préfère être rappelé le matin..."
-              rows="3"
-              style={styles.textarea}
-            />
-          </div>
+        <Field>
+          <Label>Résumé (optionnel)</Label>
+          <Textarea
+            value={resume}
+            onChange={(e) => setResume(e.target.value)}
+            placeholder="Ex: Client préfère être rappelé le matin..."
+            rows="3"
+          />
+        </Field>
 
-          <div style={styles.modalFooter}>
-            <button type="button" onClick={onClose} style={styles.btnSecondaire}>
-              Annuler
-            </button>
-            <button type="submit" style={styles.btnPrimaire}>
-              Enregistrer
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <ModalFooter>
+          <Btn type="button" $variant="ghost" onClick={onClose}>
+            Annuler
+          </Btn>
+          <Btn type="submit">Enregistrer</Btn>
+        </ModalFooter>
+      </Form>
+    </ModalShell>
   );
 }
 
@@ -630,97 +686,84 @@ function ModalProposition({ onSave, onClose }) {
   const total = elements.reduce((sum, el) => sum + (el.prix || 0), 0);
 
   return (
-    <div style={styles.modalOverlay}>
-      <div style={{ ...styles.modal, maxWidth: '900px' }}>
-        <div style={styles.modalHeader}>
-          <h3>📄 Créer une nouvelle proposition</h3>
-          <button onClick={onClose} style={styles.btnFermer}>✕</button>
-        </div>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <p style={styles.hint}>
-            Modifiez les éléments du programme. Le prix total sera recalculé automatiquement.
-          </p>
+    <ModalShell titre="Créer une nouvelle proposition" Icon={FileText} onClose={onClose} wide>
+      <Form onSubmit={handleSubmit}>
+        <Hint>
+          Modifiez les éléments du programme. Le prix total sera recalculé automatiquement.
+        </Hint>
 
-          {elements.map((el, index) => (
-            <div key={index} style={styles.elementForm}>
-              <div style={styles.elementFormGrid}>
-                <div style={styles.field}>
-                  <label style={styles.label}>Jour</label>
-                  <input
-                    type="number"
-                    value={el.jour}
-                    onChange={(e) => modifierElement(index, 'jour', parseInt(e.target.value) || 1)}
-                    min="1"
-                    style={styles.input}
-                  />
-                </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Libellé *</label>
-                  <input
-                    type="text"
-                    value={el.libelle}
-                    onChange={(e) => modifierElement(index, 'libelle', e.target.value)}
-                    placeholder="Ex: Visite de la Grotte d'Anjohibe"
-                    required
-                    style={styles.input}
-                  />
-                </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Prix (Ar) *</label>
-                  <input
-                    type="number"
-                    value={el.prix}
-                    onChange={(e) => modifierElement(index, 'prix', parseInt(e.target.value) || 0)}
-                    required
-                    style={styles.input}
-                  />
-                </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Durée (min)</label>
-                  <input
-                    type="number"
-                    value={el.duree_min}
-                    onChange={(e) => modifierElement(index, 'duree_min', parseInt(e.target.value) || 0)}
-                    style={styles.input}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => supprimerElement(index)}
-                  style={styles.btnSupprElement}
-                  disabled={elements.length === 1}
-                  title="Supprimer"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          ))}
+        {elements.map((el, index) => (
+          <ElementForm key={index}>
+            <ElementFormGrid>
+              <Field>
+                <Label>Jour</Label>
+                <Input
+                  type="number"
+                  value={el.jour}
+                  onChange={(e) => modifierElement(index, 'jour', parseInt(e.target.value) || 1)}
+                  min="1"
+                />
+              </Field>
+              <Field>
+                <Label>Libellé *</Label>
+                <Input
+                  type="text"
+                  value={el.libelle}
+                  onChange={(e) => modifierElement(index, 'libelle', e.target.value)}
+                  placeholder="Ex: Visite de la Grotte d'Anjohibe"
+                  required
+                />
+              </Field>
+              <Field>
+                <Label>Prix (Ar) *</Label>
+                <Input
+                  type="number"
+                  value={el.prix}
+                  onChange={(e) => modifierElement(index, 'prix', parseInt(e.target.value) || 0)}
+                  required
+                />
+              </Field>
+              <Field>
+                <Label>Durée (min)</Label>
+                <Input
+                  type="number"
+                  value={el.duree_min}
+                  onChange={(e) => modifierElement(index, 'duree_min', parseInt(e.target.value) || 0)}
+                />
+              </Field>
+              <BtnSuppr
+                type="button"
+                onClick={() => supprimerElement(index)}
+                disabled={elements.length === 1}
+                title="Supprimer"
+                aria-label="Supprimer l'élément"
+              >
+                <Trash2 size={16} />
+              </BtnSuppr>
+            </ElementFormGrid>
+          </ElementForm>
+        ))}
 
-          <button
-            type="button"
-            onClick={ajouterElement}
-            style={styles.btnAjouterElement}
-          >
-            ➕ Ajouter un élément
-          </button>
+        <AjouterWrap>
+          <Btn type="button" $variant="outline" onClick={ajouterElement}>
+            <Plus size={16} />
+            Ajouter un élément
+          </Btn>
+        </AjouterWrap>
 
-          <div style={styles.totalProposition}>
-            <strong>Total estimé : </strong>
-            {total.toLocaleString('fr-FR')} Ar
-          </div>
+        <TotalProposition>
+          <span>Total estimé</span>
+          <strong>{total.toLocaleString('fr-FR')} Ar</strong>
+        </TotalProposition>
 
-          <div style={styles.modalFooter}>
-            <button type="button" onClick={onClose} style={styles.btnSecondaire}>
-              Annuler
-            </button>
-            <button type="submit" style={styles.btnPrimaire}>
-              Créer la proposition
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <ModalFooter>
+          <Btn type="button" $variant="ghost" onClick={onClose}>
+            Annuler
+          </Btn>
+          <Btn type="submit">Créer la proposition</Btn>
+        </ModalFooter>
+      </Form>
+    </ModalShell>
   );
 }
 
@@ -733,444 +776,737 @@ function ModalAccord({ proposition, onSave, onClose }) {
   };
 
   return (
-    <div style={styles.modalOverlay}>
-      <div style={{ ...styles.modal, maxWidth: '500px' }}>
-        <div style={styles.modalHeader}>
-          <h3>📝 Enregistrer l'accord client</h3>
-          <button onClick={onClose} style={styles.btnFermer}>✕</button>
-        </div>
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <p style={styles.hint}>
-            Version {proposition.numero_version} — Total : {proposition.total.toLocaleString('fr-FR')} Ar
-          </p>
+    <ModalShell titre="Enregistrer l'accord client" Icon={ClipboardCheck} onClose={onClose} narrow>
+      <Form onSubmit={handleSubmit}>
+        <Hint>
+          Version {proposition.numero_version} — Total : {proposition.total.toLocaleString('fr-FR')} Ar
+        </Hint>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Mode d'accord *</label>
-            <select
-              value={mode}
-              onChange={(e) => setMode(e.target.value)}
-              required
-              style={styles.input}
-            >
-              <option value="telephone">📞 Téléphone</option>
-              <option value="ecrit">📧 Écrit (email, SMS)</option>
-              <option value="en_ligne">💻 En ligne (page de suivi)</option>
-            </select>
-          </div>
+        <Field>
+          <Label>Mode d'accord *</Label>
+          <Select value={mode} onChange={(e) => setMode(e.target.value)} required>
+            <option value="telephone">Téléphone</option>
+            <option value="ecrit">Écrit (email, SMS)</option>
+            <option value="en_ligne">En ligne (page de suivi)</option>
+          </Select>
+        </Field>
 
-          <div style={styles.modalFooter}>
-            <button type="button" onClick={onClose} style={styles.btnSecondaire}>
-              Annuler
-            </button>
-            <button type="submit" style={styles.btnPrimaire}>
-              Enregistrer l'accord
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <ModalFooter>
+          <Btn type="button" $variant="ghost" onClick={onClose}>
+            Annuler
+          </Btn>
+          <Btn type="submit">Enregistrer l'accord</Btn>
+        </ModalFooter>
+      </Form>
+    </ModalShell>
   );
 }
 
-const styles = {
-  loading: { padding: '40px', textAlign: 'center', color: '#7f8c8d' },
-  erreur: {
-    padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B',
-    borderRadius: '8px', textAlign: 'center'
-  },
-  header: {
-    backgroundColor: 'white',
-    padding: '20px 24px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-  },
-  retour: { fontSize: '13px', color: '#7f8c8d', display: 'block', marginBottom: '8px' },
-  reference: { fontSize: '24px', color: '#2C3E50', marginBottom: '4px' },
-  client: { fontSize: '14px', color: '#7f8c8d' },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '16px'
-  },
-  colonne: { display: 'flex', flexDirection: 'column', gap: '16px' },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    padding: '20px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-  },
-  cardTitre: { fontSize: '15px', color: '#2C3E50', marginBottom: '16px' },
-  cardContenu: {},
-  info: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '8px 0',
-    borderBottom: '1px solid #f0f0f0',
-    fontSize: '13px'
-  },
-  infoLabel: { color: '#7f8c8d' },
-  infoValeur: { color: '#2C3E50', fontWeight: '600' },
-  commentaire: { fontSize: '13px', color: '#2C3E50', lineHeight: '1.6' },
-  vide: { fontSize: '13px', color: '#95A5A6', fontStyle: 'italic' },
-  note: {
-    padding: '10px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '4px',
-    marginBottom: '8px'
-  },
-  noteHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '12px',
-    color: '#7f8c8d',
-    marginBottom: '4px'
-  },
-  evenement: {
-    padding: '10px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '4px',
-    marginBottom: '8px'
-  },
-  evenementHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '12px',
-    color: '#7f8c8d',
-    marginBottom: '4px'
-  },
-  label: {
-    display: 'block',
-    fontSize: '13px',
-    color: '#7f8c8d',
-    marginBottom: '6px'
-  },
-  selectStatut: {
-    width: '100%',
-    padding: '10px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '14px',
-    backgroundColor: 'white',
-    cursor: 'pointer'
-  },
-  actionsRapides: {
-    marginTop: '12px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  },
-  btnAction: {
-    padding: '10px',
-    backgroundColor: '#C0392B',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '8px'
-  },
-  btnActionVert: {
-    padding: '10px',
-    backgroundColor: '#27AE60',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '8px'
-  },
-  btnActionRouge: {
-    padding: '10px',
-    backgroundColor: '#E74C3C',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '8px'
-  },
-  btnAppel: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#3498DB',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginTop: '12px'
-  },
-  badge: {
-    display: 'inline-block',
-    padding: '6px 14px',
-    borderRadius: '16px',
-    color: 'white',
-    fontSize: '12px',
-    fontWeight: '600'
-  },
-  noteForm: {
-    marginBottom: '16px',
-    paddingBottom: '16px',
-    borderBottom: '1px solid #ecf0f1'
-  },
-  noteInput: {
-    width: '100%',
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontFamily: 'inherit',
-    resize: 'vertical',
-    marginBottom: '8px',
-    outline: 'none'
-  },
-  btnAjouterNote: {
-    width: '100%',
-    padding: '8px',
-    backgroundColor: '#C0392B',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  // Propositions
-  btnCreerProposition: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#9B59B6',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginBottom: '12px'
-  },
-  propositionCard: {
-    padding: '12px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '6px',
-    marginBottom: '10px',
-    border: '1px solid #ecf0f1'
-  },
-  propositionHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '6px'
-  },
-  propositionTotal: {
-    color: '#C0392B',
-    fontWeight: '700',
-    fontSize: '14px'
-  },
-  propositionMeta: {
-    fontSize: '11px',
-    color: '#95A5A6',
-    marginBottom: '6px'
-  },
-  propositionEcarts: {
-    fontSize: '12px',
-    color: '#E67E22',
-    backgroundColor: '#FEF5E7',
-    padding: '4px 8px',
-    borderRadius: '4px',
-    marginBottom: '8px'
-  },
-  accordOk: {
-    fontSize: '12px',
-    color: '#27AE60',
-    backgroundColor: '#D5F4E6',
-    padding: '6px 10px',
-    borderRadius: '4px',
-    fontWeight: '600'
-  },
-  btnAccord: {
-    width: '100%',
-    padding: '8px',
-    backgroundColor: '#27AE60',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  propositionDetails: {
-    marginTop: '10px'
-  },
-  propositionSummary: {
-    fontSize: '12px',
-    color: '#7f8c8d',
-    cursor: 'pointer',
-    padding: '4px 0'
-  },
-  elementListe: {
-    listStyle: 'none',
-    padding: '8px 0 0',
-    margin: 0
-  },
-  elementItem: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '4px 0',
-    fontSize: '12px',
-    borderBottom: '1px solid #ecf0f1'
-  },
-  elementJour: {
-    display: 'inline-block',
-    minWidth: '30px',
-    fontWeight: '700',
-    color: '#C0392B'
-  },
-  elementLibelle: {
-    flex: 1,
-    color: '#2C3E50'
-  },
-  elementPrix: {
-    color: '#7f8c8d',
-    fontWeight: '600'
-  },
-  // Modal proposition
-  elementForm: {
-    padding: '12px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '6px',
-    marginBottom: '10px'
-  },
-  elementFormGrid: {
-    display: 'grid',
-    gridTemplateColumns: '60px 1fr 120px 100px 40px',
-    gap: '8px',
-    alignItems: 'end'
-  },
-  btnSupprElement: {
-    padding: '8px',
-    backgroundColor: '#E74C3C',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px'
-  },
-  btnAjouterElement: {
-    padding: '8px 16px',
-    backgroundColor: '#3498DB',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    marginBottom: '16px'
-  },
-  totalProposition: {
-    padding: '12px',
-    backgroundColor: '#ECF0F1',
-    borderRadius: '4px',
-    textAlign: 'right',
-    fontSize: '14px',
-    marginBottom: '16px'
-  },
-  hint: {
-    fontSize: '12px',
-    color: '#7f8c8d',
-    fontStyle: 'italic',
-    marginBottom: '16px'
-  },
-  // Modal
-  modalOverlay: {
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
-    alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px'
-  },
-  modal: {
-    backgroundColor: 'white', borderRadius: '8px', width: '100%',
-    maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto'
-  },
-  modalHeader: {
-    padding: '20px 24px', borderBottom: '1px solid #ecf0f1',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-  },
-  btnFermer: {
-    background: 'none', border: 'none', fontSize: '20px',
-    cursor: 'pointer', color: '#7f8c8d'
-  },
-  form: { padding: '24px' },
-  field: { display: 'flex', flexDirection: 'column', marginBottom: '16px' },
-  input: {
-    padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
-    fontSize: '14px', outline: 'none'
-  },
-  textarea: {
-    padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
-    fontSize: '14px', outline: 'none', fontFamily: 'inherit', resize: 'vertical'
-  },
-  modalFooter: {
-    display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px'
-  },
-  btnPrimaire: {
-    padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
-    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
-  },
-  btnSecondaire: {
-    padding: '10px 20px', backgroundColor: '#ECF0F1', color: '#2C3E50',
-    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
-  },
-alerteDoublon: {
-  fontSize: '13px',
-  color: '#E67E22',
-  marginBottom: '10px',
-  fontWeight: '600'
-},
-doublonItem: {
-  padding: '6px 10px',
-  backgroundColor: '#FEF5E7',
-  borderRadius: '4px',
-  marginBottom: '6px',
-  fontSize: '13px'
-},
-doublonLink: {
-  color: '#C0392B',
-  fontWeight: '600'
-},
-compteurAppels: {
-  display: 'flex',
-  gap: '16px',
-  padding: '12px',
-  backgroundColor: '#ECF0F1',
-  borderRadius: '6px',
-  marginBottom: '12px'
-},
-compteurItem: {
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  fontSize: '11px',
-  color: '#7f8c8d'
-},
+/* ------------------------------------------------------------------ */
+/* Styles                                                             */
+/* ------------------------------------------------------------------ */
 
-btnActionOrange: {
-  padding: '10px',
-  backgroundColor: '#E67E22',
-  color: 'white',
-  border: 'none',
-  borderRadius: '4px',
-  fontSize: '13px',
-  fontWeight: '600',
-  cursor: 'pointer',
-  marginTop: '8px'
-},
-
+const TONES = {
+  neutral: { fg: '#4b5d70', bg: '#eef2f6' },
+  blue: { fg: '#1d5fbf', bg: '#e6f0ff' },
+  green: { fg: '#0f7a3d', bg: '#e3f8ea' },
+  amber: { fg: '#b45309', bg: '#fff1e0' },
+  yellow: { fg: '#a16207', bg: '#fef7d6' },
+  red: { fg: '#c0182b', bg: '#ffe8ea' },
+  violet: { fg: '#7a1fc4', bg: '#f3e8ff' }
 };
+
+const toneFg = ({ $tone }) => (TONES[$tone] || TONES.neutral).fg;
+const toneBg = ({ $tone }) => (TONES[$tone] || TONES.neutral).bg;
+
+const BTN_VARIANTS = {
+  primary: { bg: '#2f6fd6', hover: '#2760bf', fg: '#fff', border: 'transparent' },
+  success: { bg: '#16a34a', hover: '#15803d', fg: '#fff', border: 'transparent' },
+  danger: { bg: '#fff', hover: '#fef3f2', fg: '#b42318', border: '#fecdca' },
+  warning: { bg: '#fff', hover: '#fff6ed', fg: '#b45309', border: '#fed7aa' },
+  violet: { bg: '#7c3aed', hover: '#6d28d9', fg: '#fff', border: 'transparent' },
+  outline: { bg: '#fff', hover: '#f4f8fc', fg: '#1f4e79', border: '#dbe5f0' },
+  ghost: { bg: '#eef2f6', hover: '#e2e9f1', fg: '#1f4e79', border: 'transparent' }
+};
+
+const variant = ({ $variant }) => BTN_VARIANTS[$variant || 'primary'];
+
+const Page = styled.div`
+  --navy: #1f4e79;
+  --accent: #2f6fd6;
+  --accent-hover: #2760bf;
+  --ink: #1b2a3a;
+  --text: #3d4f63;
+  --muted: #6b7c8f;
+  --border: #dbe5f0;
+  --surface: #ffffff;
+  --soft: #f4f8fc;
+
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+
+  &,
+  & *,
+  & *::before,
+  & *::after {
+    box-sizing: border-box;
+  }
+
+  a {
+    text-decoration: none;
+  }
+`;
+
+const Loading = styled.div`
+  padding: 64px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+`;
+
+const ErreurBox = styled.div`
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 12px;
+`;
+
+/* ---------- En-tête ---------- */
+const Header = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  @media (min-width: 640px) {
+    padding: 20px 24px;
+  }
+`;
+
+const Retour = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--accent);
+  }
+`;
+
+const Reference = styled.h1`
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--navy);
+`;
+
+const ClientLine = styled.p`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+`;
+
+const Badge = styled.span`
+  display: inline-block;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${toneFg};
+  background: ${toneBg};
+  border-radius: 999px;
+`;
+
+/* ---------- Grille ---------- */
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (min-width: 1000px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const Colonne = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+`;
+
+const CardBox = styled.section`
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid ${({ $warning }) => ($warning ? '#fed7aa' : 'var(--border)')};
+  border-radius: 12px;
+`;
+
+const CardTitre = styled.h3`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: ${({ $warning }) => ($warning ? '#b45309' : 'var(--navy)')};
+`;
+
+/* ---------- Informations ---------- */
+const InfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #edf2f8;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const InfoLabel = styled.span`
+  flex-shrink: 0;
+  color: var(--muted);
+`;
+
+const InfoValeur = styled.span`
+  min-width: 0;
+  text-align: right;
+  font-weight: 600;
+  color: var(--ink);
+  word-break: break-word;
+`;
+
+const Commentaire = styled.p`
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+`;
+
+const Vide = styled.p`
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: #9db0c4;
+`;
+
+const AlerteDoublon = styled.p`
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b45309;
+`;
+
+const DoublonItem = styled.div`
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text);
+  background: #fff6ed;
+  border-radius: 8px;
+`;
+
+const DoublonLink = styled(Link)`
+  font-weight: 600;
+  color: var(--navy);
+
+  &:hover {
+    color: var(--accent);
+  }
+`;
+
+/* ---------- Notes / historique ---------- */
+const NoteForm = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #edf2f8;
+`;
+
+const LogItem = styled.div`
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--soft);
+  border: 1px solid #edf2f8;
+  border-radius: 10px;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+    word-break: break-word;
+  }
+`;
+
+const LogHeader = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--muted);
+
+  strong {
+    color: var(--navy);
+  }
+`;
+
+/* ---------- Formulaires ---------- */
+const Label = styled.label`
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+`;
+
+const controlStyles = `
+  width: 100%;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 16px;
+  color: #1b2a3a;
+  background: #fff;
+  border: 1px solid #dbe5f0;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    border-color: #c5d3e3;
+  }
+
+  &:focus {
+    border-color: #2f6fd6;
+    box-shadow: 0 0 0 4px rgba(47, 111, 214, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (min-width: 640px) {
+    font-size: 14px;
+  }
+`;
+
+const Input = styled.input`
+  ${controlStyles}
+`;
+
+const Select = styled.select`
+  ${controlStyles}
+  cursor: pointer;
+`;
+
+const Textarea = styled.textarea`
+  ${controlStyles}
+  resize: vertical;
+`;
+
+/* ---------- Boutons ---------- */
+const Btn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: ${({ $block }) => ($block ? '100%' : 'auto')};
+  padding: ${({ $small }) => ($small ? '8px 12px' : '10px 16px')};
+  font-family: inherit;
+  font-size: ${({ $small }) => ($small ? '13px' : '14px')};
+  font-weight: 600;
+  color: ${(p) => variant(p).fg};
+  background: ${(p) => variant(p).bg};
+  border: 1px solid ${(p) => variant(p).border};
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: ${(p) => variant(p).hover};
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(47, 111, 214, 0.25);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+/* ---------- Actions ---------- */
+const ActionsRapides = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+`;
+
+const CompteurAppels = styled.div`
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  margin: 14px 0 12px;
+  background: var(--soft);
+  border: 1px solid #edf2f8;
+  border-radius: 10px;
+`;
+
+const CompteurItem = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+  color: var(--muted);
+
+  strong {
+    font-size: 20px;
+    line-height: 1.2;
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+`;
+
+/* ---------- Propositions ---------- */
+const CreerWrap = styled.div`
+  margin-bottom: 12px;
+`;
+
+const PropositionCard = styled.div`
+  padding: 14px;
+  margin-bottom: 10px;
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+`;
+
+const PropositionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--ink);
+`;
+
+const PropositionTotal = styled.span`
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+`;
+
+const PropositionMeta = styled.div`
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--muted);
+`;
+
+const PropositionEcarts = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #b45309;
+  background: #fff1e0;
+  border-radius: 8px;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+`;
+
+const AccordOk = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f7a3d;
+  background: #e3f8ea;
+  border-radius: 8px;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+`;
+
+const Details = styled.details`
+  margin-top: 10px;
+
+  summary {
+    padding: 4px 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    cursor: pointer;
+  }
+`;
+
+const ElementListe = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 8px 0 0;
+`;
+
+const ElementItem = styled.li`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #e3ebf4;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ElementJour = styled.span`
+  min-width: 30px;
+  font-weight: 700;
+  color: var(--accent);
+`;
+
+const ElementLibelle = styled.span`
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+`;
+
+const ElementPrix = styled.span`
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+`;
+
+/* ---------- Modales ---------- */
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(27, 42, 58, 0.45);
+  backdrop-filter: blur(2px);
+`;
+
+const ModalBox = styled.div`
+  width: 100%;
+  max-width: ${({ $wide, $narrow }) => ($wide ? '900px' : $narrow ? '500px' : '560px')};
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(31, 78, 121, 0.25);
+`;
+
+const ModalHeader = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+
+  @media (min-width: 640px) {
+    padding: 18px 24px;
+  }
+`;
+
+const ModalTitre = styled.h3`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--navy);
+`;
+
+const BtnFermer = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    color: var(--navy);
+    background: #eef3f9;
+  }
+`;
+
+const Form = styled.form`
+  padding: 20px;
+
+  @media (min-width: 640px) {
+    padding: 24px;
+  }
+`;
+
+const Field = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  min-width: 0;
+`;
+
+const Hint = styled.p`
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+`;
+
+const ModalFooter = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+`;
+
+const ElementForm = styled.div`
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--soft);
+  border: 1px solid #edf2f8;
+  border-radius: 12px;
+`;
+
+const ElementFormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 10px;
+  align-items: end;
+
+  & > div {
+    margin-bottom: 0;
+  }
+
+  /* Mobile : Jour + Prix | Libellé pleine largeur */
+  & > div:nth-child(2) {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  & > button {
+    grid-column: 1 / -1;
+  }
+
+  @media (min-width: 760px) {
+    grid-template-columns: 70px 1fr 130px 110px 40px;
+
+    & > div:nth-child(2) {
+      grid-column: auto;
+      order: 0;
+    }
+
+    & > button {
+      grid-column: auto;
+    }
+  }
+`;
+
+const BtnSuppr = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  color: #b42318;
+  background: #fff;
+  border: 1px solid #fecdca;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #fef3f2;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`;
+
+const AjouterWrap = styled.div`
+  margin-bottom: 16px;
+`;
+
+const TotalProposition = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--text);
+  background: #e6f0ff;
+  border-radius: 10px;
+
+  strong {
+    font-size: 16px;
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+`;
