@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import {
+  AlertCircle,
   ClipboardList,
   Bell,
   Phone,
@@ -19,6 +20,27 @@ import {
 import { demandesService } from '../services/demandes';
 import { alertesService } from '../services/alertes';
 
+const ALERTES_VIDES = {
+  total: 0,
+  tarifs_anciens: [],
+  circuits_a_reviser: [],
+  demandes_en_retard: [],
+  lignes_a_confirmer: []
+};
+
+// Garantit que toutes les clés attendues existent, même si l'API en oublie une
+const normaliserAlertes = (data) => {
+  const src = data && typeof data === 'object' ? data : {};
+  const liste = (v) => (Array.isArray(v) ? v : []);
+  return {
+    total: Number(src.total) || 0,
+    tarifs_anciens: liste(src.tarifs_anciens),
+    circuits_a_reviser: liste(src.circuits_a_reviser),
+    demandes_en_retard: liste(src.demandes_en_retard),
+    lignes_a_confirmer: liste(src.lignes_a_confirmer)
+  };
+};
+
 /* ------------------------------------------------------------------ */
 /* Composant                                                          */
 /* ------------------------------------------------------------------ */
@@ -31,14 +53,9 @@ export default function Dashboard() {
     confirmee: 0
   });
   const [dernieresDemandes, setDernieresDemandes] = useState([]);
-  const [alertes, setAlertes] = useState({
-    total: 0,
-    tarifs_anciens: [],
-    circuits_a_reviser: [],
-    demandes_en_retard: [],
-    lignes_a_confirmer: []
-  });
+  const [alertes, setAlertes] = useState(ALERTES_VIDES);
   const [loading, setLoading] = useState(true);
+  const [erreurs, setErreurs] = useState([]);
 
   useEffect(() => {
     chargerDonnees();
@@ -47,10 +64,36 @@ export default function Dashboard() {
   const chargerDonnees = async () => {
     try {
       setLoading(true);
-      const [demandes, alertesData] = await Promise.all([
+      setErreurs([]);
+
+      // allSettled : si une des deux requêtes échoue, l'autre s'affiche quand même
+      const [resDemandes, resAlertes] = await Promise.allSettled([
         demandesService.getAll(),
         alertesService.getAll()
       ]);
+
+      const messages = [];
+      const decrire = (nom, reason) => {
+        const status = reason?.response?.status;
+        const detail = reason?.response?.data?.error || reason?.message || 'erreur inconnue';
+        return `${nom} : ${status ? `HTTP ${status} — ` : ''}${detail}`;
+      };
+
+      let demandes = [];
+      if (resDemandes.status === 'fulfilled') {
+        demandes = Array.isArray(resDemandes.value) ? resDemandes.value : [];
+      } else {
+        console.error('Erreur demandes :', resDemandes.reason);
+        messages.push(decrire('Demandes', resDemandes.reason));
+      }
+
+      if (resAlertes.status === 'fulfilled') {
+        setAlertes(normaliserAlertes(resAlertes.value));
+      } else {
+        console.error('Erreur alertes :', resAlertes.reason);
+        messages.push(decrire('Alertes', resAlertes.reason));
+        setAlertes(ALERTES_VIDES);
+      }
 
       const nouvellesStats = {
         total: demandes.length,
@@ -61,9 +104,10 @@ export default function Dashboard() {
 
       setStats(nouvellesStats);
       setDernieresDemandes(demandes.slice(0, 5));
-      setAlertes(alertesData);
+      setErreurs(messages);
     } catch (error) {
       console.error('Erreur chargement :', error);
+      setErreurs([error?.message || 'Erreur de chargement']);
     } finally {
       setLoading(false);
     }
@@ -84,6 +128,23 @@ export default function Dashboard() {
         <PageTitle>Tableau de bord</PageTitle>
         <PageSub>Suivre les demandes clients et les points à traiter</PageSub>
       </PageHeader>
+
+      {erreurs.length > 0 && (
+        <ErrorBanner role="alert">
+          <AlertCircle size={18} />
+          <ErrorText>
+            <strong>Certaines données n'ont pas pu être chargées.</strong>
+            <ul>
+              {erreurs.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </ErrorText>
+          <RetryButton type="button" onClick={chargerDonnees}>
+            Réessayer
+          </RetryButton>
+        </ErrorBanner>
+      )}
 
       {/* Cartes de statistiques */}
       <StatsGrid>
@@ -343,6 +404,55 @@ const PageSub = styled.p`
   margin: 4px 0 0;
   font-size: 14px;
   color: var(--muted);
+`;
+
+/* ---------- Erreurs ---------- */
+const ErrorBanner = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 12px;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+`;
+
+const ErrorText = styled.div`
+  flex: 1 1 240px;
+  min-width: 0;
+  font-size: 14px;
+
+  ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-size: 13px;
+    word-break: break-word;
+  }
+`;
+
+const RetryButton = styled.button`
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--accent-hover);
+  }
 `;
 
 /* ---------- Chargement ---------- */
