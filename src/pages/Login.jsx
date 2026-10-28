@@ -1,7 +1,6 @@
 // src/pages/Login.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, AlertCircle, Loader2, Compass } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import styles from './Login.module.css';
 
@@ -9,7 +8,7 @@ export default function Login() {
   const [identifiant, setIdentifiant] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [erreur, setErreur] = useState('');
-  const [afficherMdp, setAfficherMdp] = useState(false); // purement visuel
+  const [afficherMdp, setAfficherMdp] = useState(false);
   const { login, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -31,7 +30,7 @@ export default function Login() {
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.logo}>
-            <Compass size={22} strokeWidth={2} />
+            <span style={{ fontSize: '22px' }}>🧭</span>
           </div>
           <h1 className={styles.title}>Shams Tour</h1>
           <p className={styles.subtitle}>Espace d'administration</p>
@@ -45,7 +44,7 @@ export default function Login() {
 
           {erreur && (
             <div className={styles.error} role="alert">
-              <AlertCircle size={16} />
+              <span>⚠️</span>
               <span>{erreur}</span>
             </div>
           )}
@@ -55,7 +54,7 @@ export default function Login() {
               Identifiant
             </label>
             <div className={styles.inputWrapper}>
-              <User size={16} className={styles.inputIcon} />
+              <span className={styles.inputIcon}>👤</span>
               <input
                 id="identifiant"
                 type="text"
@@ -75,7 +74,7 @@ export default function Login() {
               Mot de passe
             </label>
             <div className={styles.inputWrapper}>
-              <Lock size={16} className={styles.inputIcon} />
+              <span className={styles.inputIcon}>🔒</span>
               <input
                 id="motDePasse"
                 type={afficherMdp ? 'text' : 'password'}
@@ -93,20 +92,13 @@ export default function Login() {
                 aria-label={afficherMdp ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                 tabIndex={-1}
               >
-                {afficherMdp ? <EyeOff size={16} /> : <Eye size={16} />}
+                {afficherMdp ? '🙈' : '👁️'}
               </button>
             </div>
           </div>
 
           <button type="submit" className={styles.button} disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 size={16} className={styles.spinner} />
-                Connexion...
-              </>
-            ) : (
-              'Se connecter'
-            )}
+            {loading ? 'Connexion...' : 'Se connecter'}
           </button>
 
           <p className={styles.hint}>
