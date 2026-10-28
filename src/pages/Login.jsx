@@ -1,12 +1,15 @@
 // src/pages/Login.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { User, Lock, Eye, EyeOff, AlertCircle, Loader2, Compass } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import styles from './Login.module.css';
 
 export default function Login() {
   const [identifiant, setIdentifiant] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [erreur, setErreur] = useState('');
+  const [afficherMdp, setAfficherMdp] = useState(false);
   const { login, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -24,151 +27,95 @@ export default function Login() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>SHAMS TOUR</h1>
-          <p style={styles.subtitle}>Administration</p>
+    <div className={styles.container}>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <div className={styles.logo}>
+            <Compass size={22} strokeWidth={2} />
+          </div>
+          <h1 className={styles.title}>Shams Tour</h1>
+          <p className={styles.subtitle}>Espace d'administration</p>
         </div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <h2 style={styles.formTitle}>Connexion</h2>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <h2 className={styles.formTitle}>Connexion</h2>
+          <p className={styles.formText}>
+            Entrez vos identifiants pour accéder au tableau de bord.
+          </p>
 
           {erreur && (
-            <div style={styles.error}>{erreur}</div>
+            <div className={styles.error} role="alert">
+              <AlertCircle size={16} />
+              <span>{erreur}</span>
+            </div>
           )}
 
-          <div style={styles.field}>
-            <label style={styles.label}>Identifiant</label>
-            <input
-              type="text"
-              value={identifiant}
-              onChange={(e) => setIdentifiant(e.target.value)}
-              style={styles.input}
-              placeholder="admin"
-              required
-              autoFocus
-            />
+          <div className={styles.field}>
+            <label htmlFor="identifiant" className={styles.label}>
+              Identifiant
+            </label>
+            <div className={styles.inputWrapper}>
+              <User size={16} className={styles.inputIcon} />
+              <input
+                id="identifiant"
+                type="text"
+                value={identifiant}
+                onChange={(e) => setIdentifiant(e.target.value)}
+                className={styles.input}
+                placeholder="admin"
+                autoComplete="username"
+                required
+                autoFocus
+              />
+            </div>
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Mot de passe</label>
-            <input
-              type="password"
-              value={motDePasse}
-              onChange={(e) => setMotDePasse(e.target.value)}
-              style={styles.input}
-              placeholder="••••••••"
-              required
-            />
+          <div className={styles.field}>
+            <label htmlFor="motDePasse" className={styles.label}>
+              Mot de passe
+            </label>
+            <div className={styles.inputWrapper}>
+              <Lock size={16} className={styles.inputIcon} />
+              <input
+                id="motDePasse"
+                type={afficherMdp ? 'text' : 'password'}
+                value={motDePasse}
+                onChange={(e) => setMotDePasse(e.target.value)}
+                className={`${styles.input} ${styles.inputWithToggle}`}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className={styles.toggle}
+                onClick={() => setAfficherMdp((v) => !v)}
+                aria-label={afficherMdp ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                tabIndex={-1}
+              >
+                {afficherMdp ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
-          <button 
-            type="submit" 
-            style={styles.button}
-            disabled={loading}
-          >
-            {loading ? 'Connexion...' : 'Se connecter'}
+          <button type="submit" className={styles.button} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 size={16} className={styles.spinner} />
+                Connexion...
+              </>
+            ) : (
+              'Se connecter'
+            )}
           </button>
 
-          <p style={styles.hint}>
-            💡 Compte de test : <strong>admin</strong> / <strong>admin123</strong>
+          <p className={styles.hint}>
+            Compte de test : <strong>admin</strong> / <strong>admin123</strong>
           </p>
         </form>
       </div>
+
+      <p className={styles.footer}>© {new Date().getFullYear()} Shams Tour · Madagascar</p>
     </div>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#2C3E50',
-    padding: '20px'
-  },
-  card: {
-    width: '100%',
-    maxWidth: '400px',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
-  },
-  header: {
-    backgroundColor: '#C0392B',
-    padding: '24px',
-    textAlign: 'center',
-    color: 'white'
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    letterSpacing: '2px'
-  },
-  subtitle: {
-    fontSize: '13px',
-    opacity: 0.9,
-    marginTop: '4px'
-  },
-  form: {
-    padding: '32px 24px'
-  },
-  formTitle: {
-    fontSize: '18px',
-    color: '#2C3E50',
-    marginBottom: '24px',
-    textAlign: 'center'
-  },
-  error: {
-    backgroundColor: '#FADBD8',
-    color: '#C0392B',
-    padding: '10px 14px',
-    borderRadius: '4px',
-    fontSize: '13px',
-    marginBottom: '16px',
-    border: '1px solid #E74C3C'
-  },
-  field: {
-    marginBottom: '16px'
-  },
-  label: {
-    display: 'block',
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: '6px'
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '14px',
-    outline: 'none',
-    transition: 'border-color 0.2s'
-  },
-  button: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#C0392B',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: 'bold',
-    marginTop: '8px',
-    transition: 'background-color 0.2s'
-  },
-  hint: {
-    fontSize: '12px',
-    color: '#7f8c8d',
-    textAlign: 'center',
-    marginTop: '20px',
-    padding: '8px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '4px'
-  }
-};
