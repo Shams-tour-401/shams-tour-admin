@@ -9,7 +9,7 @@ export default function Login() {
   const [identifiant, setIdentifiant] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [erreur, setErreur] = useState('');
-  const [afficherMdp, setAfficherMdp] = useState(false); // purement visuel
+  const [afficherMdp, setAfficherMdp] = useState(false);
   const { login, loading } = useAuth();
   const navigate = useNavigate();
 
