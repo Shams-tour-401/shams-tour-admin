@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { activitesService } from '../services/activites';
 import { lieuxService } from '../services/lieux';
-import { photosService } from '../services/photos'; // Import du service photos
+import { photosService } from '../services/photos'; 
 import { useAuth } from '../context/AuthContext';
 
 export default function Activites() {
@@ -12,7 +12,7 @@ export default function Activites() {
   const [erreur, setErreur] = useState('');
   const [modalOuvert, setModalOuvert] = useState(false);
   const [activiteEnEdition, setActiviteEnEdition] = useState(null);
-  const [photoModal, setPhotoModal] = useState(null); // Stocke l'ID de l'activité pour les photos
+  const [photoModal, setPhotoModal] = useState(null); 
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
@@ -128,7 +128,6 @@ export default function Activites() {
                   <td style={styles.td}>
                     {estAdmin ? (
                       <>
-                        {/* Bouton pour gérer les photos */}
                         <button onClick={() => setPhotoModal(a.id)} style={styles.btnIcone} title="Gérer les photos">
                           📸
                         </button>
@@ -171,7 +170,7 @@ export default function Activites() {
   );
 }
 
-// ============ MODAL ACTIVITE (Inchangé) ============
+// ============ MODAL ACTIVITE ============
 function ModalActivite({ activite, lieux, onSave, onClose }) {
   const [form, setForm] = useState({
     nom: activite?.nom || '',
@@ -280,11 +279,14 @@ function ModalActivite({ activite, lieux, onSave, onClose }) {
   );
 }
 
-// ============ MODAL PHOTOS (VERSION GRANDE TAILLE) ============
+// ============ MODAL PHOTOS (AVEC BOUTON DE VISUALISATION) ============
 function ModalPhotos({ activiteId, onClose }) {
-  const [photosExistantes, setPhotosExistantes] = useState([]); // Photos déjà en base
-  const [photosNouvelles, setPhotosNouvelles] = useState([]); // Photos sélectionnées à envoyer
+  const [photosExistantes, setPhotosExistantes] = useState([]); 
+  const [photosNouvelles, setPhotosNouvelles] = useState([]); 
   const [uploading, setUploading] = useState(false);
+  
+  // 👇 ÉTAT POUR L'IMAGE EN PLEIN ÉCRAN
+  const [photoAgrandie, setPhotoAgrandie] = useState(null);
 
   const chargerPhotos = async () => {
     try {
@@ -325,8 +327,8 @@ function ModalPhotos({ activiteId, onClose }) {
     try {
       setUploading(true);
       await photosService.upload(activiteId, formData);
-      setPhotosNouvelles([]); // Vider la file d'attente
-      await chargerPhotos(); // Recharger la liste depuis le serveur
+      setPhotosNouvelles([]); 
+      await chargerPhotos(); 
     } catch (error) {
       alert('Erreur lors de l\'enregistrement des photos');
     } finally {
@@ -336,7 +338,6 @@ function ModalPhotos({ activiteId, onClose }) {
 
   return (
     <div style={styles.modalOverlay}>
-      {/* On augmente la taille max à 1000px pour avoir de la place */}
       <div style={{...styles.modal, maxWidth: '1000px', width: '95%'}}>
         
         <div style={styles.modalHeader}>
@@ -346,7 +347,7 @@ function ModalPhotos({ activiteId, onClose }) {
 
         <div style={{ padding: '30px' }}>
           
-          {/* --- ZONE DE SÉLECTION --- */}
+          {/* ZONE DE SÉLECTION */}
           <div style={{ marginBottom: '30px', textAlign: 'center' }}>
             <label style={{ 
               ...styles.btnSecondaire, 
@@ -362,14 +363,13 @@ function ModalPhotos({ activiteId, onClose }) {
             </label>
           </div>
 
-          {/* --- PRÉVISUALISATION DES PHOTOS À ENVOYER --- */}
+          {/* PRÉVISUALISATION DES PHOTOS À ENVOYER */}
           {photosNouvelles.length > 0 && (
             <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: '#FEF5E7', borderRadius: '8px' }}>
               <h4 style={{ marginBottom: '15px', color: '#E67E22', fontSize: '18px' }}>
                 Photos en attente d'enregistrement ({photosNouvelles.length})
               </h4>
               
-              {/* Grille 3 colonnes pour les grandes images */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px', marginBottom: '20px' }}>
                 {photosNouvelles.map((p, index) => (
                   <div key={index} style={{ position: 'relative' }}>
@@ -398,7 +398,7 @@ function ModalPhotos({ activiteId, onClose }) {
             </div>
           )}
 
-          {/* --- PHOTOS DÉJÀ ENREGISTRÉES --- */}
+          {/* PHOTOS DÉJÀ ENREGISTRÉES */}
           <h4 style={{ marginBottom: '15px', borderBottom: '2px solid #ecf0f1', paddingBottom: '10px', fontSize: '18px' }}>
             Photos actuelles ({photosExistantes.length})
           </h4>
@@ -414,6 +414,17 @@ function ModalPhotos({ activiteId, onClose }) {
                     alt="activité" 
                     style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} 
                   />
+                  
+                  {/* 👇 BOUTON DE VISUALISATION (ŒIL) */}
+                  <button 
+                    onClick={() => setPhotoAgrandie(p.url)}
+                    style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    title="Voir en grand"
+                  >
+                    👁️
+                  </button>
+
+                  {/* Bouton Supprimer */}
                   <button 
                     onClick={() => supprimerPhotoExistante(p.id)}
                     style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
@@ -427,9 +438,28 @@ function ModalPhotos({ activiteId, onClose }) {
 
         </div>
       </div>
+
+      {/* 👇 LA FENÊTRE PLEIN ÉCRAN POUR L'IMAGE */}
+      {photoAgrandie && (
+        <div style={styles.modalOverlayFull}>
+          <button 
+            onClick={() => setPhotoAgrandie(null)} 
+            style={{ position: 'absolute', top: 20, right: 30, background: 'transparent', border: 'none', color: 'white', fontSize: '40px', cursor: 'pointer', zIndex: 10 }}
+          >
+            ✕
+          </button>
+          <img 
+            src={photoAgrandie} 
+            alt="Aperçu" 
+            style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', borderRadius: '8px' }} 
+          />
+        </div>
+      )}
+
     </div>
   );
 }
+
 // ============ STYLES ============
 const styles = {
   loading: { padding: '40px', textAlign: 'center', color: '#7f8c8d' },
@@ -474,6 +504,11 @@ const styles = {
     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
     alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px'
+  },
+  modalOverlayFull: {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.9)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', zIndex: 2000
   },
   modal: {
     backgroundColor: 'white', borderRadius: '8px', width: '100%',
