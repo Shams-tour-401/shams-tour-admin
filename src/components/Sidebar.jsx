@@ -1,4 +1,3 @@
-
 // src/components/Sidebar.jsx
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
@@ -13,11 +12,13 @@ import {
   MapPinned,
   UserCog,
   Bus,
-  LogOut
+  LogOut,
+  X // 👈 On importe l'icône de fermeture
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export default function Sidebar() {
+// 👇 On ajoute closeMenu en prop
+export default function Sidebar({ closeMenu }) {
   const { user, logout } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
@@ -52,18 +53,19 @@ export default function Sidebar() {
     <Aside>
       <Brand>
         <Logo>S</Logo>
-         <button onClick={closeMenu} className="close-mobile">
-    ✕
-  </button>
         <div>
           <BrandName>SHAMS TOUR</BrandName>
           <BrandSub>Administration</BrandSub>
         </div>
+        {/* 👇 Bouton Fermer (visible uniquement sur mobile) */}
+        <CloseButtonMobile onClick={closeMenu} className="close-mobile">
+          <X size={20} />
+        </CloseButtonMobile>
       </Brand>
 
       <Nav aria-label="Navigation principale">
         {menuFiltre.map(({ path, label, Icon }) => (
-          <NavItem key={path} to={path}>
+          <NavItem key={path} to={path} onClick={closeMenu}>
             <Icon size={18} strokeWidth={2} />
             <span>{label}</span>
           </NavItem>
@@ -128,6 +130,7 @@ const Brand = styled.div`
   gap: 12px;
   padding: 20px 18px;
   border-bottom: 1px solid var(--border);
+  position: relative;
 `;
 
 const Logo = styled.div`
@@ -155,6 +158,24 @@ const BrandSub = styled.div`
   margin-top: 1px;
   font-size: 12px;
   color: var(--muted);
+`;
+
+// 👇 Bouton fermer caché par défaut (sera affiché en CSS sur mobile)
+const CloseButtonMobile = styled.button`
+  display: none;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 5px;
+  
+  &:hover {
+    color: var(--navy);
+  }
 `;
 
 const Nav = styled.nav`
