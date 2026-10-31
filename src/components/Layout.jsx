@@ -14,7 +14,6 @@ export default function Layout() {
 
   return (
     <div className="layout-container">
-      
       {/* Bouton Menu (visible uniquement sur mobile) */}
       <button 
         onClick={() => setSidebarOuverte(true)} 
