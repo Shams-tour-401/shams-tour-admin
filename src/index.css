@@ -1,168 +1,48 @@
+// src/components/Layout.jsx
+import { useState } from 'react';
+import { Outlet, Navigate } from 'react-router-dom';
+import Sidebar from './Sidebar';
+import Header from './Header';
+import { useAuth } from '../context/AuthContext';
 
-/* =========================================
-   RESPONSIVE DESIGN (MOBILE)
-   ========================================= */
-@media (max-width: 768px) {
-  /* Afficher le bouton menu */
-  .mobile-menu-btn {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
+export default function Layout() {
+  const { user } = useAuth();
+  const [sidebarOuverte, setSidebarOuverte] = useState(false);
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
   }
 
-  /* Cacher le bouton fermer sur PC, l'afficher sur mobile */
-  .close-mobile {
-    display: block !important;
-  }
+  return (
+    <div className="layout-container">
+      {/* Bouton Menu Mobile */}
+      <button 
+        onClick={() => setSidebarOuverte(true)} 
+        className="mobile-menu-btn"
+      >
+        ☰
+      </button>
 
-  /* Afficher l'overlay sombre */
-  .mobile-overlay {
-    display: block !important;
-  }
+      {/* Overlay sombre */}
+      {sidebarOuverte && (
+        <div 
+          onClick={() => setSidebarOuverte(false)} 
+          className="mobile-overlay"
+        />
+      )}
 
-  /* Le contenu principal prend toute la largeur (plus de margin) */
-  .main-content {
-    margin-left: 0 !important;
-    padding-top: 60px; /* Pour ne pas cacher le contenu sous le bouton menu */
-  }
+      {/* Sidebar */}
+      <div className={`sidebar-wrapper ${sidebarOuverte ? 'open' : ''}`}>
+        <Sidebar closeMenu={() => setSidebarOuverte(false)} />
+      </div>
 
-  /* Ajuster le padding global */
-  .content-area {
-    padding: 15px !important;
-  }
-
-  /* Rendre les tableaux défilables horizontalement */
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-/* =========================================
-   STYLES DE BASE (PC)
-   ========================================= */
-.layout-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.sidebar-wrapper {
-  width: 250px; /* Largeur de votre sidebar */
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  z-index: 1000;
-  transition: transform 0.3s ease;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-left: 250px; /* Laisse la place à la sidebar sur PC */
-  transition: margin-left 0.3s ease;
-}
-
-.content-area {
-  flex: 1;
-  padding: 24px;
-}
-
-/* Cacher le bouton menu et l'overlay sur PC */
-.mobile-menu-btn {
-  display: none;
-}
-.mobile-overlay {
-  display: none;
-}
-.close-mobile {
-  display: none;
-}
-
-/* =========================================
-   RESPONSIVE (MOBILE : Écrans < 768px)
-   ========================================= */
-@media (max-width: 768px) {
-  
-  /* 1. Le contenu prend toute la largeur */
-  .main-content {
-    margin-left: 0 !important;
-    padding-top: 60px; /* Évite que le bouton menu cache le contenu */
-  }
-
-  .content-area {
-    padding: 15px !important;
-  }
-
-  /* 2. La sidebar est cachée par défaut (glissée vers la gauche) */
-  .sidebar-wrapper {
-    transform: translateX(-100%);
-    width: 280px; /* Un peu plus large sur mobile pour le confort */
-    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-  }
-
-  /* 3. Quand on clique sur le menu, la sidebar apparaît */
-  .sidebar-wrapper.open {
-    transform: translateX(0);
-  }
-
-  /* 4. Afficher le bouton menu */
-  .mobile-menu-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1100;
-    background-color: #C0392B; /* Rouge Shams Tour */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  }
-
-  /* 5. Afficher l'overlay sombre */
-  .mobile-overlay {
-    display: block;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 999;
-  }
-
-  /* 6. Afficher le bouton fermer dans la sidebar */
-  .close-mobile {
-    display: block;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-  }
-
-  /* 7. Rendre les tableaux défilables horizontalement */
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* 8. Réduire la taille des titres sur mobile */
-  h1 { font-size: 22px !important; }
-  h2 { font-size: 18px !important; }
-}
-  /* Ajuster les grilles (statistiques, etc.) */
-  .grid-responsive {
-    grid-template-columns: 1fr !important;
-  }
+      {/* Contenu Principal */}
+      <div className="main-content">
+        <Header />
+        <div className="content-area">
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  );
 }
