@@ -52,6 +52,9 @@ export default function Sidebar() {
     <Aside>
       <Brand>
         <Logo>S</Logo>
+         <button onClick={closeMenu} className="close-mobile">
+    ✕
+  </button>
         <div>
           <BrandName>SHAMS TOUR</BrandName>
           <BrandSub>Administration</BrandSub>
