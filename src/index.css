@@ -1,83 +1,61 @@
 /* =========================================
-   STYLES DE BASE (PC)
-   ========================================= */
-.layout-container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.sidebar-wrapper {
-  width: 250px; /* Largeur de votre sidebar */
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  z-index: 1000;
-  transition: transform 0.3s ease;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-left: 250px; /* Laisse la place à la sidebar sur PC */
-  transition: margin-left 0.3s ease;
-}
-
-.content-area {
-  flex: 1;
-  padding: 24px;
-}
-
-/* Cacher le bouton menu, l'overlay et le bouton fermer sur PC */
-.mobile-menu-btn {
-  display: none;
-}
-.mobile-overlay {
-  display: none;
-}
-.close-mobile {
-  display: none;
-}
-
-/* =========================================
-   RESPONSIVE (MOBILE : Écrans < 768px)
+   RESPONSIVE DESIGN (MOBILE UNIQUEMENT)
    ========================================= */
 @media (max-width: 768px) {
   
-  /* 1. Le contenu prend toute la largeur */
-  .main-content {
-    margin-left: 0 !important;
-    padding-top: 60px; /* Évite que le bouton menu cache le contenu */
+  /* 1. Empêcher le débordement horizontal sur tout le site */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
   }
 
-  .content-area {
-    padding: 15px !important;
+  /* 2. Ajuster le conteneur principal */
+  .main-content, .content-area {
+    width: 100% !important;
+    padding: 10px !important;
   }
 
-  /* 2. La sidebar est cachée par défaut (glissée vers la gauche) */
-  .sidebar-wrapper {
-    transform: translateX(-100%);
-    width: 280px; /* Un peu plus large sur mobile pour le confort */
-    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  /* 3. Rendre les tableaux défilables (au lieu de casser la page) */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* 3. Quand on clique sur le menu, la sidebar apparaît */
-  .sidebar-wrapper.open {
-    transform: translateX(0);
+  /* 4. Adapter les grilles (Dashboard, formulaires) pour qu'elles passent en 1 colonne */
+  .formGrid, .statsGrid, .grid-responsive {
+    grid-template-columns: 1fr !important;
   }
 
-  /* 4. Afficher le bouton menu (Hamburger) */
+  /* 5. Réduire la taille des titres (pour qu'ils rentrent sur mobile) */
+  h1 { font-size: 24px !important; }
+  h2 { font-size: 20px !important; }
+  h3 { font-size: 16px !important; }
+
+  /* 6. Ajuster les cartes et blocs de stats pour prendre toute la largeur */
+  .card, .stat-card {
+    width: 100% !important;
+    margin-bottom: 15px;
+  }
+
+  /* 7. Ajuster les boutons pour qu'ils soient plus faciles à cliquer */
+  button, .btnPrimaire, .btnSecondaire {
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  /* 8. Cacher le bouton menu mobile sur PC et l'afficher sur mobile */
   .mobile-menu-btn {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
     position: fixed;
     top: 15px;
     left: 15px;
     z-index: 1100;
-    background-color: #C0392B; /* Rouge Shams Tour */
+    background-color: #C0392B; /* Votre rouge */
     color: white;
     border: none;
     border-radius: 5px;
@@ -85,45 +63,44 @@
     height: 40px;
     font-size: 20px;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
 
-  /* 5. Afficher l'overlay sombre */
+  /* 9. Adapter le menu (Sidebar) pour qu'il glisse sur mobile */
+  .sidebar-wrapper {
+    transform: translateX(-100%);
+    width: 280px !important;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  }
+  .sidebar-wrapper.open {
+    transform: translateX(0);
+  }
   .mobile-overlay {
-    display: block;
+    display: block !important;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.5);
     z-index: 999;
   }
-
-  /* 6. Afficher le bouton fermer (X) dans la sidebar */
+  .main-content {
+    margin-left: 0 !important; /* Enlève la marge de la sidebar sur mobile */
+    padding-top: 60px !important; /* Pour ne pas cacher le contenu sous le bouton menu */
+  }
   .close-mobile {
-    display: block;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: transparent;
-    border: none;
-    color: #1f4e79; /* Couleur du texte de votre sidebar */
-    font-size: 24px;
-    cursor: pointer;
+    display: block !important;
   }
+}
 
-  /* 7. Rendre les tableaux défilables horizontalement */
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
+/* =========================================
+   CACHER LES ÉLÉMENTS MOBILES SUR PC
+   ========================================= */
+@media (min-width: 769px) {
+  .mobile-menu-btn { display: none !important; }
+  .mobile-overlay { display: none !important; }
+  .close-mobile { display: none !important; }
+  .sidebar-wrapper {
+    transform: translateX(0) !important;
   }
-
-  /* 8. Réduire la taille des titres sur mobile */
-  h1 { font-size: 22px !important; }
-  h2 { font-size: 18px !important; }
-
-  /* 9. Ajuster les grilles (statistiques, etc.) */
-  .grid-responsive {
-    grid-template-columns: 1fr !important;
+  .main-content {
+    margin-left: 250px !important;
   }
 }
