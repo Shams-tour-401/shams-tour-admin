@@ -12,16 +12,16 @@ export default function Sidebar({ closeMenu }) {
   const estAdmin = user?.role === 'administrateur';
 
   const menuItems = [
-    { path: '/dashboard', label: 'Tableau de bord', Icon: LayoutDashboard, adminSeul: false },
-    { path: '/demandes', label: 'Demandes', Icon: ClipboardList, adminSeul: false },
-    { path: '/activites', label: 'Activités', Icon: Target, adminSeul: false },
-    { path: '/circuits', label: 'Circuits', Icon: Map, adminSeul: false },
-    { path: '/tarifs', label: 'Tarifs', Icon: Banknote, adminSeul: false },
-    { path: '/prestataires', label: 'Prestataires', Icon: Users, adminSeul: false },
-    { path: '/destinations', label: 'Destinations', Icon: MapPin, adminSeul: false },
-    { path: '/lieux', label: 'Lieux', Icon: MapPinned, adminSeul: false },
-    { path: '/utilisateurs', label: 'Utilisateurs', Icon: UserCog, adminSeul: true },
-    { path: '/trajets', label: 'Trajets', Icon: Bus, adminSeul: false }
+    { path: '/dashboard',    label: 'Tableau de bord', Icon: LayoutDashboard, adminSeul: false },
+    { path: '/demandes',     label: 'Demandes',        Icon: ClipboardList,   adminSeul: false },
+    { path: '/activites',    label: 'Activités',       Icon: Target,          adminSeul: false },
+    { path: '/circuits',     label: 'Circuits',        Icon: Map,             adminSeul: false },
+    { path: '/tarifs',       label: 'Tarifs',          Icon: Banknote,        adminSeul: false },
+    { path: '/prestataires', label: 'Prestataires',    Icon: Users,           adminSeul: false },
+    { path: '/destinations', label: 'Destinations',    Icon: MapPin,          adminSeul: false },
+    { path: '/lieux',        label: 'Lieux',           Icon: MapPinned,       adminSeul: false },
+    { path: '/utilisateurs', label: 'Utilisateurs',    Icon: UserCog,         adminSeul: true  },
+    { path: '/trajets',      label: 'Trajets',         Icon: Bus,             adminSeul: false }
   ];
 
   const menuFiltre = estAdmin ? menuItems : menuItems.filter(i => !i.adminSeul);
@@ -42,7 +42,6 @@ export default function Sidebar({ closeMenu }) {
           type="button"
           onClick={closeMenu}
           aria-label="Fermer le menu"
-          className="close-mobile"
         >
           <X size={20} />
         </CloseButtonMobile>
@@ -85,16 +84,15 @@ const Aside = styled.aside`
   --border: #dbe5f0;
   --soft: #f4f8fc;
 
-  width: 250px;
-  height: 100vh;
-  height: 100dvh;
+  /* ✅ 100% du parent (.sidebar-wrapper) — plus de 250px en dur */
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   background: #ffffff;
   border-right: 1px solid var(--border);
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
-  /* ⚠️ On retire position:fixed — c'est le wrapper du Layout qui gère */
   position: relative;
   z-index: 100;
 
@@ -132,7 +130,6 @@ const BrandSub = styled.div`
   color: var(--muted);
 `;
 
-// ⚠️ CORRECTION : on l'affiche UNIQUEMENT sur mobile via media query
 const CloseButtonMobile = styled.button`
   display: none;
   position: absolute;
