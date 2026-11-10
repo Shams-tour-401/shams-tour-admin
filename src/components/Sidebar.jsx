@@ -2,27 +2,15 @@
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
 import {
-  LayoutDashboard,
-  ClipboardList,
-  Target,
-  Map,
-  Banknote,
-  Users,
-  MapPin,
-  MapPinned,
-  UserCog,
-  Bus,
-  LogOut,
-  X // 👈 On importe l'icône de fermeture
+  LayoutDashboard, ClipboardList, Target, Map, Banknote,
+  Users, MapPin, MapPinned, UserCog, Bus, LogOut, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// 👇 On ajoute closeMenu en prop
 export default function Sidebar({ closeMenu }) {
   const { user, logout } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
-  // Menu selon le rôle
   const menuItems = [
     { path: '/dashboard', label: 'Tableau de bord', Icon: LayoutDashboard, adminSeul: false },
     { path: '/demandes', label: 'Demandes', Icon: ClipboardList, adminSeul: false },
@@ -36,18 +24,11 @@ export default function Sidebar({ closeMenu }) {
     { path: '/trajets', label: 'Trajets', Icon: Bus, adminSeul: false }
   ];
 
-  // Filtrer selon le rôle
-  const menuFiltre = estAdmin
-    ? menuItems
-    : menuItems.filter(item => !item.adminSeul);
+  const menuFiltre = estAdmin ? menuItems : menuItems.filter(i => !i.adminSeul);
 
-  // Initiales pour l'avatar (purement visuel)
   const initiales = (user?.nom_complet || '?')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((mot) => mot[0].toUpperCase())
-    .join('');
+    .split(' ').filter(Boolean).slice(0, 2)
+    .map(m => m[0].toUpperCase()).join('');
 
   return (
     <Aside>
@@ -57,8 +38,12 @@ export default function Sidebar({ closeMenu }) {
           <BrandName>SHAMS TOUR</BrandName>
           <BrandSub>Administration</BrandSub>
         </div>
-        {/* 👇 Bouton Fermer (visible uniquement sur mobile) */}
-        <CloseButtonMobile onClick={closeMenu} className="close-mobile">
+        <CloseButtonMobile
+          type="button"
+          onClick={closeMenu}
+          aria-label="Fermer le menu"
+          className="close-mobile"
+        >
           <X size={20} />
         </CloseButtonMobile>
       </Brand>
@@ -89,9 +74,7 @@ export default function Sidebar({ closeMenu }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Styles                                                             */
-/* ------------------------------------------------------------------ */
+/* ---------------------- Styles ---------------------- */
 
 const Aside = styled.aside`
   --navy: #1f4e79;
@@ -102,9 +85,6 @@ const Aside = styled.aside`
   --border: #dbe5f0;
   --soft: #f4f8fc;
 
-  position: fixed;
-  left: 0;
-  top: 0;
   width: 250px;
   height: 100vh;
   height: 100dvh;
@@ -114,14 +94,11 @@ const Aside = styled.aside`
   border-right: 1px solid var(--border);
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* ⚠️ On retire position:fixed — c'est le wrapper du Layout qui gère */
+  position: relative;
   z-index: 100;
 
-  &,
-  & *,
-  & *::before,
-  & *::after {
-    box-sizing: border-box;
-  }
+  &, & *, & *::before, & *::after { box-sizing: border-box; }
 `;
 
 const Brand = styled.div`
@@ -134,22 +111,17 @@ const Brand = styled.div`
 `;
 
 const Logo = styled.div`
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  font-size: 19px;
-  font-weight: 700;
+  font-size: 19px; font-weight: 700;
   color: #fff;
   background: var(--navy);
   border-radius: 10px;
 `;
 
 const BrandName = styled.div`
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 15px; font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--navy);
 `;
@@ -160,74 +132,56 @@ const BrandSub = styled.div`
   color: var(--muted);
 `;
 
-// 👇 Bouton fermer caché par défaut (sera affiché en CSS sur mobile)
+// ⚠️ CORRECTION : on l'affiche UNIQUEMENT sur mobile via media query
 const CloseButtonMobile = styled.button`
   display: none;
   position: absolute;
-  right: 15px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: transparent;
   border: none;
   color: var(--muted);
   cursor: pointer;
-  padding: 5px;
-  
-  &:hover {
-    color: var(--navy);
+  padding: 6px;
+  border-radius: 6px;
+
+  &:hover { color: var(--navy); background: var(--soft); }
+
+  @media (max-width: 1024px) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 `;
 
 const Nav = styled.nav`
   flex: 1;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   gap: 2px;
   padding: 12px;
   overflow-y: auto;
 `;
 
 const NavItem = styled(NavLink)`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex; align-items: center; gap: 12px;
   padding: 10px 12px;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 14px; font-weight: 500;
   color: var(--text);
   text-decoration: none;
   border-radius: 10px;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color .15s ease, color .15s ease;
 
-  svg {
-    flex-shrink: 0;
-    color: #8fa2b6;
-    transition: color 0.15s ease;
-  }
+  svg { flex-shrink: 0; color: #8fa2b6; transition: color .15s ease; }
 
-  &:hover {
-    background: var(--soft);
-    color: var(--navy);
-
-    svg {
-      color: var(--navy);
-    }
-  }
+  &:hover { background: var(--soft); color: var(--navy); svg { color: var(--navy); } }
 
   &.active {
-    color: var(--navy);
-    font-weight: 600;
-    background: #e6f0ff;
-
-    svg {
-      color: var(--accent);
-    }
+    color: var(--navy); font-weight: 600; background: #e6f0ff;
+    svg { color: var(--accent); }
   }
 
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(47, 111, 214, 0.3);
-  }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(47,111,214,.3); }
 `;
 
 const Footer = styled.div`
@@ -237,49 +191,33 @@ const Footer = styled.div`
 `;
 
 const UserBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 4px;
-  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 4px; margin-bottom: 12px;
 `;
 
 const Avatar = styled.div`
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 13px; font-weight: 700;
   color: var(--navy);
   background: #e6f0ff;
   border: 1px solid #cfe0f7;
   border-radius: 50%;
 `;
 
-const UserText = styled.div`
-  min-width: 0;
-`;
+const UserText = styled.div`min-width: 0;`;
 
 const UserName = styled.div`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 13px; font-weight: 600; color: var(--ink);
 `;
 
 const Role = styled.span`
-  display: inline-block;
-  margin-top: 3px;
+  display: inline-block; margin-top: 3px;
   padding: 1px 8px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
   color: ${({ $admin }) => ($admin ? '#b45309' : '#4b5d70')};
   background: ${({ $admin }) => ($admin ? '#fff1e0' : '#eef2f6')};
   border-radius: 999px;
@@ -287,29 +225,14 @@ const Role = styled.span`
 
 const LogoutButton = styled.button`
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 9px 12px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--navy);
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--navy); background: #fff;
+  border: 1px solid var(--border); border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 
-  &:hover {
-    color: #b42318;
-    background: #fef3f2;
-    border-color: #fecdca;
-  }
-
-  &:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(47, 111, 214, 0.3);
-  }
+  &:hover { color: #b42318; background: #fef3f2; border-color: #fecdca; }
+  &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(47,111,214,.3); }
 `;
