@@ -84,7 +84,6 @@ const Aside = styled.aside`
   --border: #dbe5f0;
   --soft: #f4f8fc;
 
-  /* ✅ 100% du parent (.sidebar-wrapper) — plus de 250px en dur */
   width: 100%;
   height: 100%;
   display: flex;
@@ -95,6 +94,9 @@ const Aside = styled.aside`
   -webkit-font-smoothing: antialiased;
   position: relative;
   z-index: 100;
+  
+  /* ✅ Évite le débordement sur PC */
+  overflow: hidden;
 
   &, & *, & *::before, & *::after { box-sizing: border-box; }
 `;
@@ -106,6 +108,7 @@ const Brand = styled.div`
   padding: 20px 18px;
   border-bottom: 1px solid var(--border);
   position: relative;
+  flex-shrink: 0; /* ✅ Ne se compresse pas si la nav est longue */
 `;
 
 const Logo = styled.div`
@@ -158,6 +161,12 @@ const Nav = styled.nav`
   gap: 2px;
   padding: 12px;
   overflow-y: auto;
+  
+  /* ✅ Scrollbar discrète sur PC */
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  &::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 `;
 
 const NavItem = styled(NavLink)`
@@ -185,6 +194,7 @@ const Footer = styled.div`
   padding: 14px 12px 16px;
   border-top: 1px solid var(--border);
   background: var(--soft);
+  flex-shrink: 0; /* ✅ Le footer ne rétrécit pas */
 `;
 
 const UserBox = styled.div`
