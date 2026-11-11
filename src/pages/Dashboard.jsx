@@ -58,7 +58,7 @@ export default function Dashboard() {
 
   const chargerDonnees = async () => {
     try {
-    setLoading(true);
+      setLoading(true);
       setErreurs([]);
 
       const [resDemandes, resAlertes] = await Promise.allSettled([
@@ -115,8 +115,6 @@ export default function Dashboard() {
 
   return (
     <Page>
-      {/* ❌ SUPPRIMÉ : Le doublon du titre car le <Header /> l'affiche déjà */}
-
       {erreurs.length > 0 && (
         <ErrorBanner role="alert">
           <AlertCircle size={18} />
@@ -342,13 +340,13 @@ const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
 
+/* ✅ PAGE NETTOYÉE */
 const Page = styled.div`
-
- width: 100%; /* ✅ Force la largeur */
+  width: 100%;
   max-width: 100%;
-  display: flex; /* ✅ Force l'affichage en flex */
-  flex-direction: column; /* ✅ Les éléments s'empilent */
-  align-items: stretch; /* ✅ Les éléments s'étirent sur toute la largeur */
+  display: flex;
+  flex-direction: column;
+
   --navy: #1f4e79;
   --accent: #2f6fd6;
   --accent-hover: #2760bf;
@@ -362,7 +360,6 @@ const Page = styled.div`
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
-  width: 100%; /* ✅ Force la page à prendre 100% */
 
   &, & *, & *::before, & *::after { box-sizing: border-box; }
   a { text-decoration: none; }
@@ -416,7 +413,7 @@ const Spinner = styled(Loader2)`
   animation: ${spin} 0.8s linear infinite;
 `;
 
-/* ✅ GRILLE DES STATS CORRIGÉE */
+/* ✅ GRILLE DES STATS : prend 100% de la largeur, 4 colonnes sur PC */
 const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -482,7 +479,7 @@ const AlertesTotal = styled.span`
   color: #fff; background: #e5283c; border-radius: 999px;
 `;
 
-/* ✅ GRILLE DES ALERTES CORRIGÉE */
+/* ✅ GRILLE DES ALERTES : prend 100% de la largeur */
 const AlertesGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
