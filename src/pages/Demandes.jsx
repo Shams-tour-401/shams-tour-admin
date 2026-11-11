@@ -126,7 +126,7 @@ export default function Demandes() {
                 <th style={styles.th}>Voyageurs</th>
                 <th style={styles.th}>Statut</th>
                 <th style={styles.th}>Reçue le</th>
-                 <th style={styles.th}>Doublons</th>
+                 <th style={styles.th}>Actions</th>
                 <th style={styles.th}></th>
               </tr>
             </thead>
