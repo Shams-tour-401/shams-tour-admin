@@ -343,6 +343,12 @@ const spin = keyframes`
 `;
 
 const Page = styled.div`
+
+ width: 100%; /* ✅ Force la largeur */
+  max-width: 100%;
+  display: flex; /* ✅ Force l'affichage en flex */
+  flex-direction: column; /* ✅ Les éléments s'empilent */
+  align-items: stretch; /* ✅ Les éléments s'étirent sur toute la largeur */
   --navy: #1f4e79;
   --accent: #2f6fd6;
   --accent-hover: #2760bf;
