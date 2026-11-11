@@ -28,7 +28,6 @@ const ALERTES_VIDES = {
   lignes_a_confirmer: []
 };
 
-// Garantit que toutes les clés attendues existent, même si l'API en oublie une
 const normaliserAlertes = (data) => {
   const src = data && typeof data === 'object' ? data : {};
   const liste = (v) => (Array.isArray(v) ? v : []);
@@ -40,10 +39,6 @@ const normaliserAlertes = (data) => {
     lignes_a_confirmer: liste(src.lignes_a_confirmer)
   };
 };
-
-/* ------------------------------------------------------------------ */
-/* Composant                                                          */
-/* ------------------------------------------------------------------ */
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -63,10 +58,9 @@ export default function Dashboard() {
 
   const chargerDonnees = async () => {
     try {
-      setLoading(true);
+    setLoading(true);
       setErreurs([]);
 
-      // allSettled : si une des deux requêtes échoue, l'autre s'affiche quand même
       const [resDemandes, resAlertes] = await Promise.allSettled([
         demandesService.getAll(),
         alertesService.getAll()
@@ -83,14 +77,12 @@ export default function Dashboard() {
       if (resDemandes.status === 'fulfilled') {
         demandes = Array.isArray(resDemandes.value) ? resDemandes.value : [];
       } else {
-        console.error('Erreur demandes :', resDemandes.reason);
         messages.push(decrire('Demandes', resDemandes.reason));
       }
 
       if (resAlertes.status === 'fulfilled') {
         setAlertes(normaliserAlertes(resAlertes.value));
       } else {
-        console.error('Erreur alertes :', resAlertes.reason);
         messages.push(decrire('Alertes', resAlertes.reason));
         setAlertes(ALERTES_VIDES);
       }
@@ -106,7 +98,6 @@ export default function Dashboard() {
       setDernieresDemandes(demandes.slice(0, 5));
       setErreurs(messages);
     } catch (error) {
-      console.error('Erreur chargement :', error);
       setErreurs([error?.message || 'Erreur de chargement']);
     } finally {
       setLoading(false);
@@ -124,10 +115,7 @@ export default function Dashboard() {
 
   return (
     <Page>
-      <PageHeader>
-        <PageTitle>Tableau de bord</PageTitle>
-        <PageSub>Suivre les demandes clients et les points à traiter</PageSub>
-      </PageHeader>
+      {/* ❌ SUPPRIMÉ : Le doublon du titre car le <Header /> l'affiche déjà */}
 
       {erreurs.length > 0 && (
         <ErrorBanner role="alert">
@@ -164,7 +152,6 @@ export default function Dashboard() {
           </AlertesTitre>
 
           <AlertesGrid>
-            {/* Alertes : demandes en retard */}
             {alertes.demandes_en_retard.length > 0 && (
               <AlerteCard
                 tone="red"
@@ -184,7 +171,6 @@ export default function Dashboard() {
               </AlerteCard>
             )}
 
-            {/* Alertes : tarifs anciens */}
             {alertes.tarifs_anciens.length > 0 && (
               <AlerteCard
                 tone="amber"
@@ -206,7 +192,6 @@ export default function Dashboard() {
               </AlerteCard>
             )}
 
-            {/* Alertes : circuits à réviser */}
             {alertes.circuits_a_reviser.length > 0 && (
               <AlerteCard
                 tone="yellow"
@@ -224,7 +209,6 @@ export default function Dashboard() {
               </AlerteCard>
             )}
 
-            {/* Alertes : lignes à confirmer */}
             {alertes.lignes_a_confirmer.length > 0 && (
               <AlerteCard
                 tone="violet"
@@ -336,13 +320,10 @@ function StatutBadge({ statut }) {
   };
 
   const c = config[statut] || { label: statut, tone: 'neutral' };
-
   return <Badge $tone={c.tone}>{c.label}</Badge>;
 }
 
-/* ------------------------------------------------------------------ */
-/* Styles                                                             */
-/* ------------------------------------------------------------------ */
+/* ---------------------- Styles ---------------------- */
 
 const TONES = {
   neutral: { fg: '#4b5d70', bg: '#eef2f6' },
@@ -375,38 +356,12 @@ const Page = styled.div`
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  width: 100%; /* ✅ Force la page à prendre 100% */
 
-  &,
-  & *,
-  & *::before,
-  & *::after {
-    box-sizing: border-box;
-  }
-
-  a {
-    text-decoration: none;
-  }
+  &, & *, & *::before, & *::after { box-sizing: border-box; }
+  a { text-decoration: none; }
 `;
 
-const PageHeader = styled.div`
-  margin-bottom: 20px;
-`;
-
-const PageTitle = styled.h1`
-  margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--navy);
-`;
-
-const PageSub = styled.p`
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: var(--muted);
-`;
-
-/* ---------- Erreurs ---------- */
 const ErrorBanner = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -418,24 +373,14 @@ const ErrorBanner = styled.div`
   background: #fef3f2;
   border: 1px solid #fecdca;
   border-radius: 12px;
-
-  svg {
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
+  svg { flex-shrink: 0; margin-top: 2px; }
 `;
 
 const ErrorText = styled.div`
   flex: 1 1 240px;
   min-width: 0;
   font-size: 14px;
-
-  ul {
-    margin: 6px 0 0;
-    padding-left: 18px;
-    font-size: 13px;
-    word-break: break-word;
-  }
+  ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; word-break: break-word; }
 `;
 
 const RetryButton = styled.button`
@@ -448,14 +393,9 @@ const RetryButton = styled.button`
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background: var(--accent-hover);
-  }
+  &:hover { background: var(--accent-hover); }
 `;
 
-/* ---------- Chargement ---------- */
 const Loading = styled.div`
   display: flex;
   align-items: center;
@@ -468,22 +408,22 @@ const Loading = styled.div`
 
 const Spinner = styled(Loader2)`
   animation: ${spin} 0.8s linear infinite;
-
-  @media (prefers-reduced-motion: reduce) {
-    animation-duration: 2s;
-  }
 `;
 
-/* ---------- Stats ---------- */
+/* ✅ GRILLE DES STATS CORRIGÉE */
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
 
-  @media (min-width: 900px) {
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1200px) {
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
   }
 `;
 
@@ -494,22 +434,8 @@ const StatCardBox = styled.div`
   border-left: 3px solid ${({ $featured }) => ($featured ? 'var(--accent)' : 'var(--border)')};
   border-radius: 12px;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 8px 22px rgba(31, 78, 121, 0.1);
-    transform: translateY(-1px);
-  }
-
-  @media (min-width: 900px) {
-    padding: 18px 20px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-    &:hover {
-      transform: none;
-    }
-  }
+  &:hover { box-shadow: 0 8px 22px rgba(31, 78, 121, 0.1); transform: translateY(-1px); }
+  @media (min-width: 900px) { padding: 18px 20px; }
 `;
 
 const StatTop = styled.div`
@@ -519,299 +445,149 @@ const StatTop = styled.div`
   gap: 8px;
 `;
 
-const StatTitre = styled.div`
-  font-size: 13px;
-  color: var(--muted);
-`;
+const StatTitre = styled.div` font-size: 13px; color: var(--muted); `;
 
 const StatIcon = styled.div`
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  color: ${toneFg};
-  background: ${toneBg};
+  color: ${toneFg}; background: ${toneBg};
   border-radius: 8px;
 `;
 
 const StatValeur = styled.div`
   margin-top: 10px;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  color: var(--navy);
+  font-size: 28px; font-weight: 700; line-height: 1.1;
+  letter-spacing: -0.01em; color: var(--navy);
   font-variant-numeric: tabular-nums;
-
-  @media (min-width: 900px) {
-    font-size: 32px;
-  }
+  @media (min-width: 900px) { font-size: 32px; }
 `;
 
-/* ---------- Alertes ---------- */
-const AlertesSection = styled.section`
-  margin-bottom: 20px;
-`;
+const AlertesSection = styled.section` margin-bottom: 24px; width: 100%; `;
 
 const AlertesTitre = styled.h2`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--navy);
-
-  svg {
-    color: #b45309;
-  }
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 0 12px; font-size: 16px; font-weight: 600; color: var(--navy);
+  svg { color: #b45309; }
 `;
 
 const AlertesTotal = styled.span`
-  padding: 1px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  background: #e5283c;
-  border-radius: 999px;
+  padding: 1px 8px; font-size: 11px; font-weight: 700;
+  color: #fff; background: #e5283c; border-radius: 999px;
 `;
 
+/* ✅ GRILLE DES ALERTES CORRIGÉE */
 const AlertesGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 16px;
+  width: 100%;
 
-  @media (min-width: 640px) {
+  @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-
-  @media (min-width: 1100px) {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
 `;
 
 const AlerteBox = styled.div`
-  padding: 16px;
-  background: var(--soft);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  padding: 16px; background: var(--soft);
+  border: 1px solid var(--border); border-radius: 12px;
 `;
 
-const AlerteHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
+const AlerteHeader = styled.div` display: flex; align-items: center; gap: 10px; `;
 
 const AlerteIcone = styled.span`
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 28px; height: 28px; display: flex;
+  align-items: center; justify-content: center;
   flex-shrink: 0;
-  color: ${toneFg};
-  background: ${toneBg};
-  border-radius: 8px;
+  color: ${toneFg}; background: ${toneBg}; border-radius: 8px;
 `;
 
-const AlerteNom = styled.strong`
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
-`;
+const AlerteNom = styled.strong` font-size: 15px; font-weight: 600; color: var(--ink); `;
 
 const AlerteCount = styled.span`
-  margin-left: auto;
-  min-width: 24px;
-  padding: 2px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  text-align: center;
-  color: ${toneFg};
-  background: ${toneBg};
-  border-radius: 999px;
+  margin-left: auto; min-width: 24px; padding: 2px 8px;
+  font-size: 11px; font-weight: 700; text-align: center;
+  color: ${toneFg}; background: ${toneBg}; border-radius: 999px;
   font-variant-numeric: tabular-nums;
 `;
 
-const AlerteDesc = styled.p`
-  margin: 8px 0 10px;
-  font-size: 12px;
-  color: var(--muted);
-`;
-
-const AlerteListe = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 13px;
-`;
+const AlerteDesc = styled.p` margin: 8px 0 10px; font-size: 12px; color: var(--muted); `;
+const AlerteListe = styled.ul` list-style: none; margin: 0; padding: 0; font-size: 13px; `;
 
 const AlerteItem = styled.li`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 0;
-  border-top: 1px solid var(--border);
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; padding: 8px 0; border-top: 1px solid var(--border);
 `;
 
 const AlerteLink = styled(Link)`
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-  color: var(--ink);
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: var(--accent);
-  }
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-weight: 500; color: var(--ink); transition: color 0.15s ease;
+  &:hover { color: var(--accent); }
 `;
 
-const AlerteMeta = styled.small`
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--muted);
-`;
+const AlerteMeta = styled.small` flex-shrink: 0; font-size: 12px; color: var(--muted); `;
 
-/* ---------- Section / tableau ---------- */
 const Section = styled.section`
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; width: 100%;
 `;
 
 const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-
-  @media (min-width: 640px) {
-    padding: 16px 20px;
-  }
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; @media (min-width: 640px) { padding: 16px 20px; }
 `;
 
-const SectionTitle = styled.h2`
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--navy);
-`;
+const SectionTitle = styled.h2` margin: 0; font-size: 16px; font-weight: 600; color: var(--navy); `;
 
 const VoirTout = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--accent);
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 13px; font-weight: 500; color: var(--accent);
   transition: gap 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    gap: 5px;
-    color: var(--accent-hover);
-  }
+  &:hover { gap: 5px; color: var(--accent-hover); }
 `;
 
 const Empty = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 48px 16px;
-  color: #9db0c4;
-
-  p {
-    margin: 0;
-    font-size: 14px;
-    color: var(--muted);
-  }
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 48px 16px; color: #9db0c4;
+  p { margin: 0; font-size: 14px; color: var(--muted); }
 `;
 
-const TableWrapper = styled.div`
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-`;
+const TableWrapper = styled.div` overflow-x: auto; -webkit-overflow-scrolling: touch; `;
 
-const Table = styled.table`
-  width: 100%;
-  min-width: 640px;
-  border-collapse: collapse;
-`;
+const Table = styled.table` width: 100%; min-width: 640px; border-collapse: collapse; `;
 
 const Th = styled.th`
-  padding: 10px 16px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
+  padding: 10px 16px; text-align: left;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--muted);
   background: var(--soft);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
   white-space: nowrap;
-
-  @media (min-width: 640px) {
-    &:first-child {
-      padding-left: 20px;
-    }
-  }
+  @media (min-width: 640px) { &:first-child { padding-left: 20px; } }
 `;
 
 const Tr = styled.tr`
-  border-bottom: 1px solid #edf2f8;
-  transition: background-color 0.12s ease;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background: var(--soft);
-  }
+  border-bottom: 1px solid #edf2f8; transition: background-color 0.12s ease;
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--soft); }
 `;
 
 const Td = styled.td`
-  padding: 14px 16px;
-  font-size: 14px;
+  padding: 14px 16px; font-size: 14px;
   font-weight: ${({ $strong }) => ($strong ? 600 : 400)};
-  color: ${({ $muted, $strong }) =>
-    $muted ? 'var(--muted)' : $strong ? 'var(--ink)' : 'var(--text)'};
+  color: ${({ $muted, $strong }) => $muted ? 'var(--muted)' : $strong ? 'var(--ink)' : 'var(--text)'};
   white-space: nowrap;
-
-  @media (min-width: 640px) {
-    &:first-child {
-      padding-left: 20px;
-    }
-  }
+  @media (min-width: 640px) { &:first-child { padding-left: 20px; } }
 `;
 
 const RefLink = styled(Link)`
-  font-weight: 600;
-  color: var(--navy);
-  font-variant-numeric: tabular-nums;
+  font-weight: 600; color: var(--navy); font-variant-numeric: tabular-nums;
   transition: color 0.15s ease;
-
-  &:hover {
-    color: var(--accent);
-  }
+  &:hover { color: var(--accent); }
 `;
 
-/* ---------- Badges ---------- */
 const Badge = styled.span`
-  display: inline-block;
-  padding: 3px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: ${toneFg};
-  background: ${toneBg};
-  border-radius: 999px;
+  display: inline-block; padding: 3px 10px;
+  font-size: 12px; font-weight: 500;
+  color: ${toneFg}; background: ${toneBg}; border-radius: 999px;
 `;
