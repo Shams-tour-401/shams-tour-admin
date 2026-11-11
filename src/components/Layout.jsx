@@ -162,6 +162,55 @@ export default function Layout() {
           .content-area    { padding: 72px 12px 20px; }
           .sidebar-wrapper { width: 86vw; max-width: 320px; }
         }
+
+
+
+        /* ✅ AJOUTER CECI DANS LE <style> DU LAYOUT */
+      .layout-container {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        background: #f5f8fb;
+      }
+      
+      .sidebar-wrapper {
+        flex: 0 0 250px;
+        width: 250px;
+        /* ... */
+      }
+      
+      .main-content {
+        flex: 1 1 0%;
+        width: 0; /* ✅ ASTUCE FLEXBOX : force le conteneur à prendre TOUT l'espace restant */
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .content-area {
+        flex: 1;
+        width: 100%;
+        padding: 24px;
+      }
+    `}</style>
+
+    <div className="layout-container">
+      {/* ... bouton mobile ... */}
+      
+      <div className="sidebar-wrapper">
+        <Sidebar closeMenu={fermerSidebar} />
+      </div>
+
+      <div className="main-content">
+        <Header />
+        <div className="content-area">
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  </>
+);
       `}</style>
 
       <div className="layout-container">
