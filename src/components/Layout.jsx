@@ -40,7 +40,6 @@ export default function Layout() {
 
   return (
     <>
-      {/* ============ CSS intégré (toujours chargé) ============ */}
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
 
@@ -81,15 +80,24 @@ export default function Layout() {
         .main-content {
           flex: 1 1 auto;
           min-width: 0;
-          max-width: 100%;
           display: flex;
           flex-direction: column;
           overflow-x: hidden;
         }
+        
         .content-area {
           flex: 1;
           padding: 24px;
           overflow-x: auto;
+          /* ✅ Contrainte de largeur pour les grands écrans */
+          width: 100%;
+        }
+
+        /* ✅ Nouveau : conteneur interne pour centrer le contenu sur PC */
+        .content-inner {
+          max-width: 1400px;
+          margin: 0 auto;
+          width: 100%;
         }
 
         /* ----- Hamburger (caché desktop) ----- */
@@ -156,6 +164,9 @@ export default function Layout() {
           .content-area {
             padding: 76px 16px 24px;
           }
+          .content-inner {
+            max-width: 100%;
+          }
         }
 
         /* ============= PETIT MOBILE ============= */
@@ -195,7 +206,10 @@ export default function Layout() {
         <div className="main-content">
           <Header />
           <div className="content-area">
-            <Outlet />
+            {/* ✅ Nouveau wrapper pour centrer et contenir les blocs sur PC */}
+            <div className="content-inner">
+              <Outlet />
+            </div>
           </div>
         </div>
       </div>
