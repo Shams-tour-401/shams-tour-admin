@@ -79,7 +79,7 @@ export default function Layout() {
         /* ----- Contenu principal ----- */
         .main-content {
           flex: 1 1 auto;
-          min-width: 0;
+          min-width: 0; /* ✅ TRÈS IMPORTANT : permet au flex de rétrécir et de prendre la place */
           display: flex;
           flex-direction: column;
           overflow-x: hidden;
@@ -88,18 +88,7 @@ export default function Layout() {
         .content-area {
           flex: 1;
           padding: 24px;
-          overflow-x: auto;
           width: 100%;
-          /* ✅ LA CLÉ : on centre le contenu */
-          display: flex;
-          justify-content: center;
-        }
-
-        /* ✅ LE WRAPPER QUI CONTRAINT LA LARGEUR */
-        .content-inner {
-          max-width: 1400px;
-          width: 100%;
-          margin: 0 auto;
         }
 
         /* ----- Hamburger (caché desktop) ----- */
@@ -165,10 +154,6 @@ export default function Layout() {
           }
           .content-area {
             padding: 76px 16px 24px;
-            display: block; /* ✅ Sur mobile, on annule le flex pour le centrage */
-          }
-          .content-inner {
-            max-width: 100%;
           }
         }
 
@@ -209,10 +194,7 @@ export default function Layout() {
         <div className="main-content">
           <Header />
           <div className="content-area">
-            {/* ✅ LE WRAPPER QUI CONTRAINT LA LARGEUR */}
-            <div className="content-inner">
-              <Outlet />
-            </div>
+            <Outlet />
           </div>
         </div>
       </div>
