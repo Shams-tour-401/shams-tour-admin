@@ -41,12 +41,14 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+    width: '100%' // ✅ Assure que le header prend toute la largeur
   },
   title: {
     fontSize: '20px',
     color: '#2C3E50',
-    fontWeight: '600'
+    fontWeight: '600',
+    margin: 0 // ✅ Enlève la marge par défaut du h1
   },
   date: {
     fontSize: '13px',
