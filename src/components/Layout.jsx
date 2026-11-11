@@ -89,15 +89,17 @@ export default function Layout() {
           flex: 1;
           padding: 24px;
           overflow-x: auto;
-          /* ✅ Contrainte de largeur pour les grands écrans */
           width: 100%;
+          /* ✅ LA CLÉ : on centre le contenu */
+          display: flex;
+          justify-content: center;
         }
 
-        /* ✅ Nouveau : conteneur interne pour centrer le contenu sur PC */
+        /* ✅ LE WRAPPER QUI CONTRAINT LA LARGEUR */
         .content-inner {
           max-width: 1400px;
-          margin: 0 auto;
           width: 100%;
+          margin: 0 auto;
         }
 
         /* ----- Hamburger (caché desktop) ----- */
@@ -163,6 +165,7 @@ export default function Layout() {
           }
           .content-area {
             padding: 76px 16px 24px;
+            display: block; /* ✅ Sur mobile, on annule le flex pour le centrage */
           }
           .content-inner {
             max-width: 100%;
@@ -206,7 +209,7 @@ export default function Layout() {
         <div className="main-content">
           <Header />
           <div className="content-area">
-            {/* ✅ Nouveau wrapper pour centrer et contenir les blocs sur PC */}
+            {/* ✅ LE WRAPPER QUI CONTRAINT LA LARGEUR */}
             <div className="content-inner">
               <Outlet />
             </div>
