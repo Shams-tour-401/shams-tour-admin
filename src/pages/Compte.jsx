@@ -1,8 +1,7 @@
 // src/pages/Compte.jsx
 import { useState } from 'react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/auth'; // ✅ L'IMPORT MANQUANT EST ICI
+import { utilisateursService } from '../services/utilisateurs'; // ✅ Import du service
 import styled from 'styled-components';
 
 export default function Compte() {
@@ -25,7 +24,6 @@ export default function Compte() {
     e.preventDefault();
     setMessage({ type: '', text: '' });
 
-    // Validations côté client
     if (motDePasse.nouveau !== motDePasse.confirmation) {
       return setMessage({ type: 'error', text: 'Les deux nouveaux mots de passe ne correspondent pas.' });
     }
@@ -35,14 +33,12 @@ export default function Compte() {
 
     try {
       setEnvoiEnCours(true);
-      const token = authService.getToken(); // ✅ Utilise la méthode du service
       
-      await axios.put('https://shams-tour-api.onrender.com/api/utilisateurs/mot-de-passe', {
-        ancien_mot_de_passe: motDePasse.actuel,
-        nouveau_mot_de_passe: motDePasse.nouveau
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // ✅ On utilise le service
+      await utilisateursService.changerMotDePasse(
+        motDePasse.actuel, 
+        motDePasse.nouveau
+      );
       
       setMessage({ type: 'success', text: 'Mot de passe mis à jour avec succès !' });
       setMotDePasse({ actuel: '', nouveau: '', confirmation: '' });
@@ -65,68 +61,31 @@ export default function Compte() {
       </PageHeader>
 
       <Grid>
-        {/* CARTE : Informations */}
         <Card>
-          <CardHeader>
-            <h3>👤 Informations</h3>
-          </CardHeader>
+          <CardHeader><h3>👤 Informations</h3></CardHeader>
           <CardBody>
-            <Row>
-              <Label>Nom complet</Label>
-              <Valeur>{user?.nom_complet}</Valeur>
-            </Row>
-            <Row>
-              <Label>Identifiant</Label>
-              <Valeur>{user?.identifiant}</Valeur>
-            </Row>
-            <Row>
-              <Label>Rôle</Label>
-              <Valeur style={{ textTransform: 'capitalize' }}>{user?.role}</Valeur>
-            </Row>
+            <Row><Label>Nom complet</Label><Valeur>{user?.nom_complet}</Valeur></Row>
+            <Row><Label>Identifiant</Label><Valeur>{user?.identifiant}</Valeur></Row>
+            <Row><Label>Rôle</Label><Valeur style={{ textTransform: 'capitalize' }}>{user?.role}</Valeur></Row>
           </CardBody>
         </Card>
 
-        {/* CARTE : Changer le mot de passe */}
         <Card>
-          <CardHeader>
-            <h3>🔐 Changer de mot de passe</h3>
-          </CardHeader>
+          <CardHeader><h3>🔐 Changer de mot de passe</h3></CardHeader>
           <CardBody>
-            {message.text && (
-              <Alert $type={message.type}>{message.text}</Alert>
-            )}
+            {message.text && <Alert $type={message.type}>{message.text}</Alert>}
             <form onSubmit={soumettreMotDePasse}>
               <Field>
                 <Label>Mot de passe actuel</Label>
-                <Input 
-                  type="password" 
-                  name="actuel" 
-                  value={motDePasse.actuel} 
-                  onChange={handleChange} 
-                  required 
-                />
+                <Input type="password" name="actuel" value={motDePasse.actuel} onChange={handleChange} required />
               </Field>
               <Field>
                 <Label>Nouveau mot de passe</Label>
-                <Input 
-                  type="password" 
-                  name="nouveau" 
-                  value={motDePasse.nouveau} 
-                  onChange={handleChange} 
-                  required 
-                  minLength={6}
-                />
+                <Input type="password" name="nouveau" value={motDePasse.nouveau} onChange={handleChange} required minLength={6} />
               </Field>
               <Field>
                 <Label>Confirmer le nouveau mot de passe</Label>
-                <Input 
-                  type="password" 
-                  name="confirmation" 
-                  value={motDePasse.confirmation} 
-                  onChange={handleChange} 
-                  required 
-                  minLength={6}
-                />
+                <Input type="password" name="confirmation" value={motDePasse.confirmation} onChange={handleChange} required minLength={6} />
               </Field>
               <BtnPrimaire type="submit" disabled={envoiEnCours}>
                 {envoiEnCours ? 'Mise à jour...' : 'Mettre à jour'}
@@ -139,15 +98,12 @@ export default function Compte() {
   );
 }
 
-/* ---------------------- STYLES ---------------------- */
+/* STYLES (inchangés) */
 const Page = styled.div` width: 100%; max-width: 100%; `;
 const PageHeader = styled.div` margin-bottom: 24px; `;
 const Title = styled.h1` margin: 0; font-size: 24px; color: #1f4e79; `;
 const Sub = styled.p` margin: 4px 0 0; font-size: 14px; color: #6b7c8f; `;
-const Grid = styled.div`
-  display: grid; grid-template-columns: 1fr; gap: 24px;
-  @media (min-width: 1024px) { grid-template-columns: 1fr 1fr; }
-`;
+const Grid = styled.div` display: grid; grid-template-columns: 1fr; gap: 24px; @media (min-width: 1024px) { grid-template-columns: 1fr 1fr; } `;
 const Card = styled.div` background: white; border-radius: 12px; border: 1px solid #dbe5f0; overflow: hidden; `;
 const CardHeader = styled.div` padding: 16px 20px; border-bottom: 1px solid #dbe5f0; background: #f8fafc; h3 { margin: 0; font-size: 16px; color: #1f4e79; } `;
 const CardBody = styled.div` padding: 20px; `;
@@ -156,10 +112,5 @@ const Label = styled.span` font-size: 13px; color: #6b7c8f; font-weight: 500; `;
 const Valeur = styled.span` font-size: 13px; color: #1b2a3a; font-weight: 600; `;
 const Field = styled.div` display: flex; flex-direction: column; margin-bottom: 16px; `;
 const Input = styled.input` padding: 10px 12px; border: 1px solid #dbe5f0; border-radius: 8px; font-size: 14px; outline: none; &:focus { border-color: #2f6fd6; } `;
-const BtnPrimaire = styled.button` 
-  width: 100%; padding: 12px; background: #1f4e79; color: white; border: none; border-radius: 8px; 
-  font-weight: 600; cursor: pointer; transition: background 0.2s; 
-  &:hover { background: #163a5a; } 
-  &:disabled { background: #7f8c8d; cursor: not-allowed; }
-`;
+const BtnPrimaire = styled.button` width: 100%; padding: 12px; background: #1f4e79; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; &:hover { background: #163a5a; } &:disabled { background: #7f8c8d; cursor: not-allowed; } `;
 const Alert = styled.div` padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; ${({ $type }) => $type === 'error' ? `background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;` : `background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;`} `;
