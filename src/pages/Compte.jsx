@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { authService } from '../services/auth'; // ✅ L'IMPORT MANQUANT EST ICI
 import styled from 'styled-components';
 
 export default function Compte() {
@@ -34,9 +35,8 @@ export default function Compte() {
 
     try {
       setEnvoiEnCours(true);
-      const token = authService.getToken();
+      const token = authService.getToken(); // ✅ Utilise la méthode du service
       
-      // ⚠️ Vérifie que l'URL correspond bien à ton API sur Render
       await axios.put('https://shams-tour-api.onrender.com/api/utilisateurs/mot-de-passe', {
         ancien_mot_de_passe: motDePasse.actuel,
         nouveau_mot_de_passe: motDePasse.nouveau
