@@ -107,25 +107,7 @@ export default function Compte() {
           </CardBody>
         </Card>
 
-        {/* CARTE : Apparence */}
-        <Card>
-          <CardHeader>
-            <h3>🎨 Apparence</h3>
-          </CardHeader>
-          <CardBody>
-            <Row>
-              <Label>Thème de l'interface</Label>
-              <ThemeSelector>
-                <ThemeBtn $active={theme === 'clair'} onClick={() => changerTheme('clair')}>
-                  ☀️ Clair
-                </ThemeBtn>
-                <ThemeBtn $active={theme === 'sombre'} onClick={() => changerTheme('sombre')}>
-                  🌙 Sombre
-                </ThemeBtn>
-              </ThemeSelector>
-            </Row>
-          </CardBody>
-        </Card>
+        
       </Grid>
     </Page>
   );
