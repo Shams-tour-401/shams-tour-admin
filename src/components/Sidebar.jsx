@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
 import {
   LayoutDashboard, ClipboardList, Target, Map, Banknote,
-  Users, MapPin, MapPinned, UserCog, Bus, LogOut, X
+  Users, MapPin, MapPinned, UserCog, Bus, LogOut, X, Settings 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -21,7 +21,8 @@ export default function Sidebar({ closeMenu }) {
     { path: '/destinations', label: 'Destinations',    Icon: MapPin,          adminSeul: false },
     { path: '/lieux',        label: 'Lieux',           Icon: MapPinned,       adminSeul: false },
     { path: '/utilisateurs', label: 'Utilisateurs',    Icon: UserCog,         adminSeul: true  },
-    { path: '/trajets',      label: 'Trajets',         Icon: Bus,             adminSeul: false }
+    { path: '/trajets',      label: 'Trajets',         Icon: Bus,             adminSeul: false },
+    { path: '/compte',       label: 'Mon compte',      Icon: Settings,        adminSeul: true  }, 
   ];
 
   const menuFiltre = estAdmin ? menuItems : menuItems.filter(i => !i.adminSeul);
