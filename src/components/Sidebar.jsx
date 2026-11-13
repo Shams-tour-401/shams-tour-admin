@@ -22,7 +22,7 @@ export default function Sidebar({ closeMenu }) {
     { path: '/lieux',        label: 'Lieux',           Icon: MapPinned,       adminSeul: false },
     { path: '/utilisateurs', label: 'Utilisateurs',    Icon: UserCog,         adminSeul: true  },
     { path: '/trajets',      label: 'Trajets',         Icon: Bus,             adminSeul: false },
-    { path: '/compte',       label: 'Mon compte',      Icon: Settings,        adminSeul: true  }, 
+    { path: '/compte',       label: 'Mon compte',      Icon: Settings,        adminSeul: false  }, 
   ];
 
   const menuFiltre = estAdmin ? menuItems : menuItems.filter(i => !i.adminSeul);
