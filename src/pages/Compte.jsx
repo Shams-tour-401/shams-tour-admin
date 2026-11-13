@@ -34,7 +34,7 @@ export default function Compte() {
 
     try {
       setEnvoiEnCours(true);
-      const token = localStorage.getItem('token'); // Ton token JWT
+      const token = authService.getToken();
       
       // ⚠️ Vérifie que l'URL correspond bien à ton API sur Render
       await axios.put('https://shams-tour-api.onrender.com/api/utilisateurs/mot-de-passe', {
