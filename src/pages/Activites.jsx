@@ -1,5 +1,5 @@
 // src/pages/Activites.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react'; // ✅ Ajout de useMemo
 import { activitesService } from '../services/activites';
 import { lieuxService } from '../services/lieux';
 import { photosService } from '../services/photos'; 
@@ -15,6 +15,12 @@ export default function Activites() {
   const [photoModal, setPhotoModal] = useState(null); 
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
+
+  // ✅ NOUVEAUX ÉTATS POUR LA RECHERCHE ET LES FILTRES
+  const [recherche, setRecherche] = useState('');
+  const [filtreCategorie, setFiltreCategorie] = useState('');
+  const [filtreDuree, setFiltreDuree] = useState('');
+  const [filtreAge, setFiltreAge] = useState('');
 
   useEffect(() => {
     chargerDonnees();
@@ -77,6 +83,40 @@ export default function Activites() {
     }
   };
 
+  // ✅ LOGIQUE DE FILTRAGE INSTANTANÉ
+  const activitesFiltrees = useMemo(() => {
+    const terme = recherche.trim().toLowerCase();
+
+    return activites.filter((a) => {
+      // 1. Recherche par nom ou lieu
+      const matchRecherche = 
+        terme === '' || 
+        (a.nom || '').toLowerCase().includes(terme) || 
+        (a.lieu_nom || '').toLowerCase().includes(terme);
+
+      // 2. Filtre par catégorie
+      const matchCategorie = filtreCategorie === '' || a.categorie === filtreCategorie;
+
+      // 3. Filtre par durée
+      let matchDuree = true;
+      if (filtreDuree === 'court') matchDuree = a.duree_min < 60;
+      else if (filtreDuree === 'moyen') matchDuree = a.duree_min >= 60 && a.duree_min <= 180;
+      else if (filtreDuree === 'long') matchDuree = a.duree_min > 180;
+
+      // 4. Filtre par âge minimum
+      const matchAge = filtreAge === '' || a.age_min <= parseInt(filtreAge);
+
+      return matchRecherche && matchCategorie && matchDuree && matchAge;
+    });
+  }, [activites, recherche, filtreCategorie, filtreDuree, filtreAge]);
+
+  const reinitialiserFiltres = () => {
+    setRecherche('');
+    setFiltreCategorie('');
+    setFiltreDuree('');
+    setFiltreAge('');
+  };
+
   if (loading) return <div style={styles.loading}>Chargement...</div>;
   if (erreur) return <div style={styles.erreur}>{erreur}</div>;
 
@@ -85,7 +125,10 @@ export default function Activites() {
       {/* Barre d'actions */}
       <div style={styles.barreActions}>
         <div>
-          <h2 style={styles.titre}>Activités ({activites.length})</h2>
+          <h2 style={styles.titre}>
+            Activités ({activitesFiltrees.length}
+            {activitesFiltrees.length !== activites.length && ` / ${activites.length}`})
+          </h2>
           <p style={styles.sousTitre}>Catalogue des activités disponibles</p>
         </div>
         {estAdmin && (
@@ -95,10 +138,51 @@ export default function Activites() {
         )}
       </div>
 
+      {/* ✅ BARRE DE RECHERCHE ET FILTRES */}
+      <div style={styles.barreFiltres}>
+        <input
+          type="text"
+          placeholder="🔍 Rechercher par nom ou lieu..."
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          style={styles.recherche}
+        />
+
+        <select value={filtreCategorie} onChange={(e) => setFiltreCategorie(e.target.value)} style={styles.select}>
+          <option value="">Toutes les catégories</option>
+          <option value="Nature">Nature</option>
+          <option value="Aventure">Aventure</option>
+          <option value="Culture">Culture</option>
+        </select>
+
+        <select value={filtreDuree} onChange={(e) => setFiltreDuree(e.target.value)} style={styles.select}>
+          <option value="">Toutes les durées</option>
+          <option value="court">Moins d'1 heure</option>
+          <option value="moyen">1h à 3h</option>
+          <option value="long">Plus de 3h</option>
+        </select>
+
+        <select value={filtreAge} onChange={(e) => setFiltreAge(e.target.value)} style={styles.select}>
+          <option value="">Tous les âges</option>
+          <option value="0">Dès 0 an</option>
+          <option value="3">Dès 3 ans</option>
+          <option value="6">Dès 6 ans</option>
+          <option value="12">Dès 12 ans</option>
+        </select>
+
+        {(recherche || filtreCategorie || filtreDuree || filtreAge) && (
+          <button onClick={reinitialiserFiltres} style={styles.btnReset}>
+            Réinitialiser
+          </button>
+        )}
+      </div>
+
       {/* Tableau */}
       <div style={styles.tableContainer}>
-        {activites.length === 0 ? (
-          <div style={styles.aucune}>Aucune activité</div>
+        {activitesFiltrees.length === 0 ? (
+          <div style={styles.aucune}>
+            {activites.length === 0 ? 'Aucune activité' : 'Aucune activité ne correspond à votre recherche'}
+          </div>
         ) : (
           <table style={styles.table}>
             <thead>
@@ -113,7 +197,7 @@ export default function Activites() {
               </tr>
             </thead>
             <tbody>
-              {activites.map((a) => (
+              {activitesFiltrees.map((a) => (
                 <tr key={a.id} style={styles.tr}>
                   <td style={styles.td}>
                     <strong>{a.nom}</strong>
@@ -285,7 +369,6 @@ function ModalPhotos({ activiteId, onClose }) {
   const [photosNouvelles, setPhotosNouvelles] = useState([]); 
   const [uploading, setUploading] = useState(false);
   
-  // 👇 ÉTAT POUR L'IMAGE EN PLEIN ÉCRAN
   const [photoAgrandie, setPhotoAgrandie] = useState(null);
 
   const chargerPhotos = async () => {
@@ -347,7 +430,6 @@ function ModalPhotos({ activiteId, onClose }) {
 
         <div style={{ padding: '30px' }}>
           
-          {/* ZONE DE SÉLECTION */}
           <div style={{ marginBottom: '30px', textAlign: 'center' }}>
             <label style={{ 
               ...styles.btnSecondaire, 
@@ -363,7 +445,6 @@ function ModalPhotos({ activiteId, onClose }) {
             </label>
           </div>
 
-          {/* PRÉVISUALISATION DES PHOTOS À ENVOYER */}
           {photosNouvelles.length > 0 && (
             <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: '#FEF5E7', borderRadius: '8px' }}>
               <h4 style={{ marginBottom: '15px', color: '#E67E22', fontSize: '18px' }}>
@@ -398,7 +479,6 @@ function ModalPhotos({ activiteId, onClose }) {
             </div>
           )}
 
-          {/* PHOTOS DÉJÀ ENREGISTRÉES */}
           <h4 style={{ marginBottom: '15px', borderBottom: '2px solid #ecf0f1', paddingBottom: '10px', fontSize: '18px' }}>
             Photos actuelles ({photosExistantes.length})
           </h4>
@@ -415,7 +495,6 @@ function ModalPhotos({ activiteId, onClose }) {
                     style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} 
                   />
                   
-                  {/* 👇 BOUTON DE VISUALISATION (ŒIL) */}
                   <button 
                     onClick={() => setPhotoAgrandie(p.url)}
                     style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -424,7 +503,6 @@ function ModalPhotos({ activiteId, onClose }) {
                     👁️
                   </button>
 
-                  {/* Bouton Supprimer */}
                   <button 
                     onClick={() => supprimerPhotoExistante(p.id)}
                     style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
@@ -439,7 +517,6 @@ function ModalPhotos({ activiteId, onClose }) {
         </div>
       </div>
 
-      {/* 👇 LA FENÊTRE PLEIN ÉCRAN POUR L'IMAGE */}
       {photoAgrandie && (
         <div style={styles.modalOverlayFull}>
           <button 
@@ -478,6 +555,45 @@ const styles = {
   btnSecondaire: {
     padding: '10px 20px', backgroundColor: '#ECF0F1', color: '#2C3E50',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
+  },
+  // ✅ NOUVEAUX STYLES POUR LA BARRE DE FILTRES
+  barreFiltres: {
+    backgroundColor: 'white',
+    padding: '16px 20px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+  },
+  recherche: {
+    flex: 1,
+    minWidth: '250px',
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
+    outline: 'none'
+  },
+  select: {
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '13px',
+    backgroundColor: 'white',
+    cursor: 'pointer'
+  },
+  btnReset: {
+    padding: '8px 16px',
+    backgroundColor: '#ECF0F1',
+    color: '#2C3E50',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer'
   },
   tableContainer: {
     backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden',
