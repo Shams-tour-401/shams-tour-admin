@@ -16,6 +16,7 @@ import Lieux from './pages/Lieux';
 import Trajets from './pages/Trajets';
 import Prestataires from './pages/Prestataires';
 import Utilisateurs from './pages/Utilisateurs';
+import Compte from './pages/Compte';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
             <Route path="lieux" element={<Lieux />} />
             <Route path="trajets" element={<Trajets />} />
             <Route path="utilisateurs" element={<Utilisateurs />} />
+            <Route path="/compte" element={<Compte />} />
           </Route>
         </Routes>
       </BrowserRouter>
