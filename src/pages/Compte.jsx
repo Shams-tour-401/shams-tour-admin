@@ -1,27 +1,19 @@
 // src/pages/Compte.jsx
 import { useState } from 'react';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import styled from 'styled-components';
 
 export default function Compte() {
   const { user } = useAuth();
   
-  // État pour le formulaire de mot de passe
   const [motDePasse, setMotDePasse] = useState({
     actuel: '',
     nouveau: '',
     confirmation: ''
   });
   const [message, setMessage] = useState({ type: '', text: '' });
-
-  // État pour le thème (clair/sombre)
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'clair');
-
-  const changerTheme = (nouveauTheme) => {
-    setTheme(nouveauTheme);
-    localStorage.setItem('theme', nouveauTheme);
-    document.body.setAttribute('data-theme', nouveauTheme);
-  };
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,6 +24,7 @@ export default function Compte() {
     e.preventDefault();
     setMessage({ type: '', text: '' });
 
+    // Validations côté client
     if (motDePasse.nouveau !== motDePasse.confirmation) {
       return setMessage({ type: 'error', text: 'Les deux nouveaux mots de passe ne correspondent pas.' });
     }
@@ -40,14 +33,27 @@ export default function Compte() {
     }
 
     try {
-      // ICI : Appelle ton API Node.js (ex: axios.put('/api/utilisateurs/mot-de-passe', ...))
-      // Pour l'instant, on simule un succès
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setEnvoiEnCours(true);
+      const token = localStorage.getItem('token'); // Ton token JWT
+      
+      // ⚠️ Vérifie que l'URL correspond bien à ton API sur Render
+      await axios.put('https://shams-tour-api.onrender.com/api/utilisateurs/mot-de-passe', {
+        ancien_mot_de_passe: motDePasse.actuel,
+        nouveau_mot_de_passe: motDePasse.nouveau
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
       setMessage({ type: 'success', text: 'Mot de passe mis à jour avec succès !' });
       setMotDePasse({ actuel: '', nouveau: '', confirmation: '' });
     } catch (error) {
-      setMessage({ type: 'error', text: 'Erreur lors de la mise à jour.' });
+      console.error(error);
+      setMessage({ 
+        type: 'error', 
+        text: error.response?.data?.error || 'Erreur lors de la mise à jour.' 
+      });
+    } finally {
+      setEnvoiEnCours(false);
     }
   };
 
@@ -55,7 +61,7 @@ export default function Compte() {
     <Page>
       <PageHeader>
         <Title>Mon compte</Title>
-        <Sub>Gérez vos informations de connexion et vos préférences</Sub>
+        <Sub>Gérez vos informations de connexion</Sub>
       </PageHeader>
 
       <Grid>
@@ -92,22 +98,42 @@ export default function Compte() {
             <form onSubmit={soumettreMotDePasse}>
               <Field>
                 <Label>Mot de passe actuel</Label>
-                <Input type="password" name="actuel" value={motDePasse.actuel} onChange={handleChange} required />
+                <Input 
+                  type="password" 
+                  name="actuel" 
+                  value={motDePasse.actuel} 
+                  onChange={handleChange} 
+                  required 
+                />
               </Field>
               <Field>
                 <Label>Nouveau mot de passe</Label>
-                <Input type="password" name="nouveau" value={motDePasse.nouveau} onChange={handleChange} required />
+                <Input 
+                  type="password" 
+                  name="nouveau" 
+                  value={motDePasse.nouveau} 
+                  onChange={handleChange} 
+                  required 
+                  minLength={6}
+                />
               </Field>
               <Field>
                 <Label>Confirmer le nouveau mot de passe</Label>
-                <Input type="password" name="confirmation" value={motDePasse.confirmation} onChange={handleChange} required />
+                <Input 
+                  type="password" 
+                  name="confirmation" 
+                  value={motDePasse.confirmation} 
+                  onChange={handleChange} 
+                  required 
+                  minLength={6}
+                />
               </Field>
-              <BtnPrimaire type="submit">Mettre à jour</BtnPrimaire>
+              <BtnPrimaire type="submit" disabled={envoiEnCours}>
+                {envoiEnCours ? 'Mise à jour...' : 'Mettre à jour'}
+              </BtnPrimaire>
             </form>
           </CardBody>
         </Card>
-
-        
       </Grid>
     </Page>
   );
@@ -130,7 +156,10 @@ const Label = styled.span` font-size: 13px; color: #6b7c8f; font-weight: 500; `;
 const Valeur = styled.span` font-size: 13px; color: #1b2a3a; font-weight: 600; `;
 const Field = styled.div` display: flex; flex-direction: column; margin-bottom: 16px; `;
 const Input = styled.input` padding: 10px 12px; border: 1px solid #dbe5f0; border-radius: 8px; font-size: 14px; outline: none; &:focus { border-color: #2f6fd6; } `;
-const BtnPrimaire = styled.button` width: 100%; padding: 12px; background: #1f4e79; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; &:hover { background: #163a5a; } `;
+const BtnPrimaire = styled.button` 
+  width: 100%; padding: 12px; background: #1f4e79; color: white; border: none; border-radius: 8px; 
+  font-weight: 600; cursor: pointer; transition: background 0.2s; 
+  &:hover { background: #163a5a; } 
+  &:disabled { background: #7f8c8d; cursor: not-allowed; }
+`;
 const Alert = styled.div` padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; ${({ $type }) => $type === 'error' ? `background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;` : `background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;`} `;
-const ThemeSelector = styled.div` display: flex; gap: 10px; `;
-const ThemeBtn = styled.button` padding: 8px 16px; border-radius: 8px; border: 1px solid #dbe5f0; background: ${({ $active }) => $active ? '#e6f0ff' : 'white'}; color: ${({ $active }) => $active ? '#1f4e79' : '#6b7c8f'}; font-weight: 600; cursor: pointer; `;
