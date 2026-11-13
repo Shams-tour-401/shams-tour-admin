@@ -27,6 +27,11 @@ export const authService = {
     const user = localStorage.getItem('shams_user');
     return user ? JSON.parse(user) : null;
   },
+   // ✅ Nouvelle méthode pour récupérer le token
+  getToken() {
+    return localStorage.getItem('shams_token');
+  },
+
 
   // Vérifier si connecté
   isAuthenticated() {
