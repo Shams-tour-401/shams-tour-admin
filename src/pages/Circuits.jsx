@@ -1,5 +1,5 @@
 // src/pages/Circuits.jsx
-import { useEffect, useState, useMemo } from 'react'; // ✅ Ajout de useMemo
+import { useEffect, useState, useMemo } from 'react'; 
 import { circuitsService } from '../services/circuits';
 import { activitesService } from '../services/activites';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +14,7 @@ export default function Circuits() {
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
-  // ✅ NOUVEAUX ÉTATS POUR LA RECHERCHE ET LES FILTRES
+  //  LA RECHERCHE ET LES FILTRES
   const [recherche, setRecherche] = useState('');
   const [filtreDuree, setFiltreDuree] = useState('');
   const [filtreRythme, setFiltreRythme] = useState('');
@@ -101,7 +101,7 @@ export default function Circuits() {
     }
   };
 
-  // ✅ LOGIQUE DE FILTRAGE INSTANTANÉ
+  //  LOGIQUE DE FILTRAGE INSTANTANÉ
   const circuitsFiltres = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
 
@@ -159,7 +159,7 @@ export default function Circuits() {
         )}
       </div>
 
-      {/* ✅ BARRE DE RECHERCHE ET FILTRES */}
+      {/*  BARRE DE RECHERCHE ET FILTRES */}
       <div style={styles.barreFiltres}>
         <input
           type="text"
@@ -629,7 +629,7 @@ const styles = {
   },
   titre: { fontSize: '20px', color: '#2C3E50' },
   sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
-  // ✅ NOUVEAUX STYLES POUR LA BARRE DE FILTRES
+  //  STYLES POUR LA BARRE DE FILTRES
   barreFiltres: {
     backgroundColor: 'white',
     padding: '16px 20px',
