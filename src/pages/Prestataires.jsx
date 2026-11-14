@@ -1,5 +1,5 @@
 // src/pages/Prestataires.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react'; 
 import { prestatairesService } from '../services/prestataires';
 import { useAuth } from '../context/AuthContext';
 
@@ -8,9 +8,12 @@ export default function Prestataires() {
   const [loading, setLoading] = useState(true);
   const [modalOuvert, setModalOuvert] = useState(false);
   const [enEdition, setEnEdition] = useState(null);
-  const [filtreStatut, setFiltreStatut] = useState('');
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
+
+  //  ÉTATS POUR LA RECHERCHE ET LE FILTRE
+  const [recherche, setRecherche] = useState('');
+  const [filtreStatut, setFiltreStatut] = useState('');
 
   useEffect(() => {
     charger();
@@ -28,9 +31,28 @@ export default function Prestataires() {
     }
   };
 
-  const prestatairesFiltres = filtreStatut
-    ? prestataires.filter(p => p.statut === filtreStatut)
-    : prestataires;
+  //  LOGIQUE DE FILTRAGE INSTANTANÉ
+  const prestatairesFiltres = useMemo(() => {
+    const terme = recherche.trim().toLowerCase();
+
+    return prestataires.filter((p) => {
+      // 1. Recherche par nom ou téléphone
+      const matchRecherche = 
+        terme === '' || 
+        (p.nom || '').toLowerCase().includes(terme) || 
+        (p.telephones || '').toLowerCase().includes(terme);
+
+      // 2. Filtre par statut
+      const matchStatut = filtreStatut === '' || p.statut === filtreStatut;
+
+      return matchRecherche && matchStatut;
+    });
+  }, [prestataires, recherche, filtreStatut]);
+
+  const reinitialiserFiltres = () => {
+    setRecherche('');
+    setFiltreStatut('');
+  };
 
   const sauvegarder = async (form) => {
     try {
@@ -63,35 +85,56 @@ export default function Prestataires() {
     <div>
       <div style={styles.barreActions}>
         <div>
-          <h2 style={styles.titre}>Prestataires ({prestatairesFiltres.length})</h2>
+          <h2 style={styles.titre}>
+            Prestataires ({prestatairesFiltres.length}
+            {prestatairesFiltres.length !== prestataires.length && ` / ${prestataires.length}`})
+          </h2>
           <p style={styles.sousTitre}>
             {estAdmin ? 'Guides, transporteurs et fournisseurs de services' : 'Consultation des prestataires (lecture seule)'}
           </p>
         </div>
-        <div style={styles.actionsDroite}>
-          <select
-            value={filtreStatut}
-            onChange={(e) => setFiltreStatut(e.target.value)}
-            style={styles.select}
+        {estAdmin && (
+          <button
+            onClick={() => { setEnEdition(null); setModalOuvert(true); }}
+            style={styles.btnPrimaire}
           >
-            <option value="">Tous les statuts</option>
-            <option value="actif">Actifs</option>
-            <option value="inactif">Inactifs</option>
-          </select>
-          {estAdmin && (
-            <button
-              onClick={() => { setEnEdition(null); setModalOuvert(true); }}
-              style={styles.btnPrimaire}
-            >
-              ➕ Nouveau prestataire
-            </button>
-          )}
-        </div>
+            ➕ Nouveau prestataire
+          </button>
+        )}
+      </div>
+
+      {/*  BARRE DE RECHERCHE ET FILTRE */}
+      <div style={styles.barreFiltres}>
+        <input
+          type="text"
+          placeholder="🔍 Rechercher par nom ou téléphone..."
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          style={styles.recherche}
+        />
+
+        <select
+          value={filtreStatut}
+          onChange={(e) => setFiltreStatut(e.target.value)}
+          style={styles.select}
+        >
+          <option value="">Tous les statuts</option>
+          <option value="actif">Actifs</option>
+          <option value="inactif">Inactifs</option>
+        </select>
+
+        {(recherche || filtreStatut) && (
+          <button onClick={reinitialiserFiltres} style={styles.btnReset}>
+            Réinitialiser
+          </button>
+        )}
       </div>
 
       <div style={styles.tableContainer}>
         {prestatairesFiltres.length === 0 ? (
-          <div style={styles.aucune}>Aucun prestataire</div>
+          <div style={styles.aucune}>
+            {prestataires.length === 0 ? 'Aucun prestataire' : 'Aucun prestataire ne correspond à votre recherche'}
+          </div>
         ) : (
           <table style={styles.table}>
             <thead>
@@ -259,11 +302,37 @@ const styles = {
   },
   titre: { fontSize: '20px', color: '#2C3E50' },
   sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
-  actionsDroite: { display: 'flex', gap: '12px', alignItems: 'center' },
+  //  STYLES POUR LA BARRE DE FILTRES
+  barreFiltres: {
+    backgroundColor: 'white',
+    padding: '16px 20px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+  },
+  recherche: {
+    flex: 1,
+    minWidth: '250px',
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
+    outline: 'none'
+  },
   select: {
     padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
     fontSize: '13px', backgroundColor: 'white', cursor: 'pointer'
   },
+  btnReset: {
+    padding: '8px 16px', backgroundColor: '#ECF0F1', color: '#2C3E50',
+    border: 'none', borderRadius: '4px', fontSize: '13px',
+    fontWeight: '600', cursor: 'pointer'
+  },
+  actionsDroite: { display: 'flex', gap: '12px', alignItems: 'center' },
   btnPrimaire: {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
