@@ -322,24 +322,6 @@ function StatutBadge({ statut }) {
 }
 
 /* ---------------------- Styles ---------------------- */
-
-const TONES = {
-  neutral: { fg: '#4b5d70', bg: '#eef2f6' },
-  blue: { fg: '#1d5fbf', bg: '#e6f0ff' },
-  green: { fg: '#0f7a3d', bg: '#e3f8ea' },
-  amber: { fg: '#b45309', bg: '#fff1e0' },
-  yellow: { fg: '#a16207', bg: '#fef7d6' },
-  red: { fg: '#c0182b', bg: '#ffe8ea' },
-  violet: { fg: '#7a1fc4', bg: '#f3e8ff' }
-};
-
-const toneFg = ({ $tone }) => (TONES[$tone] || TONES.neutral).fg;
-const toneBg = ({ $tone }) => (TONES[$tone] || TONES.neutral).bg;
-
-const spin = keyframes`
-  to { transform: rotate(360deg); }
-`;
-
 /* ✅ PAGE NETTOYÉE */
 const Page = styled.div`
   width: 100%;
@@ -347,18 +329,8 @@ const Page = styled.div`
   display: flex;
   flex-direction: column;
 
-  --navy: #1f4e79;
-  --accent: #2f6fd6;
-  --accent-hover: #2760bf;
-  --ink: #1b2a3a;
-  --text: #3d4f63;
-  --muted: #6b7c8f;
-  --border: #dbe5f0;
-  --surface: #ffffff;
-  --soft: #f4f8fc;
-
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
-  color: var(--text);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 
   &, & *, & *::before, & *::after { box-sizing: border-box; }
@@ -392,11 +364,11 @@ const RetryButton = styled.button`
   font-size: 13px;
   font-weight: 600;
   color: #fff;
-  background: var(--accent);
+  background: #2f6fd6;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  &:hover { background: var(--accent-hover); }
+  &:hover { background: #2760bf; }
 `;
 
 const Loading = styled.div`
@@ -406,14 +378,13 @@ const Loading = styled.div`
   gap: 8px;
   padding: 64px 16px;
   font-size: 14px;
-  color: #6b7c8f;
+  color: var(--text-muted);
 `;
 
 const Spinner = styled(Loader2)`
   animation: ${spin} 0.8s linear infinite;
 `;
 
-/* ✅ GRILLE DES STATS : prend 100% de la largeur, 4 colonnes sur PC */
 const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -432,9 +403,9 @@ const StatsGrid = styled.div`
 
 const StatCardBox = styled.div`
   padding: 16px;
-  background: var(--surface);
+  background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-left: 3px solid ${({ $featured }) => ($featured ? 'var(--accent)' : 'var(--border)')};
+  border-left: 3px solid ${({ $featured }) => ($featured ? '#2f6fd6' : 'var(--border)')};
   border-radius: 12px;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   &:hover { box-shadow: 0 8px 22px rgba(31, 78, 121, 0.1); transform: translateY(-1px); }
@@ -448,7 +419,7 @@ const StatTop = styled.div`
   gap: 8px;
 `;
 
-const StatTitre = styled.div` font-size: 13px; color: var(--muted); `;
+const StatTitre = styled.div` font-size: 13px; color: var(--text-muted); `;
 
 const StatIcon = styled.div`
   width: 28px; height: 28px;
@@ -461,7 +432,7 @@ const StatIcon = styled.div`
 const StatValeur = styled.div`
   margin-top: 10px;
   font-size: 28px; font-weight: 700; line-height: 1.1;
-  letter-spacing: -0.01em; color: var(--navy);
+  letter-spacing: -0.01em; color: var(--text-primary);
   font-variant-numeric: tabular-nums;
   @media (min-width: 900px) { font-size: 32px; }
 `;
@@ -470,7 +441,7 @@ const AlertesSection = styled.section` margin-bottom: 24px; width: 100%; `;
 
 const AlertesTitre = styled.h2`
   display: flex; align-items: center; gap: 8px;
-  margin: 0 0 12px; font-size: 16px; font-weight: 600; color: var(--navy);
+  margin: 0 0 12px; font-size: 16px; font-weight: 600; color: var(--text-primary);
   svg { color: #b45309; }
 `;
 
@@ -479,7 +450,6 @@ const AlertesTotal = styled.span`
   color: #fff; background: #e5283c; border-radius: 999px;
 `;
 
-/* ✅ GRILLE DES ALERTES : prend 100% de la largeur */
 const AlertesGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -492,7 +462,7 @@ const AlertesGrid = styled.div`
 `;
 
 const AlerteBox = styled.div`
-  padding: 16px; background: var(--soft);
+  padding: 16px; background: var(--bg-soft);
   border: 1px solid var(--border); border-radius: 12px;
 `;
 
@@ -505,7 +475,7 @@ const AlerteIcone = styled.span`
   color: ${toneFg}; background: ${toneBg}; border-radius: 8px;
 `;
 
-const AlerteNom = styled.strong` font-size: 15px; font-weight: 600; color: var(--ink); `;
+const AlerteNom = styled.strong` font-size: 15px; font-weight: 600; color: var(--text-primary); `;
 
 const AlerteCount = styled.span`
   margin-left: auto; min-width: 24px; padding: 2px 8px;
@@ -514,7 +484,7 @@ const AlerteCount = styled.span`
   font-variant-numeric: tabular-nums;
 `;
 
-const AlerteDesc = styled.p` margin: 8px 0 10px; font-size: 12px; color: var(--muted); `;
+const AlerteDesc = styled.p` margin: 8px 0 10px; font-size: 12px; color: var(--text-muted); `;
 const AlerteListe = styled.ul` list-style: none; margin: 0; padding: 0; font-size: 13px; `;
 
 const AlerteItem = styled.li`
@@ -524,14 +494,14 @@ const AlerteItem = styled.li`
 
 const AlerteLink = styled(Link)`
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-weight: 500; color: var(--ink); transition: color 0.15s ease;
-  &:hover { color: var(--accent); }
+  font-weight: 500; color: var(--text-primary); transition: color 0.15s ease;
+  &:hover { color: #2f6fd6; }
 `;
 
-const AlerteMeta = styled.small` flex-shrink: 0; font-size: 12px; color: var(--muted); `;
+const AlerteMeta = styled.small` flex-shrink: 0; font-size: 12px; color: var(--text-muted); `;
 
 const Section = styled.section`
-  background: var(--surface); border: 1px solid var(--border);
+  background: var(--bg-surface); border: 1px solid var(--border);
   border-radius: 12px; overflow: hidden; width: 100%;
 `;
 
@@ -540,19 +510,19 @@ const SectionHeader = styled.div`
   padding: 16px; @media (min-width: 640px) { padding: 16px 20px; }
 `;
 
-const SectionTitle = styled.h2` margin: 0; font-size: 16px; font-weight: 600; color: var(--navy); `;
+const SectionTitle = styled.h2` margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary); `;
 
 const VoirTout = styled(Link)`
   display: inline-flex; align-items: center; gap: 2px;
-  font-size: 13px; font-weight: 500; color: var(--accent);
+  font-size: 13px; font-weight: 500; color: #2f6fd6;
   transition: gap 0.15s ease, color 0.15s ease;
-  &:hover { gap: 5px; color: var(--accent-hover); }
+  &:hover { gap: 5px; color: #2760bf; }
 `;
 
 const Empty = styled.div`
   display: flex; flex-direction: column; align-items: center;
   gap: 8px; padding: 48px 16px; color: #9db0c4;
-  p { margin: 0; font-size: 14px; color: var(--muted); }
+  p { margin: 0; font-size: 14px; color: var(--text-muted); }
 `;
 
 const TableWrapper = styled.div` overflow-x: auto; -webkit-overflow-scrolling: touch; `;
@@ -562,31 +532,31 @@ const Table = styled.table` width: 100%; min-width: 640px; border-collapse: coll
 const Th = styled.th`
   padding: 10px 16px; text-align: left;
   font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
-  text-transform: uppercase; color: var(--muted);
-  background: var(--soft);
+  text-transform: uppercase; color: var(--text-muted);
+  background: var(--bg-soft);
   border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
   white-space: nowrap;
   @media (min-width: 640px) { &:first-child { padding-left: 20px; } }
 `;
 
 const Tr = styled.tr`
-  border-bottom: 1px solid #edf2f8; transition: background-color 0.12s ease;
+  border-bottom: 1px solid var(--border); transition: background-color 0.12s ease;
   &:last-child { border-bottom: none; }
-  &:hover { background: var(--soft); }
+  &:hover { background: var(--bg-soft); }
 `;
 
 const Td = styled.td`
   padding: 14px 16px; font-size: 14px;
   font-weight: ${({ $strong }) => ($strong ? 600 : 400)};
-  color: ${({ $muted, $strong }) => $muted ? 'var(--muted)' : $strong ? 'var(--ink)' : 'var(--text)'};
+  color: ${({ $muted, $strong }) => $muted ? 'var(--text-muted)' : $strong ? 'var(--text-primary)' : 'var(--text-secondary)'};
   white-space: nowrap;
   @media (min-width: 640px) { &:first-child { padding-left: 20px; } }
 `;
 
 const RefLink = styled(Link)`
-  font-weight: 600; color: var(--navy); font-variant-numeric: tabular-nums;
+  font-weight: 600; color: #1f4e79; font-variant-numeric: tabular-nums;
   transition: color 0.15s ease;
-  &:hover { color: var(--accent); }
+  &:hover { color: #2f6fd6; }
 `;
 
 const Badge = styled.span`
