@@ -1,5 +1,5 @@
 // src/pages/Activites.jsx
-import { useEffect, useState, useMemo } from 'react'; // ✅ Ajout de useMemo
+import { useEffect, useState, useMemo } from 'react'; 
 import { activitesService } from '../services/activites';
 import { lieuxService } from '../services/lieux';
 import { photosService } from '../services/photos'; 
@@ -16,7 +16,7 @@ export default function Activites() {
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
-  // ✅ NOUVEAUX ÉTATS POUR LA RECHERCHE ET LES FILTRES
+  // LA RECHERCHE ET LES FILTRES
   const [recherche, setRecherche] = useState('');
   const [filtreCategorie, setFiltreCategorie] = useState('');
   const [filtreDuree, setFiltreDuree] = useState('');
@@ -83,7 +83,7 @@ export default function Activites() {
     }
   };
 
-  // ✅ LOGIQUE DE FILTRAGE INSTANTANÉ
+  //  LOGIQUE DE FILTRAGE INSTANTANÉ
   const activitesFiltrees = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
 
@@ -138,7 +138,7 @@ export default function Activites() {
         )}
       </div>
 
-      {/* ✅ BARRE DE RECHERCHE ET FILTRES */}
+      {/* BARRE DE RECHERCHE ET FILTRES */}
       <div style={styles.barreFiltres}>
         <input
           type="text"
@@ -556,7 +556,7 @@ const styles = {
     padding: '10px 20px', backgroundColor: '#ECF0F1', color: '#2C3E50',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
-  // ✅ NOUVEAUX STYLES POUR LA BARRE DE FILTRES
+  //  STYLES POUR LA BARRE DE FILTRES
   barreFiltres: {
     backgroundColor: 'white',
     padding: '16px 20px',
