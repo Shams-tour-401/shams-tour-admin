@@ -77,27 +77,18 @@ export default function Sidebar({ closeMenu }) {
 /* ---------------------- Styles ---------------------- */
 
 const Aside = styled.aside`
-  --navy: #1f4e79;
-  --accent: #2f6fd6;
-  --ink: #1b2a3a;
-  --text: #3d4f63;
-  --muted: #6b7c8f;
-  --border: #dbe5f0;
-  --soft: #f4f8fc;
-
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--bg-surface);
   border-right: 1px solid var(--border);
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   position: relative;
   z-index: 100;
-  
-  /* ✅ Évite le débordement sur PC */
   overflow: hidden;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 
   &, & *, & *::before, & *::after { box-sizing: border-box; }
 `;
@@ -109,7 +100,7 @@ const Brand = styled.div`
   padding: 20px 18px;
   border-bottom: 1px solid var(--border);
   position: relative;
-  flex-shrink: 0; /* ✅ Ne se compresse pas si la nav est longue */
+  flex-shrink: 0;
 `;
 
 const Logo = styled.div`
@@ -118,20 +109,20 @@ const Logo = styled.div`
   flex-shrink: 0;
   font-size: 19px; font-weight: 700;
   color: #fff;
-  background: var(--navy);
+  background: #1f4e79;
   border-radius: 10px;
 `;
 
 const BrandName = styled.div`
   font-size: 15px; font-weight: 700;
   letter-spacing: 0.02em;
-  color: var(--navy);
+  color: var(--text-primary);
 `;
 
 const BrandSub = styled.div`
   margin-top: 1px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 `;
 
 const CloseButtonMobile = styled.button`
@@ -142,12 +133,12 @@ const CloseButtonMobile = styled.button`
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  color: var(--muted);
+  color: var(--text-muted);
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
 
-  &:hover { color: var(--navy); background: var(--soft); }
+  &:hover { color: var(--text-primary); background: var(--bg-soft); }
 
   @media (max-width: 1024px) {
     display: inline-flex;
@@ -163,29 +154,28 @@ const Nav = styled.nav`
   padding: 12px;
   overflow-y: auto;
   
-  /* ✅ Scrollbar discrète sur PC */
   &::-webkit-scrollbar { width: 6px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  &::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  &::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 `;
 
 const NavItem = styled(NavLink)`
   display: flex; align-items: center; gap: 12px;
   padding: 10px 12px;
   font-size: 14px; font-weight: 500;
-  color: var(--text);
+  color: var(--text-secondary);
   text-decoration: none;
   border-radius: 10px;
   transition: background-color .15s ease, color .15s ease;
 
-  svg { flex-shrink: 0; color: #8fa2b6; transition: color .15s ease; }
+  svg { flex-shrink: 0; color: var(--text-muted); transition: color .15s ease; }
 
-  &:hover { background: var(--soft); color: var(--navy); svg { color: var(--navy); } }
+  &:hover { background: var(--bg-soft); color: var(--text-primary); svg { color: var(--text-primary); } }
 
   &.active {
-    color: var(--navy); font-weight: 600; background: #e6f0ff;
-    svg { color: var(--accent); }
+    color: #2f6fd6; font-weight: 600; background: var(--bg-soft);
+    svg { color: #2f6fd6; }
   }
 
   &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(47,111,214,.3); }
@@ -194,8 +184,8 @@ const NavItem = styled(NavLink)`
 const Footer = styled.div`
   padding: 14px 12px 16px;
   border-top: 1px solid var(--border);
-  background: var(--soft);
-  flex-shrink: 0; /* ✅ Le footer ne rétrécit pas */
+  background: var(--bg-soft);
+  flex-shrink: 0;
 `;
 
 const UserBox = styled.div`
@@ -208,9 +198,9 @@ const Avatar = styled.div`
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   font-size: 13px; font-weight: 700;
-  color: var(--navy);
-  background: #e6f0ff;
-  border: 1px solid #cfe0f7;
+  color: #2f6fd6;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 50%;
 `;
 
@@ -218,7 +208,7 @@ const UserText = styled.div`min-width: 0;`;
 
 const UserName = styled.div`
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-size: 13px; font-weight: 600; color: var(--ink);
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
 `;
 
 const Role = styled.span`
@@ -226,8 +216,8 @@ const Role = styled.span`
   padding: 1px 8px;
   font-size: 10px; font-weight: 600;
   letter-spacing: .04em; text-transform: uppercase;
-  color: ${({ $admin }) => ($admin ? '#b45309' : '#4b5d70')};
-  background: ${({ $admin }) => ($admin ? '#fff1e0' : '#eef2f6')};
+  color: ${({ $admin }) => ($admin ? '#b45309' : 'var(--text-secondary)')};
+  background: ${({ $admin }) => ($admin ? '#fff1e0' : 'var(--bg-surface)')};
   border-radius: 999px;
 `;
 
@@ -236,7 +226,7 @@ const LogoutButton = styled.button`
   display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 9px 12px;
   font-family: inherit; font-size: 13px; font-weight: 600;
-  color: var(--navy); background: #fff;
+  color: var(--text-primary); background: var(--bg-surface);
   border: 1px solid var(--border); border-radius: 10px;
   cursor: pointer;
   transition: background-color .15s ease, border-color .15s ease, color .15s ease;
