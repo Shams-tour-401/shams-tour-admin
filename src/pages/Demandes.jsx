@@ -1,26 +1,21 @@
 // src/pages/Demandes.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { demandesService } from '../services/demandes';
 
 export default function Demandes() {
   const [demandes, setDemandes] = useState([]);
-  const [demandesFiltrees, setDemandesFiltrees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erreur, setErreur] = useState('');
 
   // Filtres
   const [filtreStatut, setFiltreStatut] = useState('');
   const [recherche, setRecherche] = useState('');
+  const [filtreDate, setFiltreDate] = useState(''); 
 
   useEffect(() => {
     chargerDemandes();
   }, []);
-
-  // Appliquer les filtres à chaque changement
-  useEffect(() => {
-    appliquerFiltres();
-  }, [demandes, filtreStatut, recherche]);
 
   const chargerDemandes = async () => {
     try {
@@ -35,30 +30,37 @@ export default function Demandes() {
     }
   };
 
-  const appliquerFiltres = () => {
-    let resultats = [...demandes];
+  //  FILTRAGE INSTANTANÉ AVEC useMemo
+  const demandesFiltrees = useMemo(() => {
+    const terme = recherche.trim().toLowerCase();
 
-    // Filtre par statut
-    if (filtreStatut) {
-      resultats = resultats.filter(d => d.statut === filtreStatut);
-    }
+    return demandes.filter((d) => {
+      // 1. Filtre par statut
+      const matchStatut = filtreStatut === '' || d.statut === filtreStatut;
 
-    // Recherche par référence, nom ou téléphone
-    if (recherche.trim()) {
-      const terme = recherche.toLowerCase();
-      resultats = resultats.filter(d =>
-        d.reference.toLowerCase().includes(terme) ||
-        d.nom_client.toLowerCase().includes(terme) ||
-        d.telephone.includes(terme)
-      );
-    }
+      // 2. Recherche par référence, nom ou téléphone
+      const matchRecherche = 
+        terme === '' ||
+        (d.reference || '').toLowerCase().includes(terme) ||
+        (d.nom_client || '').toLowerCase().includes(terme) ||
+        (d.telephone || '').includes(terme);
 
-    setDemandesFiltrees(resultats);
-  };
+      // 3. Filtre par date de création ("Reçue le")
+      let matchDate = true;
+      if (filtreDate) {
+        // On compare la date de création (YYYY-MM-DD) avec la date choisie
+        const dateCreation = new Date(d.date_creation).toISOString().split('T')[0];
+        matchDate = dateCreation === filtreDate;
+      }
+
+      return matchStatut && matchRecherche && matchDate;
+    });
+  }, [demandes, filtreStatut, recherche, filtreDate]);
 
   const reinitialiserFiltres = () => {
     setFiltreStatut('');
     setRecherche('');
+    setFiltreDate('');
   };
 
   if (loading) {
@@ -96,9 +98,20 @@ export default function Demandes() {
             <option value="annulee">Annulée</option>
           </select>
 
-          <button onClick={reinitialiserFiltres} style={styles.btnReset}>
-            Réinitialiser
-          </button>
+          {/*  CHAMP DATE */}
+          <input
+            type="date"
+            value={filtreDate}
+            onChange={(e) => setFiltreDate(e.target.value)}
+            style={styles.dateInput}
+            title="Filtrer par date de réception"
+          />
+
+          {(recherche || filtreStatut || filtreDate) && (
+            <button onClick={reinitialiserFiltres} style={styles.btnReset}>
+              Réinitialiser
+            </button>
+          )}
         </div>
 
         <div style={styles.compteur}>
@@ -126,7 +139,7 @@ export default function Demandes() {
                 <th style={styles.th}>Voyageurs</th>
                 <th style={styles.th}>Statut</th>
                 <th style={styles.th}>Reçue le</th>
-                 <th style={styles.th}>Actions</th>
+                <th style={styles.th}>Actions</th>
                 <th style={styles.th}></th>
               </tr>
             </thead>
@@ -138,10 +151,10 @@ export default function Demandes() {
                       {d.reference}
                     </Link>
                     {d.a_doublon && (
-    <span style={styles.doublonBadge} title="Doublon possible détecté">
-      ⚠️ Doublon
-    </span>
-  )}
+                      <span style={styles.doublonBadge} title="Doublon possible détecté">
+                        ⚠️ Doublon
+                      </span>
+                    )}
                   </td>
                   <td style={styles.td}>{d.nom_client}</td>
                   <td style={styles.td}>{d.telephone}</td>
@@ -228,7 +241,8 @@ const styles = {
     display: 'flex',
     gap: '12px',
     flex: 1,
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    alignItems: 'center'
   },
   recherche: {
     flex: 1,
@@ -248,6 +262,16 @@ const styles = {
     backgroundColor: 'white',
     cursor: 'pointer'
   },
+  //  STYLE POUR LE CHAMP DATE
+  dateInput: {
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
+    outline: 'none',
+    backgroundColor: 'white',
+    cursor: 'pointer'
+  },
   btnReset: {
     padding: '8px 16px',
     backgroundColor: '#ECF0F1',
@@ -255,7 +279,8 @@ const styles = {
     border: 'none',
     borderRadius: '4px',
     fontSize: '13px',
-    fontWeight: '600'
+    fontWeight: '600',
+    cursor: 'pointer'
   },
   compteur: {
     fontSize: '13px',
@@ -308,15 +333,14 @@ const styles = {
     whiteSpace: 'nowrap'
   },
   doublonBadge: {
-  display: 'inline-block',
-  marginLeft: '8px',
-  padding: '2px 8px',
-  backgroundColor: '#F39C12',
-  color: 'white',
-  borderRadius: '10px',
-  fontSize: '10px',
-  fontWeight: '600',
-  cursor: 'help'
-},
-
+    display: 'inline-block',
+    marginLeft: '8px',
+    padding: '2px 8px',
+    backgroundColor: '#F39C12',
+    color: 'white',
+    borderRadius: '10px',
+    fontSize: '10px',
+    fontWeight: '600',
+    cursor: 'help'
+  }
 };
