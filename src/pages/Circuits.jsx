@@ -1,5 +1,5 @@
 // src/pages/Circuits.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react'; // ✅ Ajout de useMemo
 import { circuitsService } from '../services/circuits';
 import { activitesService } from '../services/activites';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,13 @@ export default function Circuits() {
   const [circuitSelectionne, setCircuitSelectionne] = useState(null);
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
+
+  // ✅ NOUVEAUX ÉTATS POUR LA RECHERCHE ET LES FILTRES
+  const [recherche, setRecherche] = useState('');
+  const [filtreDuree, setFiltreDuree] = useState('');
+  const [filtreRythme, setFiltreRythme] = useState('');
+  const [filtreEtiquette, setFiltreEtiquette] = useState('');
+  const [filtreStatut, setFiltreStatut] = useState('');
 
   useEffect(() => {
     chargerCircuits();
@@ -94,6 +101,42 @@ export default function Circuits() {
     }
   };
 
+  // ✅ LOGIQUE DE FILTRAGE INSTANTANÉ
+  const circuitsFiltres = useMemo(() => {
+    const terme = recherche.trim().toLowerCase();
+
+    return circuits.filter((c) => {
+      // 1. Recherche par nom
+      const matchRecherche = terme === '' || (c.nom || '').toLowerCase().includes(terme);
+
+      // 2. Filtre par durée
+      let matchDuree = true;
+      if (filtreDuree === 'court') matchDuree = c.duree_jours <= 2;
+      else if (filtreDuree === 'moyen') matchDuree = c.duree_jours >= 3 && c.duree_jours <= 4;
+      else if (filtreDuree === 'long') matchDuree = c.duree_jours >= 5;
+
+      // 3. Filtre par rythme
+      const matchRythme = filtreRythme === '' || c.rythme === filtreRythme;
+
+      // 4. Filtre par étiquette (recherche dans la chaîne d'étiquettes)
+      const matchEtiquette = filtreEtiquette === '' || 
+        (c.etiquettes || '').toLowerCase().includes(filtreEtiquette.toLowerCase());
+
+      // 5. Filtre par statut
+      const matchStatut = filtreStatut === '' || c.statut === filtreStatut;
+
+      return matchRecherche && matchDuree && matchRythme && matchEtiquette && matchStatut;
+    });
+  }, [circuits, recherche, filtreDuree, filtreRythme, filtreEtiquette, filtreStatut]);
+
+  const reinitialiserFiltres = () => {
+    setRecherche('');
+    setFiltreDuree('');
+    setFiltreRythme('');
+    setFiltreEtiquette('');
+    setFiltreStatut('');
+  };
+
   if (loading) return <div style={styles.loading}>Chargement...</div>;
   if (erreur) return <div style={styles.erreur}>{erreur}</div>;
 
@@ -101,7 +144,10 @@ export default function Circuits() {
     <div>
       <div style={styles.barreActions}>
         <div>
-          <h2 style={styles.titre}>Circuits ({circuits.length})</h2>
+          <h2 style={styles.titre}>
+            Circuits ({circuitsFiltres.length}
+            {circuitsFiltres.length !== circuits.length && ` / ${circuits.length}`})
+          </h2>
           <p style={styles.sousTitre}>
             {estAdmin ? 'Gestion des circuits touristiques' : 'Consultation des circuits (lecture seule)'}
           </p>
@@ -113,9 +159,57 @@ export default function Circuits() {
         )}
       </div>
 
+      {/* ✅ BARRE DE RECHERCHE ET FILTRES */}
+      <div style={styles.barreFiltres}>
+        <input
+          type="text"
+          placeholder="🔍 Rechercher par nom..."
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          style={styles.recherche}
+        />
+
+        <select value={filtreDuree} onChange={(e) => setFiltreDuree(e.target.value)} style={styles.select}>
+          <option value="">Toutes les durées</option>
+          <option value="court">Court (1-2 jours)</option>
+          <option value="moyen">Moyen (3-4 jours)</option>
+          <option value="long">Long (5 jours et +)</option>
+        </select>
+
+        <select value={filtreRythme} onChange={(e) => setFiltreRythme(e.target.value)} style={styles.select}>
+          <option value="">Tous les rythmes</option>
+          <option value="detente">Détente</option>
+          <option value="equilibre">Équilibré</option>
+          <option value="intense">Intense</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="Étiquette (ex: nature)"
+          value={filtreEtiquette}
+          onChange={(e) => setFiltreEtiquette(e.target.value)}
+          style={styles.inputEtiquette}
+        />
+
+        <select value={filtreStatut} onChange={(e) => setFiltreStatut(e.target.value)} style={styles.select}>
+          <option value="">Tous les statuts</option>
+          <option value="brouillon">Brouillon</option>
+          <option value="publie">Publié</option>
+          <option value="a_reviser">À réviser</option>
+        </select>
+
+        {(recherche || filtreDuree || filtreRythme || filtreEtiquette || filtreStatut) && (
+          <button onClick={reinitialiserFiltres} style={styles.btnReset}>
+            Réinitialiser
+          </button>
+        )}
+      </div>
+
       <div style={styles.tableContainer}>
-        {circuits.length === 0 ? (
-          <div style={styles.aucune}>Aucun circuit</div>
+        {circuitsFiltres.length === 0 ? (
+          <div style={styles.aucune}>
+            {circuits.length === 0 ? 'Aucun circuit' : 'Aucun circuit ne correspond à votre recherche'}
+          </div>
         ) : (
           <table style={styles.table}>
             <thead>
@@ -129,7 +223,7 @@ export default function Circuits() {
               </tr>
             </thead>
             <tbody>
-              {circuits.map((c) => (
+              {circuitsFiltres.map((c) => (
                 <tr key={c.id} style={styles.tr}>
                   <td style={styles.td}>
                     <strong>{c.nom}</strong>
@@ -535,6 +629,53 @@ const styles = {
   },
   titre: { fontSize: '20px', color: '#2C3E50' },
   sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
+  // ✅ NOUVEAUX STYLES POUR LA BARRE DE FILTRES
+  barreFiltres: {
+    backgroundColor: 'white',
+    padding: '16px 20px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+  },
+  recherche: {
+    flex: 1,
+    minWidth: '250px',
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
+    outline: 'none'
+  },
+  select: {
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '13px',
+    backgroundColor: 'white',
+    cursor: 'pointer'
+  },
+  inputEtiquette: {
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '13px',
+    outline: 'none',
+    minWidth: '150px'
+  },
+  btnReset: {
+    padding: '8px 16px',
+    backgroundColor: '#ECF0F1',
+    color: '#2C3E50',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer'
+  },
   btnPrimaire: {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px',
