@@ -326,6 +326,9 @@ function StatutBadge({ statut }) {
 
 /* ---------------------- Styles ---------------------- */
 
+/* ---------------------- Styles ---------------------- */
+
+// ✅ CES 3 BLOCS ÉTAIENT MANQUANTS
 const TONES = {
   neutral: { fg: '#4b5d70', bg: '#eef2f6' },
   blue: { fg: '#1d5fbf', bg: '#e6f0ff' },
@@ -338,9 +341,11 @@ const TONES = {
 
 const toneFg = ({ $tone }) => (TONES[$tone] || TONES.neutral).fg;
 const toneBg = ({ $tone }) => (TONES[$tone] || TONES.neutral).bg;
+
 const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
+
 const Page = styled.div`
   width: 100%;
   max-width: 100%;
