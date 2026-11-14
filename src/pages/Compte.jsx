@@ -1,7 +1,7 @@
 // src/pages/Compte.jsx
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { utilisateursService } from '../services/utilisateurs'; // ✅ Import du service
+import { utilisateursService } from '../services/utilisateurs'; 
 import styled from 'styled-components';
 
 export default function Compte() {
