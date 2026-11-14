@@ -21,9 +21,7 @@ import { demandesService } from '../services/demandes';
 import { alertesService } from '../services/alertes';
 
 
-const spin = keyframes`
-  to { transform: rotate(360deg); }
-`;
+
 
 const ALERTES_VIDES = {
   total: 0,
@@ -327,7 +325,11 @@ function StatutBadge({ statut }) {
 }
 
 /* ---------------------- Styles ---------------------- */
-/* ✅ PAGE NETTOYÉE */
+
+
+const spin = keyframes`
+  to { transform: rotate(360deg); }
+`;
 const Page = styled.div`
   width: 100%;
   max-width: 100%;
