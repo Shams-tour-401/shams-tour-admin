@@ -215,9 +215,8 @@ function StatutBadge({ statut }) {
     </span>
   );
 }
-
 const styles = {
-  loading: { padding: '40px', textAlign: 'center', color: '#7f8c8d' },
+  loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: {
     padding: '20px',
     backgroundColor: '#FADBD8',
@@ -226,11 +225,11 @@ const styles = {
     textAlign: 'center'
   },
   filtresBar: {
-    backgroundColor: 'white',
+    backgroundColor: 'var(--bg-surface)',
     padding: '16px 20px',
     borderRadius: '8px',
     marginBottom: '16px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+    boxShadow: '0 2px 4px var(--shadow)',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -248,35 +247,39 @@ const styles = {
     flex: 1,
     minWidth: '200px',
     padding: '8px 12px',
-    border: '1px solid #ddd',
+    border: '1px solid var(--border)',
     borderRadius: '4px',
     fontSize: '14px',
-    outline: 'none'
+    outline: 'none',
+    backgroundColor: 'var(--bg-surface)',
+    color: 'var(--text-primary)'
   },
   select: {
     padding: '8px 12px',
-    border: '1px solid #ddd',
+    border: '1px solid var(--border)',
     borderRadius: '4px',
     fontSize: '14px',
     outline: 'none',
-    backgroundColor: 'white',
+    backgroundColor: 'var(--bg-surface)',
+    color: 'var(--text-primary)',
     cursor: 'pointer'
   },
-  //  STYLE POUR LE CHAMP DATE
+  // ✅ STYLE POUR LE CHAMP DATE
   dateInput: {
     padding: '8px 12px',
-    border: '1px solid #ddd',
+    border: '1px solid var(--border)',
     borderRadius: '4px',
     fontSize: '14px',
     outline: 'none',
-    backgroundColor: 'white',
+    backgroundColor: 'var(--bg-surface)',
+    color: 'var(--text-primary)',
     cursor: 'pointer'
   },
   btnReset: {
     padding: '8px 16px',
-    backgroundColor: '#ECF0F1',
-    color: '#2C3E50',
-    border: 'none',
+    backgroundColor: 'var(--bg-soft)',
+    color: 'var(--text-primary)',
+    border: '1px solid var(--border)',
     borderRadius: '4px',
     fontSize: '13px',
     fontWeight: '600',
@@ -284,38 +287,38 @@ const styles = {
   },
   compteur: {
     fontSize: '13px',
-    color: '#7f8c8d',
+    color: 'var(--text-muted)',
     fontWeight: '600'
   },
   tableContainer: {
-    backgroundColor: 'white',
+    backgroundColor: 'var(--bg-surface)',
     borderRadius: '8px',
     overflow: 'hidden',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    boxShadow: '0 2px 4px var(--shadow)'
   },
   aucune: {
     padding: '60px 20px',
     textAlign: 'center',
-    color: '#95A5A6',
+    color: 'var(--text-muted)',
     fontSize: '16px'
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  thead: { backgroundColor: '#f8f9fa' },
+  thead: { backgroundColor: 'var(--bg-soft)' },
   th: {
     padding: '12px',
     textAlign: 'left',
     fontSize: '12px',
-    color: '#7f8c8d',
+    color: 'var(--text-muted)',
     fontWeight: '600',
     textTransform: 'uppercase',
-    borderBottom: '2px solid #ecf0f1'
+    borderBottom: '2px solid var(--border)'
   },
   tr: {
-    borderBottom: '1px solid #ecf0f1',
+    borderBottom: '1px solid var(--border)',
     transition: 'background-color 0.15s'
   },
-  td: { padding: '12px', fontSize: '13px', color: '#2C3E50' },
-  small: { fontSize: '11px', color: '#95A5A6' },
+  td: { padding: '12px', fontSize: '13px', color: 'var(--text-secondary)' },
+  small: { fontSize: '11px', color: 'var(--text-muted)' },
   refLink: { color: '#C0392B', fontWeight: '600', fontSize: '13px' },
   btnVoir: {
     color: '#C0392B',
