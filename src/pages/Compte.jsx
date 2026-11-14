@@ -98,19 +98,18 @@ export default function Compte() {
   );
 }
 
-/* STYLES (inchangés) */
 const Page = styled.div` width: 100%; max-width: 100%; `;
 const PageHeader = styled.div` margin-bottom: 24px; `;
-const Title = styled.h1` margin: 0; font-size: 24px; color: #1f4e79; `;
-const Sub = styled.p` margin: 4px 0 0; font-size: 14px; color: #6b7c8f; `;
+const Title = styled.h1` margin: 0; font-size: 24px; color: var(--text-primary); `;
+const Sub = styled.p` margin: 4px 0 0; font-size: 14px; color: var(--text-muted); `;
 const Grid = styled.div` display: grid; grid-template-columns: 1fr; gap: 24px; @media (min-width: 1024px) { grid-template-columns: 1fr 1fr; } `;
-const Card = styled.div` background: white; border-radius: 12px; border: 1px solid #dbe5f0; overflow: hidden; `;
-const CardHeader = styled.div` padding: 16px 20px; border-bottom: 1px solid #dbe5f0; background: #f8fafc; h3 { margin: 0; font-size: 16px; color: #1f4e79; } `;
+const Card = styled.div` background: var(--bg-surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; `;
+const CardHeader = styled.div` padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg-soft); h3 { margin: 0; font-size: 16px; color: var(--text-primary); } `;
 const CardBody = styled.div` padding: 20px; `;
-const Row = styled.div` display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; &:last-child { border-bottom: none; } `;
-const Label = styled.span` font-size: 13px; color: #6b7c8f; font-weight: 500; `;
-const Valeur = styled.span` font-size: 13px; color: #1b2a3a; font-weight: 600; `;
+const Row = styled.div` display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); &:last-child { border-bottom: none; } `;
+const Label = styled.span` font-size: 13px; color: var(--text-muted); font-weight: 500; `;
+const Valeur = styled.span` font-size: 13px; color: var(--text-primary); font-weight: 600; `;
 const Field = styled.div` display: flex; flex-direction: column; margin-bottom: 16px; `;
-const Input = styled.input` padding: 10px 12px; border: 1px solid #dbe5f0; border-radius: 8px; font-size: 14px; outline: none; &:focus { border-color: #2f6fd6; } `;
+const Input = styled.input` padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background-color: var(--bg-surface); color: var(--text-primary); &:focus { border-color: #2f6fd6; } `;
 const BtnPrimaire = styled.button` width: 100%; padding: 12px; background: #1f4e79; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; &:hover { background: #163a5a; } &:disabled { background: #7f8c8d; cursor: not-allowed; } `;
 const Alert = styled.div` padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; ${({ $type }) => $type === 'error' ? `background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;` : `background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;`} `;
