@@ -805,64 +805,20 @@ function ModalAccord({ proposition, onSave, onClose }) {
 /* ------------------------------------------------------------------ */
 /* Styles                                                             */
 /* ------------------------------------------------------------------ */
-
-const TONES = {
-  neutral: { fg: '#4b5d70', bg: '#eef2f6' },
-  blue: { fg: '#1d5fbf', bg: '#e6f0ff' },
-  green: { fg: '#0f7a3d', bg: '#e3f8ea' },
-  amber: { fg: '#b45309', bg: '#fff1e0' },
-  yellow: { fg: '#a16207', bg: '#fef7d6' },
-  red: { fg: '#c0182b', bg: '#ffe8ea' },
-  violet: { fg: '#7a1fc4', bg: '#f3e8ff' }
-};
-
-const toneFg = ({ $tone }) => (TONES[$tone] || TONES.neutral).fg;
-const toneBg = ({ $tone }) => (TONES[$tone] || TONES.neutral).bg;
-
-const BTN_VARIANTS = {
-  primary: { bg: '#2f6fd6', hover: '#2760bf', fg: '#fff', border: 'transparent' },
-  success: { bg: '#16a34a', hover: '#15803d', fg: '#fff', border: 'transparent' },
-  danger: { bg: '#fff', hover: '#fef3f2', fg: '#b42318', border: '#fecdca' },
-  warning: { bg: '#fff', hover: '#fff6ed', fg: '#b45309', border: '#fed7aa' },
-  violet: { bg: '#7c3aed', hover: '#6d28d9', fg: '#fff', border: 'transparent' },
-  outline: { bg: '#fff', hover: '#f4f8fc', fg: '#1f4e79', border: '#dbe5f0' },
-  ghost: { bg: '#eef2f6', hover: '#e2e9f1', fg: '#1f4e79', border: 'transparent' }
-};
-
-const variant = ({ $variant }) => BTN_VARIANTS[$variant || 'primary'];
-
 const Page = styled.div`
-  --navy: #1f4e79;
-  --accent: #2f6fd6;
-  --accent-hover: #2760bf;
-  --ink: #1b2a3a;
-  --text: #3d4f63;
-  --muted: #6b7c8f;
-  --border: #dbe5f0;
-  --surface: #ffffff;
-  --soft: #f4f8fc;
-
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
-  color: var(--text);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 
-  &,
-  & *,
-  & *::before,
-  & *::after {
-    box-sizing: border-box;
-  }
-
-  a {
-    text-decoration: none;
-  }
+  &, & *, & *::before, & *::after { box-sizing: border-box; }
+  a { text-decoration: none; }
 `;
 
 const Loading = styled.div`
   padding: 64px 16px;
   text-align: center;
   font-size: 14px;
-  color: var(--muted);
+  color: var(--text-muted);
 `;
 
 const ErreurBox = styled.div`
@@ -875,7 +831,6 @@ const ErreurBox = styled.div`
   border-radius: 12px;
 `;
 
-/* ---------- En-tête ---------- */
 const Header = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -884,7 +839,7 @@ const Header = styled.div`
   gap: 12px;
   padding: 18px 20px;
   margin-bottom: 16px;
-  background: var(--surface);
+  background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 12px;
 
@@ -899,11 +854,11 @@ const Retour = styled(Link)`
   gap: 6px;
   margin-bottom: 8px;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
   transition: color 0.15s ease;
 
   &:hover {
-    color: var(--accent);
+    color: #2f6fd6;
   }
 `;
 
@@ -912,7 +867,7 @@ const Reference = styled.h1`
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--navy);
+  color: var(--text-primary);
 `;
 
 const ClientLine = styled.p`
@@ -921,7 +876,7 @@ const ClientLine = styled.p`
   gap: 4px 18px;
   margin: 0;
   font-size: 14px;
-  color: var(--muted);
+  color: var(--text-muted);
 
   span {
     display: inline-flex;
@@ -940,7 +895,6 @@ const Badge = styled.span`
   border-radius: 999px;
 `;
 
-/* ---------- Grille ---------- */
 const Grid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -960,7 +914,7 @@ const Colonne = styled.div`
 
 const CardBox = styled.section`
   padding: 18px 20px;
-  background: var(--surface);
+  background: var(--bg-surface);
   border: 1px solid ${({ $warning }) => ($warning ? '#fed7aa' : 'var(--border)')};
   border-radius: 12px;
 `;
@@ -972,17 +926,16 @@ const CardTitre = styled.h3`
   margin: 0 0 14px;
   font-size: 16px;
   font-weight: 600;
-  color: ${({ $warning }) => ($warning ? '#b45309' : 'var(--navy)')};
+  color: ${({ $warning }) => ($warning ? '#b45309' : 'var(--text-primary)')};
 `;
 
-/* ---------- Informations ---------- */
 const InfoRow = styled.div`
   display: flex;
   justify-content: space-between;
   gap: 16px;
   padding: 9px 0;
   font-size: 14px;
-  border-bottom: 1px solid #edf2f8;
+  border-bottom: 1px solid var(--border);
 
   &:last-child {
     border-bottom: none;
@@ -991,14 +944,14 @@ const InfoRow = styled.div`
 
 const InfoLabel = styled.span`
   flex-shrink: 0;
-  color: var(--muted);
+  color: var(--text-muted);
 `;
 
 const InfoValeur = styled.span`
   min-width: 0;
   text-align: right;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--text-primary);
   word-break: break-word;
 `;
 
@@ -1006,14 +959,14 @@ const Commentaire = styled.p`
   margin: 0;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--ink);
+  color: var(--text-primary);
 `;
 
 const Vide = styled.p`
   margin: 0;
   font-size: 13px;
   font-style: italic;
-  color: #9db0c4;
+  color: var(--text-muted);
 `;
 
 const AlerteDoublon = styled.p`
@@ -1027,42 +980,41 @@ const DoublonItem = styled.div`
   padding: 8px 12px;
   margin-bottom: 6px;
   font-size: 13px;
-  color: var(--text);
-  background: #fff6ed;
+  color: var(--text-secondary);
+  background: var(--bg-soft);
   border-radius: 8px;
 `;
 
 const DoublonLink = styled(Link)`
   font-weight: 600;
-  color: var(--navy);
+  color: var(--text-primary);
 
   &:hover {
-    color: var(--accent);
+    color: #2f6fd6;
   }
 `;
 
-/* ---------- Notes / historique ---------- */
 const NoteForm = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding-bottom: 16px;
   margin-bottom: 16px;
-  border-bottom: 1px solid #edf2f8;
+  border-bottom: 1px solid var(--border);
 `;
 
 const LogItem = styled.div`
   padding: 10px 12px;
   margin-bottom: 8px;
-  background: var(--soft);
-  border: 1px solid #edf2f8;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
   border-radius: 10px;
 
   p {
     margin: 0;
     font-size: 14px;
     line-height: 1.5;
-    color: var(--ink);
+    color: var(--text-primary);
     word-break: break-word;
   }
 `;
@@ -1074,20 +1026,19 @@ const LogHeader = styled.div`
   gap: 4px 12px;
   margin-bottom: 4px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 
   strong {
-    color: var(--navy);
+    color: var(--text-primary);
   }
 `;
 
-/* ---------- Formulaires ---------- */
 const Label = styled.label`
   display: block;
   margin-bottom: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--text-primary);
 `;
 
 const controlStyles = `
@@ -1095,9 +1046,9 @@ const controlStyles = `
   padding: 10px 12px;
   font-family: inherit;
   font-size: 16px;
-  color: #1b2a3a;
-  background: #fff;
-  border: 1px solid #dbe5f0;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -1121,21 +1072,10 @@ const controlStyles = `
   }
 `;
 
-const Input = styled.input`
-  ${controlStyles}
-`;
+const Input = styled.input` ${controlStyles} `;
+const Select = styled.select` ${controlStyles} cursor: pointer; `;
+const Textarea = styled.textarea` ${controlStyles} resize: vertical; `;
 
-const Select = styled.select`
-  ${controlStyles}
-  cursor: pointer;
-`;
-
-const Textarea = styled.textarea`
-  ${controlStyles}
-  resize: vertical;
-`;
-
-/* ---------- Boutons ---------- */
 const Btn = styled.button`
   display: inline-flex;
   align-items: center;
@@ -1172,7 +1112,6 @@ const Btn = styled.button`
   }
 `;
 
-/* ---------- Actions ---------- */
 const ActionsRapides = styled.div`
   display: flex;
   flex-direction: column;
@@ -1185,8 +1124,8 @@ const CompteurAppels = styled.div`
   gap: 12px;
   padding: 12px;
   margin: 14px 0 12px;
-  background: var(--soft);
-  border: 1px solid #edf2f8;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
   border-radius: 10px;
 `;
 
@@ -1196,17 +1135,16 @@ const CompteurItem = styled.div`
   flex-direction: column;
   align-items: center;
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
 
   strong {
     font-size: 20px;
     line-height: 1.2;
-    color: var(--navy);
+    color: var(--text-primary);
     font-variant-numeric: tabular-nums;
   }
 `;
 
-/* ---------- Propositions ---------- */
 const CreerWrap = styled.div`
   margin-bottom: 12px;
 `;
@@ -1214,7 +1152,7 @@ const CreerWrap = styled.div`
 const PropositionCard = styled.div`
   padding: 14px;
   margin-bottom: 10px;
-  background: var(--soft);
+  background: var(--bg-soft);
   border: 1px solid var(--border);
   border-radius: 12px;
 `;
@@ -1225,20 +1163,20 @@ const PropositionHeader = styled.div`
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 4px;
-  color: var(--ink);
+  color: var(--text-primary);
 `;
 
 const PropositionTotal = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: var(--navy);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 `;
 
 const PropositionMeta = styled.div`
   margin-bottom: 8px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 `;
 
 const PropositionEcarts = styled.div`
@@ -1282,7 +1220,7 @@ const Details = styled.details`
     padding: 4px 0;
     font-size: 13px;
     font-weight: 500;
-    color: var(--accent);
+    color: #2f6fd6;
     cursor: pointer;
   }
 `;
@@ -1299,7 +1237,7 @@ const ElementItem = styled.li`
   gap: 8px;
   padding: 6px 0;
   font-size: 13px;
-  border-bottom: 1px solid #e3ebf4;
+  border-bottom: 1px solid var(--border);
 
   &:last-child {
     border-bottom: none;
@@ -1309,23 +1247,22 @@ const ElementItem = styled.li`
 const ElementJour = styled.span`
   min-width: 30px;
   font-weight: 700;
-  color: var(--accent);
+  color: #2f6fd6;
 `;
 
 const ElementLibelle = styled.span`
   flex: 1;
   min-width: 0;
-  color: var(--ink);
+  color: var(--text-primary);
 `;
 
 const ElementPrix = styled.span`
   flex-shrink: 0;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 `;
 
-/* ---------- Modales ---------- */
 const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
@@ -1344,7 +1281,7 @@ const ModalBox = styled.div`
   max-height: 90vh;
   max-height: 90dvh;
   overflow-y: auto;
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 16px;
   box-shadow: 0 24px 60px rgba(31, 78, 121, 0.25);
 `;
@@ -1358,7 +1295,7 @@ const ModalHeader = styled.div`
   justify-content: space-between;
   gap: 12px;
   padding: 16px 20px;
-  background: #fff;
+  background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
 
   @media (min-width: 640px) {
@@ -1373,7 +1310,7 @@ const ModalTitre = styled.h3`
   margin: 0;
   font-size: 17px;
   font-weight: 600;
-  color: var(--navy);
+  color: var(--text-primary);
 `;
 
 const BtnFermer = styled.button`
@@ -1382,7 +1319,7 @@ const BtnFermer = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
-  color: var(--muted);
+  color: var(--text-muted);
   background: transparent;
   border: none;
   border-radius: 8px;
@@ -1390,8 +1327,8 @@ const BtnFermer = styled.button`
   transition: background-color 0.15s ease, color 0.15s ease;
 
   &:hover {
-    color: var(--navy);
-    background: #eef3f9;
+    color: var(--text-primary);
+    background: var(--bg-soft);
   }
 `;
 
@@ -1414,7 +1351,7 @@ const Hint = styled.p`
   margin: 0 0 16px;
   font-size: 13px;
   font-style: italic;
-  color: var(--muted);
+  color: var(--text-muted);
 `;
 
 const ModalFooter = styled.div`
@@ -1428,8 +1365,8 @@ const ModalFooter = styled.div`
 const ElementForm = styled.div`
   padding: 12px;
   margin-bottom: 10px;
-  background: var(--soft);
-  border: 1px solid #edf2f8;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
   border-radius: 12px;
 `;
 
@@ -1443,7 +1380,6 @@ const ElementFormGrid = styled.div`
     margin-bottom: 0;
   }
 
-  /* Mobile : Jour + Prix | Libellé pleine largeur */
   & > div:nth-child(2) {
     grid-column: 1 / -1;
     order: -1;
@@ -1473,7 +1409,7 @@ const BtnSuppr = styled.button`
   justify-content: center;
   height: 40px;
   color: #b42318;
-  background: #fff;
+  background: var(--bg-surface);
   border: 1px solid #fecdca;
   border-radius: 10px;
   cursor: pointer;
@@ -1500,13 +1436,13 @@ const TotalProposition = styled.div`
   padding: 12px 14px;
   margin-bottom: 16px;
   font-size: 14px;
-  color: var(--text);
-  background: #e6f0ff;
+  color: var(--text-secondary);
+  background: var(--bg-soft);
   border-radius: 10px;
 
   strong {
     font-size: 16px;
-    color: var(--navy);
+    color: var(--text-primary);
     font-variant-numeric: tabular-nums;
   }
 `;
