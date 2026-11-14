@@ -102,3 +102,40 @@ html, body, #root {
   }
   /* ❌ PLUS DE margin-left: 250px ICI, C'EST LE FLEXBOX QUI GÈRE */
 }
+
+
+
+/* =========================================
+   THÈME CLAIR (par défaut)
+   ========================================= */
+:root, body[data-theme="clair"] {
+  --bg-body: #f5f8fb;
+  --bg-surface: #ffffff;
+  --bg-soft: #f4f8fc;
+  --text-primary: #1b2a3a;
+  --text-secondary: #3d4f63;
+  --text-muted: #6b7c8f;
+  --border: #dbe5f0;
+  --shadow: rgba(0, 0, 0, 0.05);
+}
+
+/* =========================================
+   THÈME SOMBRE
+   ========================================= */
+body[data-theme="sombre"] {
+  --bg-body: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-soft: #273449;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Application globale */
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
