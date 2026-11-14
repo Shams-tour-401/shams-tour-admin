@@ -34,19 +34,6 @@ export default function Utilisateurs() {
     }
   };
 
-
-   // ✅ NOUVELLE MÉTHODE
-  async changerMotDePasse(ancien_mot_de_passe, nouveau_mot_de_passe) {
-    // ⚠️ On utilise "api" (qui contient déjà le token via un intercepteur) 
-    // au lieu de "axios" brut. C'est ça qui causait le 500.
-    const response = await api.put('/utilisateurs/mot-de-passe', {
-      ancien_mot_de_passe,
-      nouveau_mot_de_passe
-    });
-    return response.data;
-  }
-};
-
   const toggleStatut = async (user) => {
     const nouveauStatut = user.statut === 'actif' ? 'inactif' : 'actif';
     if (!confirm(`Passer ${user.nom_complet} en ${nouveauStatut} ?`)) return;
@@ -199,7 +186,6 @@ export default function Utilisateurs() {
               <div style={styles.field}>
                 <label style={styles.label}>Rôle</label>
                 <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} style={styles.input}>
-                  {/* 🆕 Ajout de l'option client */}
                   <option value="client">Client</option>
                   <option value="conseiller">Conseiller</option>
                   <option value="administrateur">Administrateur</option>
