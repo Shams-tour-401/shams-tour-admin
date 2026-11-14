@@ -325,7 +325,7 @@ function StatutBadge({ statut }) {
 }
 
 /* ---------------------- Styles ---------------------- */
-/* ---------------------- Styles ---------------------- */
+
 
 const TONES = {
   neutral: { fg: '#4b5d70', bg: '#eef2f6' },
