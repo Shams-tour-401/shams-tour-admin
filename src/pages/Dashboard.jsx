@@ -326,7 +326,18 @@ function StatutBadge({ statut }) {
 
 /* ---------------------- Styles ---------------------- */
 
+const TONES = {
+  neutral: { fg: '#4b5d70', bg: '#eef2f6' },
+  blue: { fg: '#1d5fbf', bg: '#e6f0ff' },
+  green: { fg: '#0f7a3d', bg: '#e3f8ea' },
+  amber: { fg: '#b45309', bg: '#fff1e0' },
+  yellow: { fg: '#a16207', bg: '#fef7d6' },
+  red: { fg: '#c0182b', bg: '#ffe8ea' },
+  violet: { fg: '#7a1fc4', bg: '#f3e8ff' }
+};
 
+const toneFg = ({ $tone }) => (TONES[$tone] || TONES.neutral).fg;
+const toneBg = ({ $tone }) => (TONES[$tone] || TONES.neutral).bg;
 const spin = keyframes`
   to { transform: rotate(360deg); }
 `;
