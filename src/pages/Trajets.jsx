@@ -1,5 +1,5 @@
 // src/pages/Trajets.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { trajetsService } from '../services/trajets';
 import { lieuxService } from '../services/lieux';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +12,10 @@ export default function Trajets() {
   const [enEdition, setEnEdition] = useState(null);
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
+  const [rechercheDepart, setRechercheDepart] = useState('');
+  const [rechercheArrivee, setRechercheArrivee] = useState('');
+  const [filtreDuree, setFiltreDuree] = useState('');
+  const [filtreType, setFiltreType] = useState('');
 
   useEffect(() => {
     charger();
@@ -31,6 +35,38 @@ export default function Trajets() {
     } finally {
       setLoading(false);
     }
+  };
+
+  //  LOGIQUE DE FILTRAGE
+  const trajetsFiltres = useMemo(() => {
+    const termeDepart = rechercheDepart.trim().toLowerCase();
+    const termeArrivee = rechercheArrivee.trim().toLowerCase();
+
+    return trajets.filter((t) => {
+      // 1. Recherche par lieu de départ
+      const matchDepart = termeDepart === '' || (t.lieu_depart_nom || '').toLowerCase().includes(termeDepart);
+
+      // 2. Recherche par lieu d'arrivée
+      const matchArrivee = termeArrivee === '' || (t.lieu_arrivee_nom || '').toLowerCase().includes(termeArrivee);
+
+      // 3. Filtre par durée
+      let matchDuree = true;
+      if (filtreDuree === 'court') matchDuree = t.duree_min < 60;
+      else if (filtreDuree === 'moyen') matchDuree = t.duree_min >= 60 && t.duree_min <= 180;
+      else if (filtreDuree === 'long') matchDuree = t.duree_min > 180;
+
+      // 4. Filtre par type de véhicule
+      const matchType = filtreType === '' || (t.type_vehicule || '').toLowerCase().includes(filtreType.toLowerCase());
+
+      return matchDepart && matchArrivee && matchDuree && matchType;
+    });
+  }, [trajets, rechercheDepart, rechercheArrivee, filtreDuree, filtreType]);
+
+  const reinitialiserFiltres = () => {
+    setRechercheDepart('');
+    setRechercheArrivee('');
+    setFiltreDuree('');
+    setFiltreType('');
   };
 
   const sauvegarder = async (form) => {
@@ -64,7 +100,10 @@ export default function Trajets() {
     <div>
       <div style={styles.barreActions}>
         <div>
-          <h2 style={styles.titre}>Trajets ({trajets.length})</h2>
+          <h2 style={styles.titre}>
+            Trajets ({trajetsFiltres.length}
+            {trajetsFiltres.length !== trajets.length && ` / ${trajets.length}`})
+          </h2>
           <p style={styles.sousTitre}>
             {estAdmin ? 'Durées de trajet entre les lieux' : 'Consultation des trajets (lecture seule)'}
           </p>
@@ -79,9 +118,50 @@ export default function Trajets() {
         )}
       </div>
 
+      {/*  BARRE DE RECHERCHE ET FILTRES */}
+      <div style={styles.barreFiltres}>
+        <input
+          type="text"
+          placeholder="📍 Départ..."
+          value={rechercheDepart}
+          onChange={(e) => setRechercheDepart(e.target.value)}
+          style={styles.recherche}
+        />
+        <input
+          type="text"
+          placeholder="🎯 Arrivée..."
+          value={rechercheArrivee}
+          onChange={(e) => setRechercheArrivee(e.target.value)}
+          style={styles.recherche}
+        />
+
+        <select value={filtreDuree} onChange={(e) => setFiltreDuree(e.target.value)} style={styles.select}>
+          <option value="">Toutes les durées</option>
+          <option value="court">Moins d'1 heure</option>
+          <option value="moyen">1h à 3h</option>
+          <option value="long">Plus de 3h</option>
+        </select>
+
+        <input
+          type="text"
+          placeholder="Type véhicule (ex: 4x4)"
+          value={filtreType}
+          onChange={(e) => setFiltreType(e.target.value)}
+          style={styles.inputType}
+        />
+
+        {(rechercheDepart || rechercheArrivee || filtreDuree || filtreType) && (
+          <button onClick={reinitialiserFiltres} style={styles.btnReset}>
+            Réinitialiser
+          </button>
+        )}
+      </div>
+
       <div style={styles.tableContainer}>
-        {trajets.length === 0 ? (
-          <div style={styles.aucune}>Aucun trajet</div>
+        {trajetsFiltres.length === 0 ? (
+          <div style={styles.aucune}>
+            {trajets.length === 0 ? 'Aucun trajet' : 'Aucun trajet ne correspond à votre recherche'}
+          </div>
         ) : (
           <table style={styles.table}>
             <thead>
@@ -94,39 +174,19 @@ export default function Trajets() {
               </tr>
             </thead>
             <tbody>
-              {trajets.map((t) => (
+              {trajetsFiltres.map((t) => (
                 <tr key={t.id} style={styles.tr}>
+                  <td style={styles.td}><strong>📍 {t.lieu_depart_nom}</strong></td>
+                  <td style={styles.td}><strong>🎯 {t.lieu_arrivee_nom}</strong></td>
                   <td style={styles.td}>
-                    <strong>📍 {t.lieu_depart_nom}</strong>
+                    <span style={styles.dureeBadge}>{formatDuree(t.duree_min)}</span>
                   </td>
-                  <td style={styles.td}>
-                    <strong>🎯 {t.lieu_arrivee_nom}</strong>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={styles.dureeBadge}>
-                      {formatDuree(t.duree_min)}
-                    </span>
-                  </td>
-                  <td style={styles.td}>
-                    <small>{t.type_vehicule || '—'}</small>
-                  </td>
+                  <td style={styles.td}><small>{t.type_vehicule || '—'}</small></td>
                   <td style={styles.td}>
                     {estAdmin ? (
                       <>
-                        <button
-                          onClick={() => { setEnEdition(t); setModalOuvert(true); }}
-                          style={styles.btnIcone}
-                          title="Modifier"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => supprimer(t)}
-                          style={styles.btnIcone}
-                          title="Supprimer"
-                        >
-                          🗑️
-                        </button>
+                        <button onClick={() => { setEnEdition(t); setModalOuvert(true); }} style={styles.btnIcone} title="Modifier">✏️</button>
+                        <button onClick={() => supprimer(t)} style={styles.btnIcone} title="Supprimer">🗑️</button>
                       </>
                     ) : (
                       <span style={styles.lectureSeule}>👁️ Lecture seule</span>
@@ -191,69 +251,29 @@ function ModalTrajet({ trajet, lieux, onSave, onClose }) {
           <div style={styles.formGrid}>
             <div style={styles.field}>
               <label style={styles.label}>Lieu de départ *</label>
-              <select
-                name="lieu_depart_id"
-                value={form.lieu_depart_id}
-                onChange={handleChange}
-                required
-                disabled={!!trajet}
-                style={styles.input}
-              >
-                {lieux.map(l => (
-                  <option key={l.id} value={l.id}>{l.nom}</option>
-                ))}
+              <select name="lieu_depart_id" value={form.lieu_depart_id} onChange={handleChange} required disabled={!!trajet} style={styles.input}>
+                {lieux.map(l => <option key={l.id} value={l.id}>{l.nom}</option>)}
               </select>
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Lieu d'arrivée *</label>
-              <select
-                name="lieu_arrivee_id"
-                value={form.lieu_arrivee_id}
-                onChange={handleChange}
-                required
-                disabled={!!trajet}
-                style={styles.input}
-              >
-                {lieux.map(l => (
-                  <option key={l.id} value={l.id}>{l.nom}</option>
-                ))}
+              <select name="lieu_arrivee_id" value={form.lieu_arrivee_id} onChange={handleChange} required disabled={!!trajet} style={styles.input}>
+                {lieux.map(l => <option key={l.id} value={l.id}>{l.nom}</option>)}
               </select>
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Durée (minutes) *</label>
-              <input
-                type="number"
-                name="duree_min"
-                value={form.duree_min}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              />
-              <small style={styles.hint}>
-                Soit {formatDuree(form.duree_min)}
-              </small>
+              <input type="number" name="duree_min" value={form.duree_min} onChange={handleChange} required style={styles.input} />
+              <small style={styles.hint}>Soit {formatDuree(form.duree_min)}</small>
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Type de véhicule</label>
-              <input
-                type="text"
-                name="type_vehicule"
-                value={form.type_vehicule}
-                onChange={handleChange}
-                placeholder="Ex: 4x4, bateau"
-                style={styles.input}
-              />
+              <input type="text" name="type_vehicule" value={form.type_vehicule} onChange={handleChange} placeholder="Ex: 4x4, bateau" style={styles.input} />
             </div>
           </div>
-
           <div style={styles.modalFooter}>
             <button type="button" onClick={onClose} style={styles.btnSecondaire}>Annuler</button>
-            <button type="submit" style={styles.btnPrimaire}>
-              {trajet ? 'Enregistrer' : 'Créer'}
-            </button>
+            <button type="submit" style={styles.btnPrimaire}>{trajet ? 'Enregistrer' : 'Créer'}</button>
           </div>
         </form>
       </div>
@@ -270,6 +290,34 @@ const styles = {
   },
   titre: { fontSize: '20px', color: '#2C3E50' },
   sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
+  barreFiltres: {
+    backgroundColor: 'white',
+    padding: '16px 20px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+  },
+  recherche: {
+    flex: 1, minWidth: '180px', padding: '8px 12px',
+    border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', outline: 'none'
+  },
+  select: {
+    padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
+    fontSize: '13px', backgroundColor: 'white', cursor: 'pointer'
+  },
+  inputType: {
+    padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
+    fontSize: '13px', outline: 'none', minWidth: '150px'
+  },
+  btnReset: {
+    padding: '8px 16px', backgroundColor: '#ECF0F1', color: '#2C3E50',
+    border: 'none', borderRadius: '4px', fontSize: '13px',
+    fontWeight: '600', cursor: 'pointer'
+  },
   btnPrimaire: {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
