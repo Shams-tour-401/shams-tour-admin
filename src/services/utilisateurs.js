@@ -12,5 +12,5 @@ export const utilisateursService = {
   async changerStatut(id, statut) {
     const response = await api.put(`/utilisateurs/${id}/statut`, { statut });
     return response.data;
-  }
+  },
 };
