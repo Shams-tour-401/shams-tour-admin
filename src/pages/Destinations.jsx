@@ -1,5 +1,5 @@
 // src/pages/Destinations.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { destinationsService } from '../services/destinations';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,8 @@ export default function Destinations() {
   const [enEdition, setEnEdition] = useState(null);
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
+  const [recherche, setRecherche] = useState('');
+  const [filtreStatut, setFiltreStatut] = useState('');
 
   useEffect(() => {
     charger();
@@ -27,32 +29,36 @@ export default function Destinations() {
     }
   };
 
+  //  LOGIQUE DE FILTRAGE
+  const destinationsFiltrees = useMemo(() => {
+    const terme = recherche.trim().toLowerCase();
+    return destinations.filter((d) => {
+      const matchRecherche = terme === '' || (d.nom || '').toLowerCase().includes(terme);
+      const matchStatut =
+        filtreStatut === '' ||
+        (filtreStatut === 'active' && d.statut_actif) ||
+        (filtreStatut === 'inactive' && !d.statut_actif);
+      return matchRecherche && matchStatut;
+    });
+  }, [destinations, recherche, filtreStatut]);
+
+  const reinitialiserFiltres = () => {
+    setRecherche('');
+    setFiltreStatut('');
+  };
+
   const sauvegarder = async (form) => {
     try {
       if (enEdition) {
-        await fetch(`http://localhost:3000/api/destinations/${enEdition.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('shams_token')}`
-          },
-          body: JSON.stringify(form)
-        });
+        await destinationsService.update(enEdition.id, form);
       } else {
-        await fetch('http://localhost:3000/api/destinations', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('shams_token')}`
-          },
-          body: JSON.stringify(form)
-        });
+        await destinationsService.create(form);
       }
       await charger();
       setModalOuvert(false);
       setEnEdition(null);
     } catch (error) {
-      alert('Erreur : ' + error.message);
+      alert('Erreur : ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -62,7 +68,10 @@ export default function Destinations() {
     <div>
       <div style={styles.barreActions}>
         <div>
-          <h2 style={styles.titre}>Destinations ({destinations.length})</h2>
+          <h2 style={styles.titre}>
+            Destinations ({destinationsFiltrees.length}
+            {destinationsFiltrees.length !== destinations.length && ` / ${destinations.length}`})
+          </h2>
           <p style={styles.sousTitre}>
             {estAdmin ? 'Destinations proposées par Shams Tour' : 'Consultation des destinations (lecture seule)'}
           </p>
@@ -77,48 +86,81 @@ export default function Destinations() {
         )}
       </div>
 
+      {/*  BARRE DE RECHERCHE ET FILTRE */}
+      <div style={styles.barreFiltres}>
+        <input
+          type="text"
+          placeholder="🔍 Rechercher une destination..."
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          style={styles.recherche}
+        />
+
+        <select
+          value={filtreStatut}
+          onChange={(e) => setFiltreStatut(e.target.value)}
+          style={styles.select}
+        >
+          <option value="">Tous les statuts</option>
+          <option value="active">Actives</option>
+          <option value="inactive">Inactives</option>
+        </select>
+
+        {(recherche || filtreStatut) && (
+          <button onClick={reinitialiserFiltres} style={styles.btnReset}>
+            Réinitialiser
+          </button>
+        )}
+      </div>
+
       <div style={styles.grid}>
-        {destinations.map((d) => (
-          <div key={d.id} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <h3 style={styles.cardTitre}>📍 {d.nom}</h3>
-              <span style={{
-                ...styles.statutBadge,
-                backgroundColor: d.statut_actif ? '#27AE60' : '#95A5A6'
-              }}>
-                {d.statut_actif ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-
-            {d.texte_accueil && (
-              <p style={styles.cardTexte}>{d.texte_accueil}</p>
-            )}
-
-            <div style={styles.cardStats}>
-              <div style={styles.stat}>
-                <strong>{d.nb_activites || 0}</strong>
-                <span>Activités</span>
-              </div>
-              <div style={styles.stat}>
-                <strong>{d.nb_circuits || 0}</strong>
-                <span>Circuits publiés</span>
-              </div>
-            </div>
-
-            <div style={styles.cardInfo}>
-              🕐 Fenêtre : {d.fenetre_debut?.substring(0, 5)} → {d.fenetre_fin?.substring(0, 5)}
-            </div>
-
-            {estAdmin && (
-              <button
-                onClick={() => { setEnEdition(d); setModalOuvert(true); }}
-                style={styles.btnModifier}
-              >
-                ✏️ Modifier
-              </button>
-            )}
+        {destinationsFiltrees.length === 0 ? (
+          <div style={{...styles.aucune, gridColumn: '1 / -1'}}>
+            Aucune destination ne correspond à votre recherche.
           </div>
-        ))}
+        ) : (
+          destinationsFiltrees.map((d) => (
+            <div key={d.id} style={styles.card}>
+              <div style={styles.cardHeader}>
+                <h3 style={styles.cardTitre}>📍 {d.nom}</h3>
+                <span style={{
+                  ...styles.statutBadge,
+                  backgroundColor: d.statut_actif ? '#27AE60' : '#95A5A6'
+                }}>
+                  {d.statut_actif ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+
+              {d.texte_accueil && (
+                <p style={styles.cardTexte}>{d.texte_accueil}</p>
+              )}
+
+              <div style={styles.cardStats}>
+                <div style={styles.stat}>
+                  <strong>{d.nb_activites || 0}</strong>
+                  <span>Activités</span>
+                </div>
+                <div style={styles.stat}>
+                  <strong>{d.nb_circuits || 0}</strong>
+                  <span>Circuits publiés</span>
+                </div>
+              </div>
+
+              <div style={styles.cardInfo}>
+                🕐 Fenêtre : {d.fenetre_debut?.substring(0, 5)} → {d.fenetre_fin?.substring(0, 5)}
+              </div>
+
+              {estAdmin && (
+                <button
+                  onClick={() => { setEnEdition(d); setModalOuvert(true); }}
+                  style={styles.btnModifier}
+                >
+                  ✏️ Modifier
+                </button>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       {modalOuvert && estAdmin && (
@@ -156,73 +198,34 @@ function ModalDestination({ destination, onSave, onClose }) {
           <h3>{destination ? 'Modifier' : 'Nouvelle'} destination</h3>
           <button onClick={onClose} style={styles.btnFermer}>✕</button>
         </div>
-        <form
-          onSubmit={(e) => { e.preventDefault(); onSave(form); }}
-          style={styles.form}
-        >
+        <form onSubmit={(e) => { e.preventDefault(); onSave(form); }} style={styles.form}>
           <div style={styles.field}>
             <label style={styles.label}>Nom *</label>
-            <input
-              type="text"
-              name="nom"
-              value={form.nom}
-              onChange={handleChange}
-              required
-              style={styles.input}
-            />
+            <input type="text" name="nom" value={form.nom} onChange={handleChange} required style={styles.input} />
           </div>
-
           <div style={styles.formGrid}>
             <div style={styles.field}>
               <label style={styles.label}>Fenêtre début</label>
-              <input
-                type="time"
-                name="fenetre_debut"
-                value={form.fenetre_debut}
-                onChange={handleChange}
-                style={styles.input}
-              />
+              <input type="time" name="fenetre_debut" value={form.fenetre_debut} onChange={handleChange} style={styles.input} />
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Fenêtre fin</label>
-              <input
-                type="time"
-                name="fenetre_fin"
-                value={form.fenetre_fin}
-                onChange={handleChange}
-                style={styles.input}
-              />
+              <input type="time" name="fenetre_fin" value={form.fenetre_fin} onChange={handleChange} style={styles.input} />
             </div>
           </div>
-
           <div style={styles.field}>
             <label style={styles.label}>Texte d'accueil</label>
-            <textarea
-              name="texte_accueil"
-              value={form.texte_accueil}
-              onChange={handleChange}
-              rows="3"
-              style={styles.textarea}
-            />
+            <textarea name="texte_accueil" value={form.texte_accueil} onChange={handleChange} rows="3" style={styles.textarea} />
           </div>
-
           <div style={styles.field}>
             <label style={styles.label}>
-              <input
-                type="checkbox"
-                name="statut_actif"
-                checked={form.statut_actif === 1}
-                onChange={handleChange}
-              />
+              <input type="checkbox" name="statut_actif" checked={form.statut_actif === 1} onChange={handleChange} />
               {' '}Destination active
             </label>
           </div>
-
           <div style={styles.modalFooter}>
             <button type="button" onClick={onClose} style={styles.btnSecondaire}>Annuler</button>
-            <button type="submit" style={styles.btnPrimaire}>
-              {destination ? 'Enregistrer' : 'Créer'}
-            </button>
+            <button type="submit" style={styles.btnPrimaire}>{destination ? 'Enregistrer' : 'Créer'}</button>
           </div>
         </form>
       </div>
@@ -239,6 +242,30 @@ const styles = {
   },
   titre: { fontSize: '20px', color: '#2C3E50' },
   sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
+  barreFiltres: {
+    backgroundColor: 'white',
+    padding: '16px 20px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+  },
+  recherche: {
+    flex: 1, minWidth: '250px', padding: '8px 12px',
+    border: '1px solid #ddd', borderRadius: '4px', fontSize: '14px', outline: 'none'
+  },
+  select: {
+    padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
+    fontSize: '13px', backgroundColor: 'white', cursor: 'pointer'
+  },
+  btnReset: {
+    padding: '8px 16px', backgroundColor: '#ECF0F1', color: '#2C3E50',
+    border: 'none', borderRadius: '4px', fontSize: '13px',
+    fontWeight: '600', cursor: 'pointer'
+  },
   btnPrimaire: {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
@@ -250,6 +277,7 @@ const styles = {
   grid: {
     display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px'
   },
+  aucune: { padding: '60px 20px', textAlign: 'center', color: '#95A5A6' },
   card: {
     backgroundColor: 'white', borderRadius: '8px', padding: '20px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
@@ -272,12 +300,8 @@ const styles = {
     borderTop: '1px solid #ecf0f1', borderBottom: '1px solid #ecf0f1',
     marginBottom: '12px'
   },
-  stat: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center'
-  },
-  cardInfo: {
-    fontSize: '12px', color: '#7f8c8d', marginBottom: '12px'
-  },
+  stat: { display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  cardInfo: { fontSize: '12px', color: '#7f8c8d', marginBottom: '12px' },
   btnModifier: {
     width: '100%', padding: '8px', backgroundColor: '#ECF0F1',
     color: '#2C3E50', border: 'none', borderRadius: '4px',
