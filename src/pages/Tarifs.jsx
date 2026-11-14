@@ -1,5 +1,5 @@
 // src/pages/Tarifs.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react'; 
 import { tarifsService } from '../services/tarifs';
 import { activitesService } from '../services/activites';
 import { useAuth } from '../context/AuthContext';
@@ -11,9 +11,17 @@ export default function Tarifs() {
   const [erreur, setErreur] = useState('');
   const [modalOuvert, setModalOuvert] = useState(false);
   const [tarifEnEdition, setTarifEnEdition] = useState(null);
-  const [filtreActivite, setFiltreActivite] = useState('');
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
+
+  //  LA RECHERCHE ET LES FILTRES
+  const [recherche, setRecherche] = useState('');
+  const [filtreUnite, setFiltreUnite] = useState('');
+  const [filtrePrix, setFiltrePrix] = useState('');
+  const [filtreCout, setFiltreCout] = useState('');
+  const [filtreMarge, setFiltreMarge] = useState('');
+  const [filtrePeriode, setFiltrePeriode] = useState('');
+  const [filtreVerifie, setFiltreVerifie] = useState('');
 
   useEffect(() => {
     chargerDonnees();
@@ -36,9 +44,72 @@ export default function Tarifs() {
     }
   };
 
-  const tarifsFiltres = filtreActivite
-    ? tarifs.filter(t => t.activite_id === parseInt(filtreActivite))
-    : tarifs;
+  //  LOGIQUE DE FILTRAGE INSTANTANÉ
+  const tarifsFiltres = useMemo(() => {
+    const terme = recherche.trim().toLowerCase();
+    const maintenant = new Date();
+
+    return tarifs.filter((t) => {
+      // 1. Recherche par nom d'activité
+      const matchRecherche = terme === '' || (t.activite_nom || '').toLowerCase().includes(terme);
+
+      // 2. Filtre par unité
+      const matchUnite = filtreUnite === '' || t.unite === filtreUnite;
+
+      // 3. Filtre par prix de vente
+      let matchPrix = true;
+      if (filtrePrix === 'bas') matchPrix = t.prix_vente < 50000;
+      else if (filtrePrix === 'moyen') matchPrix = t.prix_vente >= 50000 && t.prix_vente <= 200000;
+      else if (filtrePrix === 'eleve') matchPrix = t.prix_vente > 200000;
+
+      // 4. Filtre par coût
+      let matchCout = true;
+      if (filtreCout === 'bas') matchCout = t.cout && t.cout < 30000;
+      else if (filtreCout === 'moyen') matchCout = t.cout && t.cout >= 30000 && t.cout <= 100000;
+      else if (filtreCout === 'eleve') matchCout = t.cout && t.cout > 100000;
+      else if (filtreCout === 'inconnu') matchCout = !t.cout;
+
+      // 5. Filtre par marge
+      let matchMarge = true;
+      const marge = t.cout ? t.prix_vente - t.cout : null;
+      if (filtreMarge === 'faible') matchMarge = marge !== null && marge < 10000;
+      else if (filtreMarge === 'moyenne') matchMarge = marge !== null && marge >= 10000 && marge <= 50000;
+      else if (filtreMarge === 'elevee') matchMarge = marge !== null && marge > 50000;
+      else if (filtreMarge === 'inconnue') matchMarge = marge === null;
+
+      // 6. Filtre par période (actif / expiré)
+      let matchPeriode = true;
+      if (filtrePeriode === 'actif') {
+        matchPeriode = new Date(t.periode_fin) >= maintenant;
+      } else if (filtrePeriode === 'expire') {
+        matchPeriode = new Date(t.periode_fin) < maintenant;
+      }
+
+      // 7. Filtre par date de vérification
+      let matchVerifie = true;
+      if (filtreVerifie === 'recent') {
+        matchVerifie = t.derniere_verification && 
+          (maintenant - new Date(t.derniere_verification)) / (1000 * 60 * 60 * 24) <= 30;
+      } else if (filtreVerifie === 'ancien') {
+        matchVerifie = t.derniere_verification && 
+          (maintenant - new Date(t.derniere_verification)) / (1000 * 60 * 60 * 24) > 30;
+      } else if (filtreVerifie === 'jamais') {
+        matchVerifie = !t.derniere_verification;
+      }
+
+      return matchRecherche && matchUnite && matchPrix && matchCout && matchMarge && matchPeriode && matchVerifie;
+    });
+  }, [tarifs, recherche, filtreUnite, filtrePrix, filtreCout, filtreMarge, filtrePeriode, filtreVerifie]);
+
+  const reinitialiserFiltres = () => {
+    setRecherche('');
+    setFiltreUnite('');
+    setFiltrePrix('');
+    setFiltreCout('');
+    setFiltreMarge('');
+    setFiltrePeriode('');
+    setFiltreVerifie('');
+  };
 
   const ouvrirModalCreation = () => {
     setTarifEnEdition(null);
@@ -97,34 +168,88 @@ export default function Tarifs() {
       {/* Barre d'actions */}
       <div style={styles.barreActions}>
         <div>
-          <h2 style={styles.titre}>Tarifs ({tarifsFiltres.length})</h2>
+          <h2 style={styles.titre}>
+            Tarifs ({tarifsFiltres.length}
+            {tarifsFiltres.length !== tarifs.length && ` / ${tarifs.length}`})
+          </h2>
           <p style={styles.sousTitre}>
             {estAdmin ? 'Gestion des tarifs par activité' : 'Consultation des tarifs (lecture seule)'}
           </p>
         </div>
-        <div style={styles.actionsDroite}>
-          <select
-            value={filtreActivite}
-            onChange={(e) => setFiltreActivite(e.target.value)}
-            style={styles.select}
-          >
-            <option value="">Toutes les activités</option>
-            {activites.map(a => (
-              <option key={a.id} value={a.id}>{a.nom}</option>
-            ))}
-          </select>
-          {estAdmin && (
-            <button onClick={ouvrirModalCreation} style={styles.btnPrimaire}>
-              ➕ Nouveau tarif
-            </button>
-          )}
-        </div>
+        {estAdmin && (
+          <button onClick={ouvrirModalCreation} style={styles.btnPrimaire}>
+            ➕ Nouveau tarif
+          </button>
+        )}
+      </div>
+
+      {/*  BARRE DE RECHERCHE ET FILTRES */}
+      <div style={styles.barreFiltres}>
+        <input
+          type="text"
+          placeholder="🔍 Rechercher par nom d'activité..."
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          style={styles.recherche}
+        />
+
+        <select value={filtreUnite} onChange={(e) => setFiltreUnite(e.target.value)} style={styles.select}>
+          <option value="">Toutes les unités</option>
+          <option value="par_adulte">Par adulte</option>
+          <option value="par_enfant">Par enfant</option>
+          <option value="par_groupe">Par groupe</option>
+          <option value="par_vehicule">Par véhicule</option>
+        </select>
+
+        <select value={filtrePrix} onChange={(e) => setFiltrePrix(e.target.value)} style={styles.select}>
+          <option value="">Tous les prix</option>
+          <option value="bas">Prix bas (&lt; 50 000 Ar)</option>
+          <option value="moyen">Prix moyen (50k - 200k)</option>
+          <option value="eleve">Prix élevé (&gt; 200 000 Ar)</option>
+        </select>
+
+        <select value={filtreCout} onChange={(e) => setFiltreCout(e.target.value)} style={styles.select}>
+          <option value="">Tous les coûts</option>
+          <option value="bas">Coût bas (&lt; 30 000 Ar)</option>
+          <option value="moyen">Coût moyen (30k - 100k)</option>
+          <option value="eleve">Coût élevé (&gt; 100 000 Ar)</option>
+          <option value="inconnu">Coût non renseigné</option>
+        </select>
+
+        <select value={filtreMarge} onChange={(e) => setFiltreMarge(e.target.value)} style={styles.select}>
+          <option value="">Toutes les marges</option>
+          <option value="faible">Marge faible (&lt; 10 000 Ar)</option>
+          <option value="moyenne">Marge moyenne (10k - 50k)</option>
+          <option value="elevee">Marge élevée (&gt; 50 000 Ar)</option>
+          <option value="inconnue">Marge inconnue</option>
+        </select>
+
+        <select value={filtrePeriode} onChange={(e) => setFiltrePeriode(e.target.value)} style={styles.select}>
+          <option value="">Toutes les périodes</option>
+          <option value="actif">Période active</option>
+          <option value="expire">Période expirée</option>
+        </select>
+
+        <select value={filtreVerifie} onChange={(e) => setFiltreVerifie(e.target.value)} style={styles.select}>
+          <option value="">Toutes les vérifications</option>
+          <option value="recent">Vérifié récemment (&lt; 30j)</option>
+          <option value="ancien">Vérifié il y a &gt; 30j</option>
+          <option value="jamais">Jamais vérifié</option>
+        </select>
+
+        {(recherche || filtreUnite || filtrePrix || filtreCout || filtreMarge || filtrePeriode || filtreVerifie) && (
+          <button onClick={reinitialiserFiltres} style={styles.btnReset}>
+            Réinitialiser
+          </button>
+        )}
       </div>
 
       {/* Tableau */}
       <div style={styles.tableContainer}>
         {tarifsFiltres.length === 0 ? (
-          <div style={styles.aucune}>Aucun tarif</div>
+          <div style={styles.aucune}>
+            {tarifs.length === 0 ? 'Aucun tarif' : 'Aucun tarif ne correspond à votre recherche'}
+          </div>
         ) : (
           <table style={styles.table}>
             <thead>
@@ -182,7 +307,7 @@ export default function Tarifs() {
                           style={styles.btnIcone}
                           title="Marquer vérifié"
                         >
-                          ✅
+                          
                         </button>
                         <button
                           onClick={() => ouvrirModalEdition(t)}
@@ -423,7 +548,27 @@ const styles = {
   },
   titre: { fontSize: '20px', color: '#2C3E50' },
   sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
-  actionsDroite: { display: 'flex', gap: '12px', alignItems: 'center' },
+  //  NOUVEAUX STYLES POUR LA BARRE DE FILTRES
+  barreFiltres: {
+    backgroundColor: 'white',
+    padding: '16px 20px',
+    borderRadius: '8px',
+    marginBottom: '16px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+  },
+  recherche: {
+    flex: 1,
+    minWidth: '250px',
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
+    outline: 'none'
+  },
   select: {
     padding: '8px 12px',
     border: '1px solid #ddd',
@@ -432,6 +577,17 @@ const styles = {
     backgroundColor: 'white',
     cursor: 'pointer'
   },
+  btnReset: {
+    padding: '8px 16px',
+    backgroundColor: '#ECF0F1',
+    color: '#2C3E50',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer'
+  },
+  actionsDroite: { display: 'flex', gap: '12px', alignItems: 'center' },
   btnPrimaire: {
     padding: '10px 20px',
     backgroundColor: '#C0392B',
