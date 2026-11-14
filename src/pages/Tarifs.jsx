@@ -532,184 +532,96 @@ function ModalTarif({ tarif, activites, onSave, onClose }) {
 }
 
 const styles = {
-  loading: { padding: '40px', textAlign: 'center', color: '#7f8c8d' },
+  loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
   barreActions: {
-    backgroundColor: 'white',
-    padding: '20px 24px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-    flexWrap: 'wrap',
-    gap: '12px'
+    backgroundColor: 'var(--bg-surface)', padding: '20px 24px', borderRadius: '8px',
+    marginBottom: '16px', display: 'flex', justifyContent: 'space-between',
+    alignItems: 'center', boxShadow: '0 2px 4px var(--shadow)', flexWrap: 'wrap', gap: '12px'
   },
-  titre: { fontSize: '20px', color: '#2C3E50' },
-  sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
-  //  NOUVEAUX STYLES POUR LA BARRE DE FILTRES
+  titre: { fontSize: '20px', color: 'var(--text-primary)' },
+  sousTitre: { fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' },
   barreFiltres: {
-    backgroundColor: 'white',
-    padding: '16px 20px',
-    borderRadius: '8px',
-    marginBottom: '16px',
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    backgroundColor: 'var(--bg-surface)', padding: '16px 20px', borderRadius: '8px',
+    marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center',
+    flexWrap: 'wrap', boxShadow: '0 2px 4px var(--shadow)'
   },
   recherche: {
-    flex: 1,
-    minWidth: '250px',
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '14px',
-    outline: 'none'
+    flex: 1, minWidth: '250px', padding: '8px 12px',
+    border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', outline: 'none',
+    backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)'
   },
   select: {
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '13px',
-    backgroundColor: 'white',
-    cursor: 'pointer'
+    padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '4px',
+    fontSize: '13px', backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer'
   },
   btnReset: {
-    padding: '8px 16px',
-    backgroundColor: '#ECF0F1',
-    color: '#2C3E50',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer'
+    padding: '8px 16px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
+    border: '1px solid var(--border)', borderRadius: '4px', fontSize: '13px', fontWeight: '600', cursor: 'pointer'
   },
   actionsDroite: { display: 'flex', gap: '12px', alignItems: 'center' },
   btnPrimaire: {
-    padding: '10px 20px',
-    backgroundColor: '#C0392B',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer'
+    padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
+    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   btnSecondaire: {
-    padding: '10px 20px',
-    backgroundColor: '#ECF0F1',
-    color: '#2C3E50',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer'
+    padding: '10px 20px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
+    border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   tableContainer: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    backgroundColor: 'var(--bg-surface)', borderRadius: '8px', overflow: 'hidden',
+    boxShadow: '0 2px 4px var(--shadow)'
   },
-  aucune: { padding: '60px 20px', textAlign: 'center', color: '#95A5A6' },
+  aucune: { padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  thead: { backgroundColor: '#f8f9fa' },
+  thead: { backgroundColor: 'var(--bg-soft)' },
   th: {
-    padding: '12px',
-    textAlign: 'left',
-    fontSize: '12px',
-    color: '#7f8c8d',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    borderBottom: '2px solid #ecf0f1'
+    padding: '12px', textAlign: 'left', fontSize: '12px', color: 'var(--text-muted)',
+    fontWeight: '600', textTransform: 'uppercase', borderBottom: '2px solid var(--border)'
   },
-  tr: { borderBottom: '1px solid #ecf0f1' },
-  td: { padding: '12px', fontSize: '13px', color: '#2C3E50' },
+  tr: { borderBottom: '1px solid var(--border)' },
+  td: { padding: '12px', fontSize: '13px', color: 'var(--text-secondary)' },
   unite: {
-    display: 'inline-block',
-    padding: '3px 10px',
-    backgroundColor: '#ECF0F1',
-    borderRadius: '12px',
-    fontSize: '11px',
-    fontWeight: '600'
+    display: 'inline-block', padding: '3px 10px', backgroundColor: 'var(--bg-soft)',
+    borderRadius: '12px', fontSize: '11px', fontWeight: '600', color: 'var(--text-primary)'
   },
   marge: { color: '#27AE60', fontWeight: '600' },
   nonVerifie: { color: '#E67E22', fontSize: '12px', fontWeight: '600' },
   lectureSeule: {
-    fontSize: '12px',
-    color: '#95A5A6',
-    fontStyle: 'italic'
+    fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic'
   },
   btnIcone: {
-    padding: '6px 10px',
-    marginRight: '4px',
-    backgroundColor: 'transparent',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px'
+    padding: '6px 10px', marginRight: '4px', backgroundColor: 'transparent',
+    border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', fontSize: '14px',
+    color: 'var(--text-primary)'
   },
   modalOverlay: {
-    position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    padding: '20px'
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+    alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px'
   },
   modal: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    width: '100%',
-    maxWidth: '700px',
-    maxHeight: '90vh',
-    overflowY: 'auto'
+    backgroundColor: 'var(--bg-surface)', borderRadius: '8px', width: '100%',
+    maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto'
   },
   modalHeader: {
-    padding: '20px 24px',
-    borderBottom: '1px solid #ecf0f1',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    padding: '20px 24px', borderBottom: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
   },
   btnFermer: {
-    background: 'none',
-    border: 'none',
-    fontSize: '20px',
-    cursor: 'pointer',
-    color: '#7f8c8d'
+    background: 'none', border: 'none', fontSize: '20px',
+    cursor: 'pointer', color: 'var(--text-muted)'
   },
   form: { padding: '24px' },
-  formGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '16px'
-  },
+  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   field: { display: 'flex', flexDirection: 'column' },
-  label: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#2C3E50',
-    marginBottom: '6px'
-  },
+  label: { fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '6px' },
   input: {
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '14px',
-    outline: 'none'
+    padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '4px',
+    fontSize: '14px', outline: 'none', backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)'
   },
   modalFooter: {
-    padding: '16px 24px',
-    borderTop: '1px solid #ecf0f1',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '12px',
-    marginTop: '16px'
+    padding: '16px 24px', borderTop: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px'
   }
 };
