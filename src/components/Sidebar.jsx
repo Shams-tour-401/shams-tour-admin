@@ -1,4 +1,5 @@
 // src/components/Sidebar.jsx
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
 import {
@@ -10,6 +11,9 @@ import { useAuth } from '../context/AuthContext';
 export default function Sidebar({ closeMenu }) {
   const { user, logout } = useAuth();
   const estAdmin = user?.role === 'administrateur';
+  
+  // ✅ NOUVEL ÉTAT POUR LA MODALE DE DÉCONNEXION
+  const [modalDeconnexion, setModalDeconnexion] = useState(false);
 
   const menuItems = [
     { path: '/dashboard',    label: 'Tableau de bord', Icon: LayoutDashboard, adminSeul: false },
@@ -31,46 +35,85 @@ export default function Sidebar({ closeMenu }) {
     .split(' ').filter(Boolean).slice(0, 2)
     .map(m => m[0].toUpperCase()).join('');
 
+  // ✅ GESTION DE LA CONFIRMATION
+  const confirmerDeconnexion = () => {
+    setModalDeconnexion(false);
+    logout();
+  };
+
   return (
-    <Aside>
-      <Brand>
-        <Logo>S</Logo>
-        <div>
-          <BrandName>SHAMS TOUR</BrandName>
-          <BrandSub>Administration</BrandSub>
-        </div>
-        <CloseButtonMobile
-          type="button"
-          onClick={closeMenu}
-          aria-label="Fermer le menu"
-        >
-          <X size={20} />
-        </CloseButtonMobile>
-      </Brand>
+    <>
+      <Aside>
+        <Brand>
+          <Logo>S</Logo>
+          <div>
+            <BrandName>SHAMS TOUR</BrandName>
+            <BrandSub>Administration</BrandSub>
+          </div>
+          <CloseButtonMobile
+            type="button"
+            onClick={closeMenu}
+            aria-label="Fermer le menu"
+          >
+            <X size={20} />
+          </CloseButtonMobile>
+        </Brand>
 
-      <Nav aria-label="Navigation principale">
-        {menuFiltre.map(({ path, label, Icon }) => (
-          <NavItem key={path} to={path} onClick={closeMenu}>
-            <Icon size={18} strokeWidth={2} />
-            <span>{label}</span>
-          </NavItem>
-        ))}
-      </Nav>
+        <Nav aria-label="Navigation principale">
+          {menuFiltre.map(({ path, label, Icon }) => (
+            <NavItem key={path} to={path} onClick={closeMenu}>
+              <Icon size={18} strokeWidth={2} />
+              <span>{label}</span>
+            </NavItem>
+          ))}
+        </Nav>
 
-      <Footer>
-        <UserBox>
-          <Avatar>{initiales}</Avatar>
-          <UserText>
-            <UserName>{user?.nom_complet}</UserName>
-            <Role $admin={estAdmin}>{user?.role}</Role>
-          </UserText>
-        </UserBox>
-        <LogoutButton type="button" onClick={logout}>
-          <LogOut size={16} />
-          Déconnexion
-        </LogoutButton>
-      </Footer>
-    </Aside>
+        <Footer>
+          <UserBox>
+            <Avatar>{initiales}</Avatar>
+            <UserText>
+              <UserName>{user?.nom_complet}</UserName>
+              <Role $admin={estAdmin}>{user?.role}</Role>
+            </UserText>
+          </UserBox>
+          {/* ✅ OUVRE LA MODALE AU LIEU DE DÉCONNECTER DIRECTEMENT */}
+          <LogoutButton type="button" onClick={() => setModalDeconnexion(true)}>
+            <LogOut size={16} />
+            Déconnexion
+          </LogoutButton>
+        </Footer>
+      </Aside>
+
+      {/* ✅ MODALE DE CONFIRMATION */}
+      {modalDeconnexion && (
+        <ModalOverlay onClick={() => setModalDeconnexion(false)}>
+          <ModalBox onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>
+                <LogOut size={20} />
+                Confirmer la déconnexion
+              </ModalTitle>
+              <ModalClose onClick={() => setModalDeconnexion(false)}>
+                <X size={18} />
+              </ModalClose>
+            </ModalHeader>
+            <ModalBody>
+              <p>Voulez-vous vraiment vous déconnecter ?</p>
+              <p className="small">Vous devrez vous reconnecter pour accéder à l'administration.</p>
+            </ModalBody>
+            <ModalFooter>
+              <BtnSecondary onClick={() => setModalDeconnexion(false)}>
+                Annuler
+              </BtnSecondary>
+              <BtnDanger onClick={confirmerDeconnexion}>
+                <LogOut size={16} />
+                Se déconnecter
+              </BtnDanger>
+            </ModalFooter>
+          </ModalBox>
+        </ModalOverlay>
+      )}
+    </>
   );
 }
 
@@ -233,4 +276,122 @@ const LogoutButton = styled.button`
 
   &:hover { color: #b42318; background: #fef3f2; border-color: #fecdca; }
   &:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(47,111,214,.3); }
+`;
+
+/* ---------------------- Styles de la modale ---------------------- */
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+`;
+
+const ModalBox = styled.div`
+  background: var(--bg-surface);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  overflow: hidden;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-soft);
+`;
+
+const ModalTitle = styled.h3`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+`;
+
+const ModalClose = styled.button`
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: var(--border);
+    color: var(--text-primary);
+  }
+`;
+
+const ModalBody = styled.div`
+  padding: 20px;
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+
+  p { margin: 0 0 8px; }
+  p.small {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+`;
+
+const ModalFooter = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--bg-soft);
+  border-top: 1px solid var(--border);
+`;
+
+const BtnSecondary = styled.button`
+  padding: 10px 18px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--bg-soft);
+  }
+`;
+
+const BtnDanger = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #C0392B;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: #a93226;
+  }
 `;
