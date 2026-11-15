@@ -76,7 +76,7 @@ export default function Sidebar({ closeMenu }) {
               <Role $admin={estAdmin}>{user?.role}</Role>
             </UserText>
           </UserBox>
-          {/* ✅ OUVRE LA MODALE AU LIEU DE DÉCONNECTER DIRECTEMENT */}
+          {/*  OUVRE LA MODALE AU LIEU DE DÉCONNECTER DIRECTEMENT */}
           <LogoutButton type="button" onClick={() => setModalDeconnexion(true)}>
             <LogOut size={16} />
             Déconnexion
@@ -99,14 +99,13 @@ export default function Sidebar({ closeMenu }) {
             </ModalHeader>
             <ModalBody>
               <p>Voulez-vous vraiment vous déconnecter ?</p>
-              <p className="small">Vous devrez vous reconnecter pour accéder à l'administration.</p>
+              
             </ModalBody>
             <ModalFooter>
               <BtnSecondary onClick={() => setModalDeconnexion(false)}>
                 NON
               </BtnSecondary>
-              <BtnDanger onClick={confirmerDeconnexion}>
-                <LogOut size={10} />
+              <BtnDanger onClick={confirmerDeconnexion}>  
                 OUI
               </BtnDanger>
             </ModalFooter>
