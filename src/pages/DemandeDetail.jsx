@@ -805,6 +805,19 @@ function ModalAccord({ proposition, onSave, onClose }) {
 /* ------------------------------------------------------------------ */
 /* Styles                                                             */
 /* ------------------------------------------------------------------ */
+
+const BTN_VARIANTS = {
+  primary: { bg: '#2f6fd6', hover: '#2760bf', fg: '#fff', border: 'transparent' },
+  success: { bg: '#16a34a', hover: '#15803d', fg: '#fff', border: 'transparent' },
+  danger: { bg: 'var(--bg-surface)', hover: '#fef3f2', fg: '#b42318', border: '#fecdca' },
+  warning: { bg: 'var(--bg-surface)', hover: '#fff6ed', fg: '#b45309', border: '#fed7aa' },
+  violet: { bg: '#7c3aed', hover: '#6d28d9', fg: '#fff', border: 'transparent' },
+  outline: { bg: 'var(--bg-surface)', hover: 'var(--bg-soft)', fg: 'var(--text-primary)', border: 'var(--border)' },
+  ghost: { bg: 'var(--bg-soft)', hover: 'var(--border)', fg: 'var(--text-primary)', border: 'transparent' }
+};
+
+const variant = ({ $variant }) => BTN_VARIANTS[$variant || 'primary'];
+
 const TONES = {
   neutral: { fg: '#4b5d70', bg: '#eef2f6' },
   blue: { fg: '#1d5fbf', bg: '#e6f0ff' },
