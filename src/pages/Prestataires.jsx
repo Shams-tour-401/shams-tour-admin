@@ -179,7 +179,7 @@ export default function Prestataires() {
                           ✏️
                         </button>
                         {p.statut === 'actif' && (
-                          {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
+                         
                           <button
                             onClick={() => setPrestataireADesactiver(p)}
                             style={styles.btnIcone}
@@ -208,7 +208,7 @@ export default function Prestataires() {
         />
       )}
 
-      {/* ✅ MODALE DE CONFIRMATION DE DÉSACTIVATION */}
+     
       {prestataireADesactiver && (
         <ModalConfirmation
           titre="Confirmer la désactivation"
