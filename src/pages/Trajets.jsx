@@ -13,6 +13,9 @@ export default function Trajets() {
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
+  // ✅ ÉTAT POUR LA MODALE DE SUPPRESSION
+  const [trajetASupprimer, setTrajetASupprimer] = useState(null);
+
   const [rechercheDepart, setRechercheDepart] = useState('');
   const [rechercheArrivee, setRechercheArrivee] = useState('');
   const [filtreDuree, setFiltreDuree] = useState('');
@@ -24,7 +27,7 @@ export default function Trajets() {
 
   const charger = async () => {
     try {
-    setLoading(true);
+      setLoading(true);
       const [trs, lxs] = await Promise.all([
         trajetsService.getAll(),
         lieuxService.getAll()
@@ -79,11 +82,12 @@ export default function Trajets() {
     }
   };
 
+  // ✅ SUPPRESSION SANS CONFIRM NATIF
   const supprimer = async (trajet) => {
-    if (!confirm(`Supprimer le trajet ${trajet.lieu_depart_nom} → ${trajet.lieu_arrivee_nom} ?`)) return;
     try {
       await trajetsService.delete(trajet.id);
       await charger();
+      setTrajetASupprimer(null);
     } catch (error) {
       alert('Erreur : ' + (error.response?.data?.error || error.message));
     }
@@ -179,8 +183,21 @@ export default function Trajets() {
                   <td style={styles.td}>
                     {estAdmin ? (
                       <>
-                        <button onClick={() => { setEnEdition(t); setModalOuvert(true); }} style={styles.btnIcone} title="Modifier">✏️</button>
-                        <button onClick={() => supprimer(t)} style={styles.btnIcone} title="Supprimer">🗑️</button>
+                        <button
+                          onClick={() => { setEnEdition(t); setModalOuvert(true); }}
+                          style={styles.btnIcone}
+                          title="Modifier"
+                        >
+                          ✏️
+                        </button>
+                        {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
+                        <button
+                          onClick={() => setTrajetASupprimer(t)}
+                          style={styles.btnIcone}
+                          title="Supprimer"
+                        >
+                          🗑️
+                        </button>
                       </>
                     ) : (
                       <span style={styles.lectureSeule}>👁️ Lecture seule</span>
@@ -201,6 +218,44 @@ export default function Trajets() {
           onClose={() => { setModalOuvert(false); setEnEdition(null); }}
         />
       )}
+
+      {/* ✅ MODALE DE CONFIRMATION DE SUPPRESSION */}
+      {trajetASupprimer && (
+        <ModalConfirmation
+          titre="Confirmer la suppression"
+          message={`Voulez-vous vraiment supprimer le trajet "${trajetASupprimer.lieu_depart_nom} → ${trajetASupprimer.lieu_arrivee_nom}" ?`}
+          avertissement={`Durée : ${formatDuree(trajetASupprimer.duree_min)} — Type : ${trajetASupprimer.type_vehicule || 'non précisé'}`}
+          onConfirm={() => supprimer(trajetASupprimer)}
+          onCancel={() => setTrajetASupprimer(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============ MODALE DE CONFIRMATION RÉUTILISABLE ============
+function ModalConfirmation({ titre, message, avertissement, onConfirm, onCancel }) {
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalConfirm}>
+        <div style={styles.modalConfirmHeader}>
+          <h3 style={styles.modalConfirmTitre}>⚠️ {titre}</h3>
+        </div>
+        <div style={styles.modalConfirmBody}>
+          <p style={styles.modalConfirmTexte}>{message}</p>
+          {avertissement && (
+            <p style={styles.modalConfirmAvert}>{avertissement}</p>
+          )}
+        </div>
+        <div style={styles.modalConfirmFooter}>
+          <button type="button" onClick={onCancel} style={styles.btnSecondaire}>
+            Annuler
+          </button>
+          <button type="button" onClick={onConfirm} style={styles.btnDanger}>
+            🗑️ Supprimer
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -324,6 +379,10 @@ const styles = {
     padding: '10px 20px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
     border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
+  btnDanger: {
+    padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
+    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
+  },
   tableContainer: {
     backgroundColor: 'var(--bg-surface)', borderRadius: '8px', overflow: 'hidden',
     boxShadow: '0 2px 4px var(--shadow)', transition: 'background-color 0.3s ease'
@@ -379,5 +438,32 @@ const styles = {
   hint: { fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' },
   modalFooter: {
     display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px'
+  },
+  
+  // ✅ STYLES DE LA MODALE DE CONFIRMATION
+  modalConfirm: {
+    backgroundColor: 'var(--bg-surface)', borderRadius: '8px', width: '100%',
+    maxWidth: '450px', overflow: 'hidden'
+  },
+  modalConfirmHeader: {
+    padding: '20px 24px', borderBottom: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-soft)'
+  },
+  modalConfirmTitre: {
+    margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)'
+  },
+  modalConfirmBody: {
+    padding: '24px'
+  },
+  modalConfirmTexte: {
+    margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.6'
+  },
+  modalConfirmAvert: {
+    margin: 0, fontSize: '13px', color: '#b45309', fontStyle: 'italic'
+  },
+  modalConfirmFooter: {
+    padding: '16px 24px', borderTop: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'flex-end', gap: '12px',
+    backgroundColor: 'var(--bg-soft)'
   }
 };
