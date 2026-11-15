@@ -507,7 +507,7 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
                         {el.duree_min && ` (${el.duree_min} min)`}
                       </span>
                       {estAdmin && (
-                        {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
+                        
                         <button onClick={() => setElementASupprimer(el)} style={styles.btnSuppr}>✕</button>
                       )}
                     </li>
