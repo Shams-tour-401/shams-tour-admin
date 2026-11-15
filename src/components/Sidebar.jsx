@@ -106,6 +106,7 @@ export default function Sidebar({ closeMenu }) {
                 NON
               </BtnSecondary>
               <BtnDanger onClick={confirmerDeconnexion}>  
+                <LogOut size={16} />
                 OUI
               </BtnDanger>
             </ModalFooter>
