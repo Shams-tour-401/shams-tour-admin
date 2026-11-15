@@ -1,5 +1,5 @@
 // src/pages/Activites.jsx
-import { useEffect, useState, useMemo } from 'react'; 
+import { useEffect, useState, useMemo } from 'react';
 import { activitesService } from '../services/activites';
 import { lieuxService } from '../services/lieux';
 import { photosService } from '../services/photos'; 
@@ -16,7 +16,9 @@ export default function Activites() {
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
-  // LA RECHERCHE ET LES FILTRES
+  // ✅ ÉTAT POUR LA MODALE DE DÉSACTIVATION
+  const [activiteADesactiver, setActiviteADesactiver] = useState(null);
+
   const [recherche, setRecherche] = useState('');
   const [filtreCategorie, setFiltreCategorie] = useState('');
   const [filtreDuree, setFiltreDuree] = useState('');
@@ -72,38 +74,33 @@ export default function Activites() {
     }
   };
 
+  // ✅ DÉSACTIVATION SANS CONFIRM NATIF
   const desactiver = async (activite) => {
-    if (!confirm(`Désactiver "${activite.nom}" ?\n\nLes circuits qui l'utilisent seront marqués "à réviser".`)) return;
-    
     try {
       await activitesService.desactiver(activite.id);
       await chargerDonnees();
+      setActiviteADesactiver(null);
     } catch (error) {
       alert('Erreur : ' + (error.response?.data?.error || error.message));
     }
   };
 
-  //  LOGIQUE DE FILTRAGE INSTANTANÉ
   const activitesFiltrees = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
 
     return activites.filter((a) => {
-      // 1. Recherche par nom ou lieu
       const matchRecherche = 
         terme === '' || 
         (a.nom || '').toLowerCase().includes(terme) || 
         (a.lieu_nom || '').toLowerCase().includes(terme);
 
-      // 2. Filtre par catégorie
       const matchCategorie = filtreCategorie === '' || a.categorie === filtreCategorie;
 
-      // 3. Filtre par durée
       let matchDuree = true;
       if (filtreDuree === 'court') matchDuree = a.duree_min < 60;
       else if (filtreDuree === 'moyen') matchDuree = a.duree_min >= 60 && a.duree_min <= 180;
       else if (filtreDuree === 'long') matchDuree = a.duree_min > 180;
 
-      // 4. Filtre par âge minimum
       const matchAge = filtreAge === '' || a.age_min <= parseInt(filtreAge);
 
       return matchRecherche && matchCategorie && matchDuree && matchAge;
@@ -122,7 +119,6 @@ export default function Activites() {
 
   return (
     <div>
-      {/* Barre d'actions */}
       <div style={styles.barreActions}>
         <div>
           <h2 style={styles.titre}>
@@ -138,7 +134,6 @@ export default function Activites() {
         )}
       </div>
 
-      {/* BARRE DE RECHERCHE ET FILTRES */}
       <div style={styles.barreFiltres}>
         <input
           type="text"
@@ -177,7 +172,6 @@ export default function Activites() {
         )}
       </div>
 
-      {/* Tableau */}
       <div style={styles.tableContainer}>
         {activitesFiltrees.length === 0 ? (
           <div style={styles.aucune}>
@@ -199,12 +193,8 @@ export default function Activites() {
             <tbody>
               {activitesFiltrees.map((a) => (
                 <tr key={a.id} style={styles.tr}>
-                  <td style={styles.td}>
-                    <strong>{a.nom}</strong>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={styles.categorie}>{a.categorie}</span>
-                  </td>
+                  <td style={styles.td}><strong>{a.nom}</strong></td>
+                  <td style={styles.td}><span style={styles.categorie}>{a.categorie}</span></td>
                   <td style={styles.td}>{a.lieu_nom}</td>
                   <td style={styles.td}>{Math.floor(a.duree_min / 60)}h{a.duree_min % 60 > 0 ? String(a.duree_min % 60).padStart(2, '0') : ''}</td>
                   <td style={styles.td}>{a.age_min} ans</td>
@@ -218,7 +208,8 @@ export default function Activites() {
                         <button onClick={() => ouvrirModalEdition(a)} style={styles.btnIcone} title="Modifier">
                           ✏️
                         </button>
-                        <button onClick={() => desactiver(a)} style={styles.btnIcone} title="Désactiver">
+                        {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
+                        <button onClick={() => setActiviteADesactiver(a)} style={styles.btnIcone} title="Désactiver">
                           🗑️
                         </button>
                       </>
@@ -233,7 +224,6 @@ export default function Activites() {
         )}
       </div>
 
-      {/* Modal Activité */}
       {modalOuvert && (
         <ModalActivite
           activite={activiteEnEdition}
@@ -243,18 +233,55 @@ export default function Activites() {
         />
       )}
 
-      {/* Modal Photos */}
       {photoModal && (
         <ModalPhotos 
           activiteId={photoModal} 
           onClose={() => setPhotoModal(null)} 
         />
       )}
+
+      {/* ✅ MODALE DE CONFIRMATION DE DÉSACTIVATION */}
+      {activiteADesactiver && (
+        <ModalDesactivation
+          activite={activiteADesactiver}
+          onConfirm={() => desactiver(activiteADesactiver)}
+          onCancel={() => setActiviteADesactiver(null)}
+        />
+      )}
     </div>
   );
 }
 
-// ============ MODAL ACTIVITE ============
+// ============ NOUVELLE MODALE DE CONFIRMATION ============
+function ModalDesactivation({ activite, onConfirm, onCancel }) {
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalConfirm}>
+        <div style={styles.modalConfirmHeader}>
+          <h3 style={styles.modalConfirmTitre}>⚠️ Confirmer la désactivation</h3>
+        </div>
+        <div style={styles.modalConfirmBody}>
+          <p style={styles.modalConfirmTexte}>
+            Voulez-vous vraiment désactiver l'activité <strong>"{activite.nom}"</strong> ?
+          </p>
+          <p style={styles.modalConfirmAvert}>
+            Les circuits qui utilisent cette activité seront marqués "à réviser".
+          </p>
+        </div>
+        <div style={styles.modalConfirmFooter}>
+          <button type="button" onClick={onCancel} style={styles.btnSecondaire}>
+            Annuler
+          </button>
+          <button type="button" onClick={onConfirm} style={styles.btnDanger}>
+            🗑️ Désactiver
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ MODAL ACTIVITE (inchangé) ============
 function ModalActivite({ activite, lieux, onSave, onClose }) {
   const [form, setForm] = useState({
     nom: activite?.nom || '',
@@ -292,7 +319,6 @@ function ModalActivite({ activite, lieux, onSave, onClose }) {
           <h3>{activite ? 'Modifier' : 'Nouvelle'} activité</h3>
           <button onClick={onClose} style={styles.btnFermer}>✕</button>
         </div>
-
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formGrid}>
             <div style={styles.field}>
@@ -363,12 +389,11 @@ function ModalActivite({ activite, lieux, onSave, onClose }) {
   );
 }
 
-// ============ MODAL PHOTOS (AVEC BOUTON DE VISUALISATION) ============
+// ============ MODAL PHOTOS (inchangé) ============
 function ModalPhotos({ activiteId, onClose }) {
   const [photosExistantes, setPhotosExistantes] = useState([]); 
   const [photosNouvelles, setPhotosNouvelles] = useState([]); 
   const [uploading, setUploading] = useState(false);
-  
   const [photoAgrandie, setPhotoAgrandie] = useState(null);
 
   const chargerPhotos = async () => {
@@ -422,14 +447,11 @@ function ModalPhotos({ activiteId, onClose }) {
   return (
     <div style={styles.modalOverlay}>
       <div style={{...styles.modal, maxWidth: '1000px', width: '95%'}}>
-        
         <div style={styles.modalHeader}>
           <h3>📸 Galerie de l'activité</h3>
           <button onClick={onClose} style={styles.btnFermer}>✕</button>
         </div>
-
         <div style={{ padding: '30px' }}>
-          
           <div style={{ marginBottom: '30px', textAlign: 'center' }}>
             <label style={{ 
               ...styles.btnSecondaire, 
@@ -446,98 +468,53 @@ function ModalPhotos({ activiteId, onClose }) {
           </div>
 
           {photosNouvelles.length > 0 && (
-            <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: '#FEF5E7', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: 'var(--bg-soft)', borderRadius: '8px' }}>
               <h4 style={{ marginBottom: '15px', color: '#E67E22', fontSize: '18px' }}>
                 Photos en attente d'enregistrement ({photosNouvelles.length})
               </h4>
-              
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px', marginBottom: '20px' }}>
                 {photosNouvelles.map((p, index) => (
                   <div key={index} style={{ position: 'relative' }}>
-                    <img 
-                      src={p.preview} 
-                      alt="preview" 
-                      style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} 
-                    />
-                    <button 
-                      onClick={() => retirerPhotoNouvelle(index)}
-                      style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
-                    >
-                      ✕
-                    </button>
+                    <img src={p.preview} alt="preview" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }} />
+                    <button onClick={() => retirerPhotoNouvelle(index)} style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px' }}>✕</button>
                   </div>
                 ))}
               </div>
-
-              <button 
-                onClick={enregistrerPhotos} 
-                disabled={uploading}
-                style={{ ...styles.btnPrimaire, width: '100%', backgroundColor: '#27AE60', padding: '15px', fontSize: '16px' }}
-              >
+              <button onClick={enregistrerPhotos} disabled={uploading} style={{ ...styles.btnPrimaire, width: '100%', backgroundColor: '#27AE60', padding: '15px', fontSize: '16px' }}>
                 {uploading ? '⏳ Enregistrement en cours...' : '💾 Enregistrer toutes ces photos'}
               </button>
             </div>
           )}
 
-          <h4 style={{ marginBottom: '15px', borderBottom: '2px solid #ecf0f1', paddingBottom: '10px', fontSize: '18px' }}>
+          <h4 style={{ marginBottom: '15px', borderBottom: '2px solid var(--border)', paddingBottom: '10px', fontSize: '18px', color: 'var(--text-primary)' }}>
             Photos actuelles ({photosExistantes.length})
           </h4>
-          
           {photosExistantes.length === 0 ? (
             <p style={{...styles.lectureSeule, textAlign: 'center', padding: '20px'}}>Aucune photo enregistrée pour cette activité.</p>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
               {photosExistantes.map(p => (
                 <div key={p.id} style={{ position: 'relative' }}>
-                  <img 
-                    src={p.url} 
-                    alt="activité" 
-                    style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} 
-                  />
-                  
-                  <button 
-                    onClick={() => setPhotoAgrandie(p.url)}
-                    style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    title="Voir en grand"
-                  >
-                    👁️
-                  </button>
-
-                  <button 
-                    onClick={() => supprimerPhotoExistante(p.id)}
-                    style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}
-                  >
-                    ✕
-                  </button>
+                  <img src={p.url} alt="activité" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }} />
+                  <button onClick={() => setPhotoAgrandie(p.url)} style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Voir en grand">👁️</button>
+                  <button onClick={() => supprimerPhotoExistante(p.id)} style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px' }}>✕</button>
                 </div>
               ))}
             </div>
           )}
-
         </div>
       </div>
-
       {photoAgrandie && (
         <div style={styles.modalOverlayFull}>
-          <button 
-            onClick={() => setPhotoAgrandie(null)} 
-            style={{ position: 'absolute', top: 20, right: 30, background: 'transparent', border: 'none', color: 'white', fontSize: '40px', cursor: 'pointer', zIndex: 10 }}
-          >
-            ✕
-          </button>
-          <img 
-            src={photoAgrandie} 
-            alt="Aperçu" 
-            style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', borderRadius: '8px' }} 
-          />
+          <button onClick={() => setPhotoAgrandie(null)} style={{ position: 'absolute', top: 20, right: 30, background: 'transparent', border: 'none', color: 'white', fontSize: '40px', cursor: 'pointer', zIndex: 10 }}>✕</button>
+          <img src={photoAgrandie} alt="Aperçu" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', borderRadius: '8px' }} />
         </div>
       )}
-
     </div>
   );
 }
 
-// ============ STYLES ============
+// ============ STYLES (avec variables CSS) ============
 const styles = {
   loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
@@ -555,6 +532,10 @@ const styles = {
   btnSecondaire: {
     padding: '10px 20px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
     border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
+  },
+  btnDanger: {
+    padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
+    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   barreFiltres: {
     backgroundColor: 'var(--bg-surface)', padding: '16px 20px', borderRadius: '8px',
@@ -632,5 +613,32 @@ const styles = {
     padding: '16px 24px', borderTop: '1px solid var(--border)',
     display: 'flex', justifyContent: 'flex-end', gap: '12px'
   },
-  lectureSeule: { fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }
+  lectureSeule: { fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' },
+  
+  // ✅ STYLES DE LA MODALE DE CONFIRMATION
+  modalConfirm: {
+    backgroundColor: 'var(--bg-surface)', borderRadius: '8px', width: '100%',
+    maxWidth: '450px', overflow: 'hidden'
+  },
+  modalConfirmHeader: {
+    padding: '20px 24px', borderBottom: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-soft)'
+  },
+  modalConfirmTitre: {
+    margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)'
+  },
+  modalConfirmBody: {
+    padding: '24px'
+  },
+  modalConfirmTexte: {
+    margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.6'
+  },
+  modalConfirmAvert: {
+    margin: 0, fontSize: '13px', color: '#b45309', fontStyle: 'italic'
+  },
+  modalConfirmFooter: {
+    padding: '16px 24px', borderTop: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'flex-end', gap: '12px',
+    backgroundColor: 'var(--bg-soft)'
+  }
 };
