@@ -14,7 +14,9 @@ export default function Circuits() {
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
-  //  LA RECHERCHE ET LES FILTRES
+  // ✅ ÉTAT POUR LA MODALE DE SUPPRESSION DE CIRCUIT
+  const [circuitASupprimer, setCircuitASupprimer] = useState(null);
+
   const [recherche, setRecherche] = useState('');
   const [filtreDuree, setFiltreDuree] = useState('');
   const [filtreRythme, setFiltreRythme] = useState('');
@@ -82,11 +84,12 @@ export default function Circuits() {
     }
   };
 
+  // ✅ SUPPRESSION SANS CONFIRM NATIF
   const supprimer = async (circuit) => {
-    if (!confirm(`Supprimer "${circuit.nom}" ?`)) return;
     try {
       await circuitsService.delete(circuit.id);
       await chargerCircuits();
+      setCircuitASupprimer(null);
     } catch (error) {
       alert('Erreur : ' + (error.response?.data?.error || error.message));
     }
@@ -101,28 +104,20 @@ export default function Circuits() {
     }
   };
 
-  //  LOGIQUE DE FILTRAGE INSTANTANÉ
   const circuitsFiltres = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
 
     return circuits.filter((c) => {
-      // 1. Recherche par nom
       const matchRecherche = terme === '' || (c.nom || '').toLowerCase().includes(terme);
 
-      // 2. Filtre par durée
       let matchDuree = true;
       if (filtreDuree === 'court') matchDuree = c.duree_jours <= 2;
       else if (filtreDuree === 'moyen') matchDuree = c.duree_jours >= 3 && c.duree_jours <= 4;
       else if (filtreDuree === 'long') matchDuree = c.duree_jours >= 5;
 
-      // 3. Filtre par rythme
       const matchRythme = filtreRythme === '' || c.rythme === filtreRythme;
-
-      // 4. Filtre par étiquette (recherche dans la chaîne d'étiquettes)
       const matchEtiquette = filtreEtiquette === '' || 
         (c.etiquettes || '').toLowerCase().includes(filtreEtiquette.toLowerCase());
-
-      // 5. Filtre par statut
       const matchStatut = filtreStatut === '' || c.statut === filtreStatut;
 
       return matchRecherche && matchDuree && matchRythme && matchEtiquette && matchStatut;
@@ -159,7 +154,6 @@ export default function Circuits() {
         )}
       </div>
 
-      {/*  BARRE DE RECHERCHE ET FILTRES */}
       <div style={styles.barreFiltres}>
         <input
           type="text"
@@ -255,7 +249,8 @@ export default function Circuits() {
                             🚀
                           </button>
                         )}
-                        <button onClick={() => supprimer(c)} style={styles.btnIcone} title="Supprimer">
+                        {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
+                        <button onClick={() => setCircuitASupprimer(c)} style={styles.btnIcone} title="Supprimer">
                           🗑️
                         </button>
                       </>
@@ -287,6 +282,44 @@ export default function Circuits() {
           }}
         />
       )}
+
+      {/* ✅ MODALE DE CONFIRMATION DE SUPPRESSION DE CIRCUIT */}
+      {circuitASupprimer && (
+        <ModalConfirmation
+          titre="Confirmer la suppression"
+          message={`Voulez-vous vraiment supprimer le circuit "${circuitASupprimer.nom}" ?`}
+          avertissement="Cette action est irréversible. Tous les jours et éléments associés seront supprimés."
+          onConfirm={() => supprimer(circuitASupprimer)}
+          onCancel={() => setCircuitASupprimer(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============ MODALE DE CONFIRMATION RÉUTILISABLE ============
+function ModalConfirmation({ titre, message, avertissement, onConfirm, onCancel }) {
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalConfirm}>
+        <div style={styles.modalConfirmHeader}>
+          <h3 style={styles.modalConfirmTitre}>⚠️ {titre}</h3>
+        </div>
+        <div style={styles.modalConfirmBody}>
+          <p style={styles.modalConfirmTexte}>{message}</p>
+          {avertissement && (
+            <p style={styles.modalConfirmAvert}>{avertissement}</p>
+          )}
+        </div>
+        <div style={styles.modalConfirmFooter}>
+          <button type="button" onClick={onCancel} style={styles.btnSecondaire}>
+            Annuler
+          </button>
+          <button type="button" onClick={onConfirm} style={styles.btnDanger}>
+            🗑️ Supprimer
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -340,39 +373,17 @@ function ModalCircuit({ circuit, onSave, onClose }) {
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.field}>
             <label style={styles.label}>Nom *</label>
-            <input
-              type="text"
-              name="nom"
-              value={form.nom}
-              onChange={handleChange}
-              required
-              style={styles.input}
-            />
+            <input type="text" name="nom" value={form.nom} onChange={handleChange} required style={styles.input} />
           </div>
 
           <div style={styles.formGrid}>
             <div style={styles.field}>
               <label style={styles.label}>Durée (jours) *</label>
-              <input
-                type="number"
-                name="duree_jours"
-                value={form.duree_jours}
-                onChange={handleChange}
-                min="1"
-                max="5"
-                required
-                style={styles.input}
-              />
+              <input type="number" name="duree_jours" value={form.duree_jours} onChange={handleChange} min="1" max="5" required style={styles.input} />
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Rythme</label>
-              <select
-                name="rythme"
-                value={form.rythme}
-                onChange={handleChange}
-                style={styles.input}
-              >
+              <select name="rythme" value={form.rythme} onChange={handleChange} style={styles.input}>
                 <option value="detente">Détente</option>
                 <option value="equilibre">Équilibré</option>
                 <option value="intense">Intense</option>
@@ -383,57 +394,29 @@ function ModalCircuit({ circuit, onSave, onClose }) {
           <div style={styles.formGrid}>
             <div style={styles.field}>
               <label style={styles.label}>Étiquettes (séparées par virgule)</label>
-              <input
-                type="text"
-                name="etiquettes"
-                value={form.etiquettes}
-                onChange={handleChange}
-                placeholder="nature,aventure,culture"
-                style={styles.input}
-              />
+              <input type="text" name="etiquettes" value={form.etiquettes} onChange={handleChange} placeholder="nature,aventure,culture" style={styles.input} />
             </div>
-
             <div style={styles.field}>
               <label style={styles.label}>Profils adaptés</label>
-              <input
-                type="text"
-                name="profils_adaptes"
-                value={form.profils_adaptes}
-                onChange={handleChange}
-                placeholder="couple,famille,amis"
-                style={styles.input}
-              />
+              <input type="text" name="profils_adaptes" value={form.profils_adaptes} onChange={handleChange} placeholder="couple,famille,amis" style={styles.input} />
             </div>
           </div>
 
           <div style={styles.field}>
             <label style={styles.label}>Description</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              rows="3"
-              style={styles.textarea}
-            />
+            <textarea name="description" value={form.description} onChange={handleChange} rows="3" style={styles.textarea} />
           </div>
 
           <div style={styles.field}>
             <label style={styles.label}>
-              <input
-                type="checkbox"
-                name="jours_permutables"
-                checked={form.jours_permutables === 1}
-                onChange={handleChange}
-              />
+              <input type="checkbox" name="jours_permutables" checked={form.jours_permutables === 1} onChange={handleChange} />
               {' '}Jours permutables
             </label>
           </div>
 
           <div style={styles.modalFooter}>
             <button type="button" onClick={onClose} style={styles.btnSecondaire}>Annuler</button>
-            <button type="submit" style={styles.btnPrimaire}>
-              {circuit ? 'Enregistrer' : 'Créer'}
-            </button>
+            <button type="submit" style={styles.btnPrimaire}>{circuit ? 'Enregistrer' : 'Créer'}</button>
           </div>
         </form>
       </div>
@@ -444,6 +427,9 @@ function ModalCircuit({ circuit, onSave, onClose }) {
 function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
   const [activites, setActivites] = useState([]);
   const [modalAjoutElement, setModalAjoutElement] = useState(null);
+  
+  // ✅ ÉTAT POUR LA MODALE DE SUPPRESSION D'ÉLÉMENT
+  const [elementASupprimer, setElementASupprimer] = useState(null);
 
   useEffect(() => {
     chargerActivites();
@@ -468,11 +454,12 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
     }
   };
 
+  // ✅ SUPPRESSION SANS CONFIRM NATIF
   const supprimerElement = async (elementId) => {
-    if (!confirm('Supprimer cet élément ?')) return;
     try {
       await circuitsService.supprimerElement(elementId);
       await onRefresh();
+      setElementASupprimer(null);
     } catch (error) {
       alert('Erreur : ' + error.message);
     }
@@ -484,7 +471,7 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
         <div style={styles.modalHeader}>
           <div>
             <h3>{circuit.nom}</h3>
-            <small style={{ color: '#7f8c8d' }}>
+            <small style={{ color: 'var(--text-muted)' }}>
               {circuit.duree_jours} jour(s) — {circuit.rythme}
             </small>
           </div>
@@ -497,10 +484,7 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
               <div style={styles.jourHeader}>
                 <h4>📅 {jour.titre}</h4>
                 {estAdmin && (
-                  <button
-                    onClick={() => setModalAjoutElement(jour.id)}
-                    style={styles.btnPetit}
-                  >
+                  <button onClick={() => setModalAjoutElement(jour.id)} style={styles.btnPetit}>
                     ➕ Ajouter
                   </button>
                 )}
@@ -523,12 +507,8 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
                         {el.duree_min && ` (${el.duree_min} min)`}
                       </span>
                       {estAdmin && (
-                        <button
-                          onClick={() => supprimerElement(el.id)}
-                          style={styles.btnSuppr}
-                        >
-                          ✕
-                        </button>
+                        {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
+                        <button onClick={() => setElementASupprimer(el)} style={styles.btnSuppr}>✕</button>
                       )}
                     </li>
                   ))}
@@ -544,6 +524,17 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
           activites={activites}
           onSave={(data) => ajouterElement(modalAjoutElement, data)}
           onClose={() => setModalAjoutElement(null)}
+        />
+      )}
+
+      {/* ✅ MODALE DE CONFIRMATION DE SUPPRESSION D'ÉLÉMENT */}
+      {elementASupprimer && (
+        <ModalConfirmation
+          titre="Supprimer l'élément"
+          message={`Voulez-vous vraiment supprimer cet élément du programme ?`}
+          avertissement={`Élément : ${elementASupprimer.activite_nom || elementASupprimer.type}`}
+          onConfirm={() => supprimerElement(elementASupprimer.id)}
+          onCancel={() => setElementASupprimer(null)}
         />
       )}
     </div>
@@ -599,13 +590,7 @@ function ModalAjoutElement({ activites, onSave, onClose }) {
           {type !== 'activite' && (
             <div style={styles.field}>
               <label style={styles.label}>Durée (minutes)</label>
-              <input
-                type="number"
-                value={duree}
-                onChange={(e) => setDuree(e.target.value)}
-                required
-                style={styles.input}
-              />
+              <input type="number" value={duree} onChange={(e) => setDuree(e.target.value)} required style={styles.input} />
             </div>
           )}
 
@@ -658,7 +643,11 @@ const styles = {
   },
   btnSecondaire: {
     padding: '10px 20px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
-    border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', fontWeight: '600'
+    border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
+  },
+  btnDanger: {
+    padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
+    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   btnPetit: {
     padding: '4px 10px', backgroundColor: '#C0392B', color: 'white',
@@ -745,5 +734,32 @@ const styles = {
   btnSuppr: {
     background: 'none', border: 'none', color: '#C0392B',
     cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
+  },
+  
+  // ✅ STYLES DE LA MODALE DE CONFIRMATION
+  modalConfirm: {
+    backgroundColor: 'var(--bg-surface)', borderRadius: '8px', width: '100%',
+    maxWidth: '450px', overflow: 'hidden'
+  },
+  modalConfirmHeader: {
+    padding: '20px 24px', borderBottom: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-soft)'
+  },
+  modalConfirmTitre: {
+    margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)'
+  },
+  modalConfirmBody: {
+    padding: '24px'
+  },
+  modalConfirmTexte: {
+    margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.6'
+  },
+  modalConfirmAvert: {
+    margin: 0, fontSize: '13px', color: '#b45309', fontStyle: 'italic'
+  },
+  modalConfirmFooter: {
+    padding: '16px 24px', borderTop: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'flex-end', gap: '12px',
+    backgroundColor: 'var(--bg-soft)'
   }
 };
