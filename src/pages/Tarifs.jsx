@@ -14,7 +14,10 @@ export default function Tarifs() {
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
-  //  LA RECHERCHE ET LES FILTRES
+  // ✅ ÉTAT POUR LA MODALE DE SUPPRESSION
+  const [tarifASupprimer, setTarifASupprimer] = useState(null);
+
+  // LA RECHERCHE ET LES FILTRES
   const [recherche, setRecherche] = useState('');
   const [filtreUnite, setFiltreUnite] = useState('');
   const [filtrePrix, setFiltrePrix] = useState('');
@@ -44,32 +47,26 @@ export default function Tarifs() {
     }
   };
 
-  //  LOGIQUE DE FILTRAGE INSTANTANÉ
+  // LOGIQUE DE FILTRAGE INSTANTANÉ
   const tarifsFiltres = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
     const maintenant = new Date();
 
     return tarifs.filter((t) => {
-      // 1. Recherche par nom d'activité
       const matchRecherche = terme === '' || (t.activite_nom || '').toLowerCase().includes(terme);
-
-      // 2. Filtre par unité
       const matchUnite = filtreUnite === '' || t.unite === filtreUnite;
 
-      // 3. Filtre par prix de vente
       let matchPrix = true;
       if (filtrePrix === 'bas') matchPrix = t.prix_vente < 50000;
       else if (filtrePrix === 'moyen') matchPrix = t.prix_vente >= 50000 && t.prix_vente <= 200000;
       else if (filtrePrix === 'eleve') matchPrix = t.prix_vente > 200000;
 
-      // 4. Filtre par coût
       let matchCout = true;
       if (filtreCout === 'bas') matchCout = t.cout && t.cout < 30000;
       else if (filtreCout === 'moyen') matchCout = t.cout && t.cout >= 30000 && t.cout <= 100000;
       else if (filtreCout === 'eleve') matchCout = t.cout && t.cout > 100000;
       else if (filtreCout === 'inconnu') matchCout = !t.cout;
 
-      // 5. Filtre par marge
       let matchMarge = true;
       const marge = t.cout ? t.prix_vente - t.cout : null;
       if (filtreMarge === 'faible') matchMarge = marge !== null && marge < 10000;
@@ -77,15 +74,10 @@ export default function Tarifs() {
       else if (filtreMarge === 'elevee') matchMarge = marge !== null && marge > 50000;
       else if (filtreMarge === 'inconnue') matchMarge = marge === null;
 
-      // 6. Filtre par période (actif / expiré)
       let matchPeriode = true;
-      if (filtrePeriode === 'actif') {
-        matchPeriode = new Date(t.periode_fin) >= maintenant;
-      } else if (filtrePeriode === 'expire') {
-        matchPeriode = new Date(t.periode_fin) < maintenant;
-      }
+      if (filtrePeriode === 'actif') matchPeriode = new Date(t.periode_fin) >= maintenant;
+      else if (filtrePeriode === 'expire') matchPeriode = new Date(t.periode_fin) < maintenant;
 
-      // 7. Filtre par date de vérification
       let matchVerifie = true;
       if (filtreVerifie === 'recent') {
         matchVerifie = t.derniere_verification && 
@@ -140,12 +132,12 @@ export default function Tarifs() {
     }
   };
 
+  // ✅ SUPPRESSION SANS CONFIRM NATIF
   const supprimer = async (tarif) => {
-    if (!confirm(`Supprimer ce tarif de ${tarif.prix_vente.toLocaleString('fr-FR')} Ar ?`)) return;
-
     try {
       await tarifsService.delete(tarif.id);
       await chargerDonnees();
+      setTarifASupprimer(null);
     } catch (error) {
       alert('Erreur : ' + (error.response?.data?.error || error.message));
     }
@@ -165,7 +157,6 @@ export default function Tarifs() {
 
   return (
     <div>
-      {/* Barre d'actions */}
       <div style={styles.barreActions}>
         <div>
           <h2 style={styles.titre}>
@@ -183,7 +174,6 @@ export default function Tarifs() {
         )}
       </div>
 
-      {/*  BARRE DE RECHERCHE ET FILTRES */}
       <div style={styles.barreFiltres}>
         <input
           type="text"
@@ -244,7 +234,6 @@ export default function Tarifs() {
         )}
       </div>
 
-      {/* Tableau */}
       <div style={styles.tableContainer}>
         {tarifsFiltres.length === 0 ? (
           <div style={styles.aucune}>
@@ -307,7 +296,7 @@ export default function Tarifs() {
                           style={styles.btnIcone}
                           title="Marquer vérifié"
                         >
-                          
+                          ✅
                         </button>
                         <button
                           onClick={() => ouvrirModalEdition(t)}
@@ -316,8 +305,9 @@ export default function Tarifs() {
                         >
                           ✏️
                         </button>
+                        {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
                         <button
-                          onClick={() => supprimer(t)}
+                          onClick={() => setTarifASupprimer(t)}
                           style={styles.btnIcone}
                           title="Supprimer"
                         >
@@ -335,7 +325,6 @@ export default function Tarifs() {
         )}
       </div>
 
-      {/* Modal */}
       {modalOuvert && estAdmin && (
         <ModalTarif
           tarif={tarifEnEdition}
@@ -344,6 +333,44 @@ export default function Tarifs() {
           onClose={fermerModal}
         />
       )}
+
+      {/* ✅ MODALE DE CONFIRMATION DE SUPPRESSION */}
+      {tarifASupprimer && (
+        <ModalConfirmation
+          titre="Confirmer la suppression"
+          message={`Voulez-vous vraiment supprimer ce tarif de ${tarifASupprimer.prix_vente.toLocaleString('fr-FR')} Ar ?`}
+          avertissement={`Activité : ${tarifASupprimer.activite_nom || 'Prestataire'} — Unité : ${formatUnite(tarifASupprimer.unite, tarifASupprimer)}`}
+          onConfirm={() => supprimer(tarifASupprimer)}
+          onCancel={() => setTarifASupprimer(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============ MODALE DE CONFIRMATION RÉUTILISABLE ============
+function ModalConfirmation({ titre, message, avertissement, onConfirm, onCancel }) {
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalConfirm}>
+        <div style={styles.modalConfirmHeader}>
+          <h3 style={styles.modalConfirmTitre}>⚠️ {titre}</h3>
+        </div>
+        <div style={styles.modalConfirmBody}>
+          <p style={styles.modalConfirmTexte}>{message}</p>
+          {avertissement && (
+            <p style={styles.modalConfirmAvert}>{avertissement}</p>
+          )}
+        </div>
+        <div style={styles.modalConfirmFooter}>
+          <button type="button" onClick={onCancel} style={styles.btnSecondaire}>
+            Annuler
+          </button>
+          <button type="button" onClick={onConfirm} style={styles.btnDanger}>
+            🗑️ Supprimer
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -402,13 +429,7 @@ function ModalTarif({ tarif, activites, onSave, onClose }) {
           <div style={styles.formGrid}>
             <div style={styles.field}>
               <label style={styles.label}>Activité *</label>
-              <select
-                name="activite_id"
-                value={form.activite_id}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              >
+              <select name="activite_id" value={form.activite_id} onChange={handleChange} required style={styles.input}>
                 {activites.map(a => (
                   <option key={a.id} value={a.id}>{a.nom}</option>
                 ))}
@@ -417,13 +438,7 @@ function ModalTarif({ tarif, activites, onSave, onClose }) {
 
             <div style={styles.field}>
               <label style={styles.label}>Unité *</label>
-              <select
-                name="unite"
-                value={form.unite}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              >
+              <select name="unite" value={form.unite} onChange={handleChange} required style={styles.input}>
                 <option value="par_adulte">Par adulte</option>
                 <option value="par_enfant">Par enfant</option>
                 <option value="par_groupe">Par groupe</option>
@@ -435,82 +450,38 @@ function ModalTarif({ tarif, activites, onSave, onClose }) {
               <>
                 <div style={styles.field}>
                   <label style={styles.label}>Âge min</label>
-                  <input
-                    type="number"
-                    name="tranche_age_min"
-                    value={form.tranche_age_min}
-                    onChange={handleChange}
-                    style={styles.input}
-                  />
+                  <input type="number" name="tranche_age_min" value={form.tranche_age_min} onChange={handleChange} style={styles.input} />
                 </div>
                 <div style={styles.field}>
                   <label style={styles.label}>Âge max</label>
-                  <input
-                    type="number"
-                    name="tranche_age_max"
-                    value={form.tranche_age_max}
-                    onChange={handleChange}
-                    style={styles.input}
-                  />
+                  <input type="number" name="tranche_age_max" value={form.tranche_age_max} onChange={handleChange} style={styles.input} />
                 </div>
               </>
             )}
 
             <div style={styles.field}>
               <label style={styles.label}>Prix de vente (Ar) *</label>
-              <input
-                type="number"
-                name="prix_vente"
-                value={form.prix_vente}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              />
+              <input type="number" name="prix_vente" value={form.prix_vente} onChange={handleChange} required style={styles.input} />
             </div>
 
             <div style={styles.field}>
               <label style={styles.label}>Coût prestataire (Ar)</label>
-              <input
-                type="number"
-                name="cout"
-                value={form.cout}
-                onChange={handleChange}
-                style={styles.input}
-              />
+              <input type="number" name="cout" value={form.cout} onChange={handleChange} style={styles.input} />
             </div>
 
             <div style={styles.field}>
               <label style={styles.label}>Période début *</label>
-              <input
-                type="date"
-                name="periode_debut"
-                value={form.periode_debut}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              />
+              <input type="date" name="periode_debut" value={form.periode_debut} onChange={handleChange} required style={styles.input} />
             </div>
 
             <div style={styles.field}>
               <label style={styles.label}>Période fin *</label>
-              <input
-                type="date"
-                name="periode_fin"
-                value={form.periode_fin}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              />
+              <input type="date" name="periode_fin" value={form.periode_fin} onChange={handleChange} required style={styles.input} />
             </div>
 
             <div style={styles.field}>
               <label style={styles.label}>Statut</label>
-              <select
-                name="statut"
-                value={form.statut}
-                onChange={handleChange}
-                style={styles.input}
-              >
+              <select name="statut" value={form.statut} onChange={handleChange} style={styles.input}>
                 <option value="confirme">Confirmé</option>
                 <option value="a_confirmer">À confirmer</option>
               </select>
@@ -518,12 +489,8 @@ function ModalTarif({ tarif, activites, onSave, onClose }) {
           </div>
 
           <div style={styles.modalFooter}>
-            <button type="button" onClick={onClose} style={styles.btnSecondaire}>
-              Annuler
-            </button>
-            <button type="submit" style={styles.btnPrimaire}>
-              {tarif ? 'Enregistrer' : 'Créer'}
-            </button>
+            <button type="button" onClick={onClose} style={styles.btnSecondaire}>Annuler</button>
+            <button type="submit" style={styles.btnPrimaire}>{tarif ? 'Enregistrer' : 'Créer'}</button>
           </div>
         </form>
       </div>
@@ -559,7 +526,6 @@ const styles = {
     padding: '8px 16px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
     border: '1px solid var(--border)', borderRadius: '4px', fontSize: '13px', fontWeight: '600', cursor: 'pointer'
   },
-  actionsDroite: { display: 'flex', gap: '12px', alignItems: 'center' },
   btnPrimaire: {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
@@ -567,6 +533,10 @@ const styles = {
   btnSecondaire: {
     padding: '10px 20px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
     border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
+  },
+  btnDanger: {
+    padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
+    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   tableContainer: {
     backgroundColor: 'var(--bg-surface)', borderRadius: '8px', overflow: 'hidden',
@@ -623,5 +593,32 @@ const styles = {
   modalFooter: {
     padding: '16px 24px', borderTop: '1px solid var(--border)',
     display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px'
+  },
+  
+  // ✅ STYLES DE LA MODALE DE CONFIRMATION
+  modalConfirm: {
+    backgroundColor: 'var(--bg-surface)', borderRadius: '8px', width: '100%',
+    maxWidth: '450px', overflow: 'hidden'
+  },
+  modalConfirmHeader: {
+    padding: '20px 24px', borderBottom: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-soft)'
+  },
+  modalConfirmTitre: {
+    margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)'
+  },
+  modalConfirmBody: {
+    padding: '24px'
+  },
+  modalConfirmTexte: {
+    margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.6'
+  },
+  modalConfirmAvert: {
+    margin: 0, fontSize: '13px', color: '#b45309', fontStyle: 'italic'
+  },
+  modalConfirmFooter: {
+    padding: '16px 24px', borderTop: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'flex-end', gap: '12px',
+    backgroundColor: 'var(--bg-soft)'
   }
 };
