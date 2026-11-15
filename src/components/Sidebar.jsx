@@ -91,7 +91,7 @@ export default function Sidebar({ closeMenu }) {
             <ModalHeader>
               <ModalTitle>
                 <LogOut size={20} />
-                Confirmer la déconnexion
+                DECONNEXION
               </ModalTitle>
               <ModalClose onClick={() => setModalDeconnexion(false)}>
                 <X size={18} />
@@ -103,11 +103,11 @@ export default function Sidebar({ closeMenu }) {
             </ModalBody>
             <ModalFooter>
               <BtnSecondary onClick={() => setModalDeconnexion(false)}>
-                Annuler
+                NON
               </BtnSecondary>
               <BtnDanger onClick={confirmerDeconnexion}>
                 <LogOut size={16} />
-                Se déconnecter
+                OUI
               </BtnDanger>
             </ModalFooter>
           </ModalBox>
