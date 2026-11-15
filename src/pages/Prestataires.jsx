@@ -11,7 +11,10 @@ export default function Prestataires() {
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
-  //  ÉTATS POUR LA RECHERCHE ET LE FILTRE
+  // ✅ ÉTAT POUR LA MODALE DE DÉSACTIVATION
+  const [prestataireADesactiver, setPrestataireADesactiver] = useState(null);
+
+  // ÉTATS POUR LA RECHERCHE ET LE FILTRE
   const [recherche, setRecherche] = useState('');
   const [filtreStatut, setFiltreStatut] = useState('');
 
@@ -31,18 +34,15 @@ export default function Prestataires() {
     }
   };
 
-  //  LOGIQUE DE FILTRAGE INSTANTANÉ
   const prestatairesFiltres = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
 
     return prestataires.filter((p) => {
-      // 1. Recherche par nom ou téléphone
       const matchRecherche = 
         terme === '' || 
         (p.nom || '').toLowerCase().includes(terme) || 
         (p.telephones || '').toLowerCase().includes(terme);
 
-      // 2. Filtre par statut
       const matchStatut = filtreStatut === '' || p.statut === filtreStatut;
 
       return matchRecherche && matchStatut;
@@ -69,11 +69,12 @@ export default function Prestataires() {
     }
   };
 
+  // ✅ DÉSACTIVATION SANS CONFIRM NATIF
   const desactiver = async (prestataire) => {
-    if (!confirm(`Désactiver "${prestataire.nom}" ?`)) return;
     try {
       await prestatairesService.desactiver(prestataire.id);
       await charger();
+      setPrestataireADesactiver(null);
     } catch (error) {
       alert('Erreur : ' + (error.response?.data?.error || error.message));
     }
@@ -103,7 +104,6 @@ export default function Prestataires() {
         )}
       </div>
 
-      {/*  BARRE DE RECHERCHE ET FILTRE */}
       <div style={styles.barreFiltres}>
         <input
           type="text"
@@ -179,8 +179,9 @@ export default function Prestataires() {
                           ✏️
                         </button>
                         {p.statut === 'actif' && (
+                          {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
                           <button
-                            onClick={() => desactiver(p)}
+                            onClick={() => setPrestataireADesactiver(p)}
                             style={styles.btnIcone}
                             title="Désactiver"
                           >
@@ -206,6 +207,44 @@ export default function Prestataires() {
           onClose={() => { setModalOuvert(false); setEnEdition(null); }}
         />
       )}
+
+      {/* ✅ MODALE DE CONFIRMATION DE DÉSACTIVATION */}
+      {prestataireADesactiver && (
+        <ModalConfirmation
+          titre="Confirmer la désactivation"
+          message={`Voulez-vous vraiment désactiver le prestataire "${prestataireADesactiver.nom}" ?`}
+          avertissement="Le prestataire ne sera plus proposé pour de nouvelles activités."
+          onConfirm={() => desactiver(prestataireADesactiver)}
+          onCancel={() => setPrestataireADesactiver(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ============ MODALE DE CONFIRMATION RÉUTILISABLE ============
+function ModalConfirmation({ titre, message, avertissement, onConfirm, onCancel }) {
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalConfirm}>
+        <div style={styles.modalConfirmHeader}>
+          <h3 style={styles.modalConfirmTitre}>⚠️ {titre}</h3>
+        </div>
+        <div style={styles.modalConfirmBody}>
+          <p style={styles.modalConfirmTexte}>{message}</p>
+          {avertissement && (
+            <p style={styles.modalConfirmAvert}>{avertissement}</p>
+          )}
+        </div>
+        <div style={styles.modalConfirmFooter}>
+          <button type="button" onClick={onCancel} style={styles.btnSecondaire}>
+            Annuler
+          </button>
+          <button type="button" onClick={onConfirm} style={styles.btnDanger}>
+            🗑️ Désactiver
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -291,12 +330,14 @@ function ModalPrestataire({ prestataire, onSave, onClose }) {
     </div>
   );
 }
+
 const styles = {
   loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   barreActions: {
     backgroundColor: 'var(--bg-surface)', padding: '20px 24px', borderRadius: '8px',
     marginBottom: '16px', display: 'flex', justifyContent: 'space-between',
-    alignItems: 'center', boxShadow: '0 2px 4px var(--shadow)', flexWrap: 'wrap', gap: '12px'
+    alignItems: 'center', boxShadow: '0 2px 4px var(--shadow)',
+    flexWrap: 'wrap', gap: '12px'
   },
   titre: { fontSize: '20px', color: 'var(--text-primary)' },
   sousTitre: { fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' },
@@ -318,7 +359,6 @@ const styles = {
     padding: '8px 16px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
     border: '1px solid var(--border)', borderRadius: '4px', fontSize: '13px', fontWeight: '600', cursor: 'pointer'
   },
-  actionsDroite: { display: 'flex', gap: '12px', alignItems: 'center' },
   btnPrimaire: {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
@@ -326,6 +366,10 @@ const styles = {
   btnSecondaire: {
     padding: '10px 20px', backgroundColor: 'var(--bg-soft)', color: 'var(--text-primary)',
     border: '1px solid var(--border)', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
+  },
+  btnDanger: {
+    padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
+    border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   tableContainer: {
     backgroundColor: 'var(--bg-surface)', borderRadius: '8px', overflow: 'hidden',
@@ -384,5 +428,32 @@ const styles = {
   },
   modalFooter: {
     display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px'
+  },
+  
+  // ✅ STYLES DE LA MODALE DE CONFIRMATION
+  modalConfirm: {
+    backgroundColor: 'var(--bg-surface)', borderRadius: '8px', width: '100%',
+    maxWidth: '450px', overflow: 'hidden'
+  },
+  modalConfirmHeader: {
+    padding: '20px 24px', borderBottom: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-soft)'
+  },
+  modalConfirmTitre: {
+    margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)'
+  },
+  modalConfirmBody: {
+    padding: '24px'
+  },
+  modalConfirmTexte: {
+    margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.6'
+  },
+  modalConfirmAvert: {
+    margin: 0, fontSize: '13px', color: '#b45309', fontStyle: 'italic'
+  },
+  modalConfirmFooter: {
+    padding: '16px 24px', borderTop: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'flex-end', gap: '12px',
+    backgroundColor: 'var(--bg-soft)'
   }
 };
