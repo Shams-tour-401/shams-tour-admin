@@ -12,7 +12,7 @@ export default function Sidebar({ closeMenu }) {
   const { user, logout } = useAuth();
   const estAdmin = user?.role === 'administrateur';
   
-  // ✅ NOUVEL ÉTAT POUR LA MODALE DE DÉCONNEXION
+  //  MODALE DE DÉCONNEXION
   const [modalDeconnexion, setModalDeconnexion] = useState(false);
 
   const menuItems = [
@@ -35,7 +35,7 @@ export default function Sidebar({ closeMenu }) {
     .split(' ').filter(Boolean).slice(0, 2)
     .map(m => m[0].toUpperCase()).join('');
 
-  // ✅ GESTION DE LA CONFIRMATION
+  //  GESTION DE LA CONFIRMATION
   const confirmerDeconnexion = () => {
     setModalDeconnexion(false);
     logout();
@@ -84,7 +84,7 @@ export default function Sidebar({ closeMenu }) {
         </Footer>
       </Aside>
 
-      {/* ✅ MODALE DE CONFIRMATION */}
+      {/*  MODALE DE CONFIRMATION */}
       {modalDeconnexion && (
         <ModalOverlay onClick={() => setModalDeconnexion(false)}>
           <ModalBox onClick={(e) => e.stopPropagation()}>
