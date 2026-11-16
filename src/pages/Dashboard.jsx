@@ -215,7 +215,7 @@ const Spinner = styled(Loader2)`animation: ${spin} 0.8s linear infinite;`;
 /* ✅ STYLES DU DIAGRAMME EN BANDES */
 const ChartCard = styled.section`
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
@@ -311,7 +311,7 @@ const AlertesTitre = styled.div`
 `;
 const AlertesTotal = styled.span`padding: 1px 8px; font-size: 11px; font-weight: 700; color: #fff; background: #e5283c; border-radius: 999px;`;
 const AlertesGrid = styled.div`display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; @media (min-width: 768px) { grid-template-columns: repeat(2, 1fr); }`;
-const AlerteBox = styled.div`padding: 16px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px;`;
+const AlerteBox = styled.div`padding: 16px; background: var(--bg-soft); border: none; border-radius: 12px;`;
 const AlerteHeader = styled.div`display: flex; align-items: center; gap: 10px;`;
 const AlerteIcone = styled.span`width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: ${toneFg}; background: ${toneBg}; border-radius: 8px;`;
 const AlerteNom = styled.strong`font-size: 15px; font-weight: 600; color: var(--text-primary);`;
@@ -321,7 +321,7 @@ const AlerteListe = styled.ul`list-style: none; margin: 0; padding: 0; font-size
 const AlerteItem = styled.li`display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border);`;
 const AlerteLink = styled(Link)`min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: var(--text-primary); transition: color 0.15s ease; &:hover { color: #2f6fd6; }`;
 const AlerteMeta = styled.small`flex-shrink: 0; font-size: 12px; color: var(--text-muted);`;
-const Section = styled.section`background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; width: 100%;`;
+const Section = styled.section`background: var(--bg-surface); border: none; border-radius: 12px; overflow: hidden; width: 100%;`;
 const SectionHeader = styled.div`display: flex; align-items: center; justify-content: space-between; padding: 16px; @media (min-width: 640px) { padding: 16px 20px; }`;
 const SectionTitle = styled.h2`margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary);`;
 const VoirTout = styled(Link)`display: inline-flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 500; color: #2f6fd6; transition: gap 0.15s ease, color 0.15s ease; &:hover { gap: 5px; color: #2760bf; }`;
