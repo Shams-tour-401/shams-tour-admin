@@ -295,7 +295,7 @@ export default function DemandeDetail() {
             )}
 
             {/* Bouton appel */}
-            <Btn type="button" $block $variant="outline" onClick={() => setModalAppel(true)}>
+            <Btn $specialStyle type="button" $block $variant="outline" onClick={() => setModalAppel(true)}>
               <PhoneCall size={16} />
               Enregistrer un appel
             </Btn>
@@ -304,6 +304,7 @@ export default function DemandeDetail() {
             <ActionsRapides>
               {demande.statut === 'demande_recue' && (
                 <Btn
+                  $specialStyle
                   type="button"
                   $block
                   onClick={() => changerStatut('a_contacter')}
@@ -316,6 +317,7 @@ export default function DemandeDetail() {
 
               {demande.statut === 'a_contacter' && (
                 <Btn
+                  $specialStyle
                   type="button"
                   $block
                   onClick={() => changerStatut('disponibilites_a_verifier')}
@@ -1103,6 +1105,19 @@ const Select = styled.select` ${controlStyles} cursor: pointer; `;
 const Textarea = styled.textarea` ${controlStyles} resize: vertical; `;
 
 const Btn = styled.button`
+  /* styles généraux */
+  ${({ $specialStyle }) =>
+    $specialStyle &&
+    `
+    background: #f0f4ff;
+    color: #1e40af;
+    border-color: #3b82f6;
+    &:hover {
+      background: #dbeafe;
+      color: #1e3a8a;
+    }
+  `}
+`;
   display: inline-flex;
   align-items: center;
   justify-content: center;
