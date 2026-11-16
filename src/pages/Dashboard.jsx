@@ -291,7 +291,25 @@ const BarFill = styled.div`
 `;
 
 const AlertesSection = styled.section`margin-bottom: 24px; width: 100%;`;
-const AlertesTitre = styled.h2`display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 16px; font-weight: 600; color: var(--text-primary); svg { color: #b45309; }`;
+const AlertesTitre = styled.h2`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+  svg { color: #b45309; }
+  
+  /*  Force la couleur sur le texte et les enfants */
+  &, & span, & svg {
+    color: var(--text-primary);
+  }
+  svg {
+    color: #b45309; /* l'icône garde sa couleur orange */
+  }
+`;
 const AlertesTotal = styled.span`padding: 1px 8px; font-size: 11px; font-weight: 700; color: #fff; background: #e5283c; border-radius: 999px;`;
 const AlertesGrid = styled.div`display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; @media (min-width: 768px) { grid-template-columns: repeat(2, 1fr); }`;
 const AlerteBox = styled.div`padding: 16px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 12px;`;
