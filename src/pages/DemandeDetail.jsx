@@ -297,9 +297,9 @@ export default function DemandeDetail() {
               </CompteurAppels>
             )}
 
-            {/* Bouton appel — compact, aligné à droite */}
+            {/* BOUTONS ALIGNÉS HORIZONTALEMENT ET CENTRÉS */}
             <ActionsRapidesDroite>
-              <div style={{ gridColumn: '1 / -1' }}>
+              {/* 1. Enregistrer un appel */}
               <Btn
                 type="button"
                 $compact
@@ -309,8 +309,6 @@ export default function DemandeDetail() {
                 <PhoneCall size={16} />
                 Enregistrer un appel
               </Btn>
-                </div>
-            </ActionsRapidesDroite>
 
             {/* Actions rapides selon le statut — compactes, alignées à droite */}
             <ActionsRapidesDroite>
@@ -326,6 +324,8 @@ export default function DemandeDetail() {
                 </Btn>
               )}
 
+              {demande.statut === 'a_contacter' && (
+                 {/* 2. Vérifier disponibilités (uniquement si statut = à contacter) */}
               {demande.statut === 'a_contacter' && (
                 <Btn
                   type="button"
@@ -365,7 +365,8 @@ export default function DemandeDetail() {
                 </Btn>
               )}
 
-               {demande.statut !== 'annulee' && demande.statut !== 'confirmee' && (
+              {/* 3. Annuler la demande (uniquement si pas annulée ni confirmée) */}
+              {demande.statut !== 'annulee' && demande.statut !== 'confirmee' && (
                 <Btn
                   type="button"
                   $compact
@@ -377,6 +378,7 @@ export default function DemandeDetail() {
                   Annuler la demande
                 </Btn>
               )}
+            </ActionsRapidesDroite>
 
               {demande.statut !== 'annulee' &&
                 demande.statut !== 'confirmee' &&
@@ -1162,11 +1164,16 @@ const Btn = styled.button`
 
 const ActionsRapidesDroite = styled.div`
   display: flex;
-  grid-template-columns: 1fr 1fr;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+  flex-wrap: nowrap;         /* Force les boutons sur une seule ligne */
+  justify-content: center;   /* Centre les boutons horizontalement */
+  align-items: center;       /* Centre verticalement */
+  gap: 8px;                  /* Espace entre les boutons */
   margin-top: 12px;
+  
+  /* Empêche les boutons de rétrécir si l'écran est trop petit */
+  & > button {
+    white-space: nowrap; 
+  }
 `;
 
 const StatutWrap = styled.div`
