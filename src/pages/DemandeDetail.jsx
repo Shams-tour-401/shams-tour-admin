@@ -372,7 +372,7 @@ export default function DemandeDetail() {
                   $variant="danger"
                   onClick={() => changerStatut('annulee')}
                   disabled={changementEnCours}
-                  style={{ gridColumn: 2}}
+                  style={{ gridColumn: 2, justify-content: flex-end;}}
                 >
                   <XCircle size={16} />
                   Annuler la demande
