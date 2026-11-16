@@ -298,7 +298,7 @@ const AlertesTitre = styled.h2`
   margin: 0 0 12px;
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: black;
   transition: color 0.3s ease;
   svg { color: #b45309; }
   
