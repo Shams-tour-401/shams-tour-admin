@@ -365,14 +365,13 @@ export default function DemandeDetail() {
                 </Btn>
               )}
 
-              {demande.statut !== 'annulee' && demande.statut !== 'confirmee' && (
+               {demande.statut !== 'annulee' && demande.statut !== 'confirmee' && (
                 <Btn
                   type="button"
                   $compact
                   $variant="danger"
                   onClick={() => changerStatut('annulee')}
                   disabled={changementEnCours}
-                  style={{ gridColumn: 2, justify-content: flex-end;}}
                 >
                   <XCircle size={16} />
                   Annuler la demande
