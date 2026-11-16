@@ -118,7 +118,7 @@ export default function Dashboard() {
 
       {alertes.total > 0 && (
         <AlertesSection>
-          <AlertesTitre><AlertTriangle size={18} />À traiter<AlertesTotal>{alertes.total}</AlertesTotal></AlertesTitre>
+          <AlertesTitre><AlertTriangle size={18} /><AlertesTotal>{alertes.total}</AlertesTotal></AlertesTitre>
           <AlertesGrid>
             {alertes.demandes_en_retard.length > 0 && (
               <AlerteCard tone="red" Icon={Clock} titre="Demandes en retard" description="Sans action depuis plus d'un jour ouvré" count={alertes.demandes_en_retard.length}>
