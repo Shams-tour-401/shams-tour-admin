@@ -69,17 +69,53 @@ export default function Dashboard() {
 
   if (loading) return <Loading><Spinner size={18} />Chargement...</Loading>;
 
+  // ✅ DONNÉES DU DIAGRAMME EN BANDES
+  const barres = [
+    { label: 'Total demandes', valeur: stats.total, couleur: '#4b5d70', Icon: ClipboardList },
+    { label: 'Nouvelles', valeur: stats.demande_recue, couleur: '#2f6fd6', Icon: Bell },
+    { label: 'À contacter', valeur: stats.a_contacter, couleur: '#E67E22', Icon: Phone },
+    { label: 'Confirmées', valeur: stats.confirmee, couleur: '#27AE60', Icon: CheckCircle2 }
+  ];
+
+  const maxValeur = Math.max(...barres.map(b => b.valeur), 1);
+
   return (
     <Page>
       {erreurs.length > 0 && (
         <ErrorBanner role="alert"><AlertCircle size={18} /><ErrorText><strong>Certaines données n'ont pas pu être chargées.</strong><ul>{erreurs.map((m) => <li key={m}>{m}</li>)}</ul></ErrorText><RetryButton type="button" onClick={chargerDonnees}>Réessayer</RetryButton></ErrorBanner>
       )}
-      <StatsGrid>
-        <StatCard titre="Total demandes" valeur={stats.total} tone="neutral" Icon={ClipboardList} featured />
-        <StatCard titre="Nouvelles" valeur={stats.demande_recue} tone="blue" Icon={Bell} />
-        <StatCard titre="À contacter" valeur={stats.a_contacter} tone="amber" Icon={Phone} />
-        <StatCard titre="Confirmées" valeur={stats.confirmee} tone="green" Icon={CheckCircle2} />
-      </StatsGrid>
+
+      {/* ✅ DIAGRAMME EN BANDES */}
+      <ChartCard>
+        <ChartTitle>Répartition des demandes</ChartTitle>
+        <ChartBars>
+          {barres.map((b) => {
+            const pourcentage = (b.valeur / maxValeur) * 100;
+            const Icon = b.Icon;
+            return (
+              <BarRow key={b.label}>
+                <BarLabel>
+                  <BarIcon style={{ backgroundColor: b.couleur }}>
+                    <Icon size={14} />
+                  </BarIcon>
+                  <span>{b.label}</span>
+                </BarLabel>
+                <BarTrack>
+                  <BarFill
+                    style={{
+                      width: `${Math.max(pourcentage, 2)}%`,
+                      backgroundColor: b.couleur
+                    }}
+                  >
+                    <span>{b.valeur}</span>
+                  </BarFill>
+                </BarTrack>
+              </BarRow>
+            );
+          })}
+        </ChartBars>
+      </ChartCard>
+
       {alertes.total > 0 && (
         <AlertesSection>
           <AlertesTitre><AlertTriangle size={18} />À traiter<AlertesTotal>{alertes.total}</AlertesTotal></AlertesTitre>
@@ -107,6 +143,7 @@ export default function Dashboard() {
           </AlertesGrid>
         </AlertesSection>
       )}
+
       <Section>
         <SectionHeader><SectionTitle>Dernières demandes</SectionTitle><VoirTout to="/demandes">Tout voir <ChevronRight size={14} /></VoirTout></SectionHeader>
         {dernieresDemandes.length === 0 ? (
@@ -120,15 +157,6 @@ export default function Dashboard() {
         )}
       </Section>
     </Page>
-  );
-}
-
-function StatCard({ titre, valeur, tone, Icon, featured }) {
-  return (
-    <StatCardBox $featured={featured}>
-      <StatTop><StatTitre>{titre}</StatTitre><StatIcon $tone={tone}><Icon size={16} /></StatIcon></StatTop>
-      <StatValeur>{valeur}</StatValeur>
-    </StatCardBox>
   );
 }
 
@@ -183,12 +211,85 @@ const ErrorText = styled.div`flex: 1 1 240px; min-width: 0; font-size: 14px; ul 
 const RetryButton = styled.button`padding: 8px 14px; font-family: inherit; font-size: 13px; font-weight: 600; color: #fff; background: #2f6fd6; border: none; border-radius: 10px; cursor: pointer; &:hover { background: #2760bf; }`;
 const Loading = styled.div`display: flex; align-items: center; justify-content: center; gap: 8px; padding: 64px 16px; font-size: 14px; color: var(--text-muted);`;
 const Spinner = styled(Loader2)`animation: ${spin} 0.8s linear infinite;`;
-const StatsGrid = styled.div`display: grid; grid-template-columns: repeat(1, 1fr); gap: 16px; margin-bottom: 24px; width: 100%; @media (min-width: 768px) { grid-template-columns: repeat(2, 1fr); } @media (min-width: 1200px) { grid-template-columns: repeat(4, 1fr); }`;
-const StatCardBox = styled.div`padding: 16px; background: var(--bg-surface); border: 1px solid var(--border); border-left: 3px solid ${({ $featured }) => ($featured ? '#2f6fd6' : 'var(--border)')}; border-radius: 12px; transition: box-shadow 0.2s ease, transform 0.2s ease; &:hover { box-shadow: 0 8px 22px rgba(31, 78, 121, 0.1); transform: translateY(-1px); } @media (min-width: 900px) { padding: 18px 20px; }`;
-const StatTop = styled.div`display: flex; align-items: center; justify-content: space-between; gap: 8px;`;
-const StatTitre = styled.div`font-size: 13px; color: var(--text-muted);`;
-const StatIcon = styled.div`width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: ${toneFg}; background: ${toneBg}; border-radius: 8px;`;
-const StatValeur = styled.div`margin-top: 10px; font-size: 28px; font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; color: var(--text-primary); font-variant-numeric: tabular-nums; @media (min-width: 900px) { font-size: 32px; }`;
+
+/* ✅ STYLES DU DIAGRAMME EN BANDES */
+const ChartCard = styled.section`
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  width: 100%;
+  transition: background-color 0.3s ease;
+`;
+const ChartTitle = styled.h2`
+  margin: 0 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+`;
+const ChartBars = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+`;
+const BarRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+`;
+const BarLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  @media (max-width: 640px) {
+    min-width: auto;
+  }
+`;
+const BarIcon = styled.span`
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #fff;
+  flex-shrink: 0;
+`;
+const BarTrack = styled.div`
+  flex: 1;
+  height: 32px;
+  background: var(--bg-soft);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+`;
+const BarFill = styled.div`
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 12px;
+  border-radius: 8px;
+  transition: width 0.8s ease;
+  min-width: 40px;
+  span {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+`;
+
 const AlertesSection = styled.section`margin-bottom: 24px; width: 100%;`;
 const AlertesTitre = styled.h2`display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 16px; font-weight: 600; color: var(--text-primary); svg { color: #b45309; }`;
 const AlertesTotal = styled.span`padding: 1px 8px; font-size: 11px; font-weight: 700; color: #fff; background: #e5283c; border-radius: 999px;`;
