@@ -1105,19 +1105,7 @@ const Select = styled.select` ${controlStyles} cursor: pointer; `;
 const Textarea = styled.textarea` ${controlStyles} resize: vertical; `;
 
 const Btn = styled.button`
-  /* styles généraux */
-  ${({ $specialStyle }) =>
-    $specialStyle &&
-    `
-    background: #f0f4ff;
-    color: #1e40af;
-    border-color: #3b82f6;
-    &:hover {
-      background: #dbeafe;
-      color: #1e3a8a;
-    }
-  `}
-`;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
