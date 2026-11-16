@@ -263,18 +263,21 @@ export default function DemandeDetail() {
         <Colonne>
           {/* Actions */}
           <Card titre="Actions" Icon={Settings}>
-            <Label>Changer le statut :</Label>
-            <Select
-              value={demande.statut}
-              onChange={(e) => changerStatut(e.target.value)}
-              disabled={changementEnCours}
-            >
-              {statutsDisponibles.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </Select>
+            {/* Select statut : compact, aligné à gauche */}
+            <StatutWrap>
+              <Label>Changer le statut :</Label>
+              <Select
+                value={demande.statut}
+                onChange={(e) => changerStatut(e.target.value)}
+                disabled={changementEnCours}
+              >
+                {statutsDisponibles.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </Select>
+            </StatutWrap>
 
             {/* Compteur d'appels */}
             {demande.stats_appels && demande.stats_appels.total > 0 && (
@@ -294,19 +297,25 @@ export default function DemandeDetail() {
               </CompteurAppels>
             )}
 
-            {/* Bouton appel */}
-            <Btn  type="button" $block $variant="primary" onClick={() => setModalAppel(true)}>
-              <PhoneCall size={16} />
-              Enregistrer un appel
-            </Btn>
+            {/* Bouton appel — compact, aligné à droite */}
+            <ActionsRapidesDroite>
+              <Btn
+                type="button"
+                $compact
+                $variant="primary"
+                onClick={() => setModalAppel(true)}
+              >
+                <PhoneCall size={16} />
+                Enregistrer un appel
+              </Btn>
+            </ActionsRapidesDroite>
 
-            {/* Actions rapides selon le statut */}
-            <ActionsRapides>
+            {/* Actions rapides selon le statut — compactes, alignées à droite */}
+            <ActionsRapidesDroite>
               {demande.statut === 'demande_recue' && (
                 <Btn
-                  $specialStyle
                   type="button"
-                  $block
+                  $compact
                   onClick={() => changerStatut('a_contacter')}
                   disabled={changementEnCours}
                 >
@@ -317,9 +326,9 @@ export default function DemandeDetail() {
 
               {demande.statut === 'a_contacter' && (
                 <Btn
-                  $variant="violet" 
                   type="button"
-                  $block
+                  $compact
+                  $variant="violet"
                   onClick={() => changerStatut('disponibilites_a_verifier')}
                   disabled={changementEnCours}
                 >
@@ -331,7 +340,7 @@ export default function DemandeDetail() {
               {demande.statut === 'disponibilites_a_verifier' && (
                 <Btn
                   type="button"
-                  $block
+                  $compact
                   $variant="success"
                   onClick={() => changerStatut('confirmee')}
                   disabled={changementEnCours}
@@ -344,7 +353,7 @@ export default function DemandeDetail() {
               {demande.statut === 'proposition_a_valider' && (
                 <Btn
                   type="button"
-                  $block
+                  $compact
                   $variant="success"
                   onClick={() => changerStatut('confirmee')}
                   disabled={changementEnCours}
@@ -357,7 +366,7 @@ export default function DemandeDetail() {
               {demande.statut !== 'annulee' && demande.statut !== 'confirmee' && (
                 <Btn
                   type="button"
-                  $block
+                  $compact
                   $variant="danger"
                   onClick={() => changerStatut('annulee')}
                   disabled={changementEnCours}
@@ -373,7 +382,7 @@ export default function DemandeDetail() {
                 demande.stats_appels.total >= 3 && (
                   <Btn
                     type="button"
-                    $block
+                    $compact
                     $variant="warning"
                     onClick={() => {
                       const motif = prompt(
@@ -395,7 +404,7 @@ export default function DemandeDetail() {
               {demande.statut === 'confirmee' && (
                 <Btn
                   type="button"
-                  $block
+                  $compact
                   $variant="danger"
                   onClick={() => changerStatut('annulee')}
                   disabled={changementEnCours}
@@ -408,7 +417,7 @@ export default function DemandeDetail() {
               {demande.statut === 'annulee' && (
                 <Btn
                   type="button"
-                  $block
+                  $compact
                   onClick={() => changerStatut('a_contacter')}
                   disabled={changementEnCours}
                 >
@@ -416,7 +425,14 @@ export default function DemandeDetail() {
                   Réouvrir la demande
                 </Btn>
               )}
-            </ActionsRapides>
+            </ActionsRapidesDroite>
+
+            {/* GIF en bas du bloc Actions */}
+            <GifActions
+              src="/assets/ton-gif.gif"
+              alt=""
+              aria-hidden="true"
+            />
           </Card>
 
           {/* Propositions */}
@@ -1105,15 +1121,16 @@ const Select = styled.select` ${controlStyles} cursor: pointer; `;
 const Textarea = styled.textarea` ${controlStyles} resize: vertical; `;
 
 const Btn = styled.button`
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: ${({ $block }) => ($block ? '100%' : 'auto')};
-  padding: ${({ $small }) => ($small ? '8px 12px' : '10px 16px')};
+  padding: ${({ $small, $compact }) =>
+    $compact ? '6px 10px' : $small ? '8px 12px' : '10px 16px'};
   font-family: inherit;
-  font-size: ${({ $small }) => ($small ? '13px' : '14px')};
+  font-size: ${({ $small, $compact }) =>
+    $compact ? '12px' : $small ? '13px' : '14px'};
   font-weight: 600;
   color: ${(p) => variant(p).fg};
   background: ${(p) => variant(p).bg};
@@ -1141,11 +1158,39 @@ const Btn = styled.button`
   }
 `;
 
-const ActionsRapides = styled.div`
+const ActionsRapidesDroite = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
   margin-top: 12px;
+`;
+
+const StatutWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+
+  select {
+    width: auto;
+    min-width: 180px;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  label {
+    margin-bottom: 0;
+  }
+`;
+
+const GifActions = styled.img`
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  margin: 16px 0 0 auto;
+  border-radius: 10px;
 `;
 
 const CompteurAppels = styled.div`
