@@ -118,7 +118,7 @@ export default function Dashboard() {
 
       {alertes.total > 0 && (
         <AlertesSection>
-          <AlertesTitre><AlertTriangle size={18} /><AlertesTotal>{alertes.total}</AlertesTotal></AlertesTitre>
+          <AlertesTitre><AlertTriangle size={18} />À traiter<AlertesTotal>{alertes.total}</AlertesTotal></AlertesTitre>
           <AlertesGrid>
             {alertes.demandes_en_retard.length > 0 && (
               <AlerteCard tone="red" Icon={Clock} titre="Demandes en retard" description="Sans action depuis plus d'un jour ouvré" count={alertes.demandes_en_retard.length}>
@@ -291,23 +291,24 @@ const BarFill = styled.div`
 `;
 
 const AlertesSection = styled.section`margin-bottom: 24px; width: 100%;`;
-const AlertesTitre = styled.h2`
+const AlertesTitre = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid #E67E22; 
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
-  color: black;
-  transition: color 0.3s ease;
-  svg { color: #b45309; }
-  
-  /*  Force la couleur sur le texte et les enfants */
-  &, & span, & svg {
-    color: var(--text-primary);
-  }
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+
   svg {
-    color: #b45309; /* l'icône garde sa couleur orange */
+    color: #b45309;
+    flex-shrink: 0;
   }
 `;
 const AlertesTotal = styled.span`padding: 1px 8px; font-size: 11px; font-weight: 700; color: #fff; background: #e5283c; border-radius: 999px;`;
