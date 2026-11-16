@@ -310,22 +310,7 @@ export default function DemandeDetail() {
                 Enregistrer un appel
               </Btn>
 
-            {/* Actions rapides selon le statut — compactes, alignées à droite */}
-            <ActionsRapidesDroite>
-              {demande.statut === 'demande_recue' && (
-                <Btn
-                  type="button"
-                  $compact
-                  onClick={() => changerStatut('a_contacter')}
-                  disabled={changementEnCours}
-                >
-                  <Phone size={16} />
-                  Marquer "à contacter"
-                </Btn>
-              )}
-
-              {demande.statut === 'a_contacter' && (
-                 {/* 2. Vérifier disponibilités (uniquement si statut = à contacter) */}
+              {/* 2. Vérifier disponibilités (uniquement si statut = à contacter) */}
               {demande.statut === 'a_contacter' && (
                 <Btn
                   type="button"
@@ -336,6 +321,35 @@ export default function DemandeDetail() {
                 >
                   <ClipboardCheck size={16} />
                   Vérifier disponibilités
+                </Btn>
+              )}
+
+              {/* 3. Annuler la demande (uniquement si pas annulée ni confirmée) */}
+              {demande.statut !== 'annulee' && demande.statut !== 'confirmee' && (
+                <Btn
+                  type="button"
+                  $compact
+                  $variant="danger"
+                  onClick={() => changerStatut('annulee')}
+                  disabled={changementEnCours}
+                >
+                  <XCircle size={16} />
+                  Annuler la demande
+                </Btn>
+              )}
+            </ActionsRapidesDroite>
+
+            {/* Autres actions rapides selon le statut */}
+            <ActionsRapidesDroite>
+              {demande.statut === 'demande_recue' && (
+                <Btn
+                  type="button"
+                  $compact
+                  onClick={() => changerStatut('a_contacter')}
+                  disabled={changementEnCours}
+                >
+                  <Phone size={16} />
+                  Marquer "à contacter"
                 </Btn>
               )}
 
@@ -364,21 +378,6 @@ export default function DemandeDetail() {
                   Confirmer la réservation
                 </Btn>
               )}
-
-              {/* 3. Annuler la demande (uniquement si pas annulée ni confirmée) */}
-              {demande.statut !== 'annulee' && demande.statut !== 'confirmee' && (
-                <Btn
-                  type="button"
-                  $compact
-                  $variant="danger"
-                  onClick={() => changerStatut('annulee')}
-                  disabled={changementEnCours}
-                >
-                  <XCircle size={16} />
-                  Annuler la demande
-                </Btn>
-              )}
-            </ActionsRapidesDroite>
 
               {demande.statut !== 'annulee' &&
                 demande.statut !== 'confirmee' &&
@@ -1164,13 +1163,12 @@ const Btn = styled.button`
 
 const ActionsRapidesDroite = styled.div`
   display: flex;
-  flex-wrap: nowrap;         /* Force les boutons sur une seule ligne */
+  flex-wrap: wrap;           /* Permet de passer à la ligne sur petit écran */
   justify-content: center;   /* Centre les boutons horizontalement */
   align-items: center;       /* Centre verticalement */
   gap: 8px;                  /* Espace entre les boutons */
   margin-top: 12px;
-  
-  /* Empêche les boutons de rétrécir si l'écran est trop petit */
+
   & > button {
     white-space: nowrap; 
   }
