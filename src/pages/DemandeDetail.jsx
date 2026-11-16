@@ -309,6 +309,7 @@ export default function DemandeDetail() {
                 <PhoneCall size={16} />
                 Enregistrer un appel
               </Btn>
+                </div>
             </ActionsRapidesDroite>
 
             {/* Actions rapides selon le statut — compactes, alignées à droite */}
