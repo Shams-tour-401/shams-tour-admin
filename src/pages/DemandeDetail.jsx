@@ -299,6 +299,7 @@ export default function DemandeDetail() {
 
             {/* Bouton appel — compact, aligné à droite */}
             <ActionsRapidesDroite>
+              <div style={{ gridColumn: '1 / -1' }}>
               <Btn
                 type="button"
                 $compact
@@ -370,6 +371,7 @@ export default function DemandeDetail() {
                   $variant="danger"
                   onClick={() => changerStatut('annulee')}
                   disabled={changementEnCours}
+                  style={{ gridColumn: 2, width: '100%' }}
                 >
                   <XCircle size={16} />
                   Annuler la demande
@@ -1160,6 +1162,7 @@ const Btn = styled.button`
 
 const ActionsRapidesDroite = styled.div`
   display: flex;
+  grid-template-columns: 1fr 1fr;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
