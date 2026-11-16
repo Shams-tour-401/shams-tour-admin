@@ -298,9 +298,7 @@ const AlertesTitre = styled.div`
   margin: 0 0 16px;
   padding: 14px 18px;
   background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-left: 4px solid #E67E22; 
-  border-radius: 12px;
+
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
