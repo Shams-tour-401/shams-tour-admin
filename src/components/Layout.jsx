@@ -53,7 +53,7 @@ export default function Layout() {
           display: flex;
           min-height: 100vh;
           min-height: 100dvh;
-          background: #f5f8fb;
+          background: var(--bg-body);
           width: 100%;
         }
 
@@ -77,7 +77,7 @@ export default function Layout() {
         /* ----- Contenu principal ----- */
         .main-content {
           flex: 1 1 0%;
-          width: 0; /* ✅ ASTUCE : force la prise de tout l'espace restant */
+          width: 0;
           min-width: 0;
           display: flex;
           flex-direction: column;
