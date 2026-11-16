@@ -295,7 +295,7 @@ export default function DemandeDetail() {
             )}
 
             {/* Bouton appel */}
-            <Btn $specialStyle type="button" $block $variant="outline" onClick={() => setModalAppel(true)}>
+            <Btn  type="button" $block $variant="primary" onClick={() => setModalAppel(true)}>
               <PhoneCall size={16} />
               Enregistrer un appel
             </Btn>
@@ -317,7 +317,7 @@ export default function DemandeDetail() {
 
               {demande.statut === 'a_contacter' && (
                 <Btn
-                  $specialStyle
+                  $variant="violet" 
                   type="button"
                   $block
                   onClick={() => changerStatut('disponibilites_a_verifier')}
