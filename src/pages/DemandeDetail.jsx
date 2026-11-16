@@ -334,7 +334,7 @@ export default function DemandeDetail() {
                   disabled={changementEnCours}
                 >
                   <XCircle size={16} />
-                  Annuler la demande
+                  Annuler
                 </Btn>
               )}
             </ActionsRapidesDroite>
