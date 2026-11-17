@@ -568,7 +568,7 @@ const styles = {
   },
   aucune: { padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  thead: { backgroundColor: 'var(--bg-soft)' },
+  thead: { backgroundColor: #7F00FF' },
   th: {
     padding: '12px', textAlign: 'left', fontSize: '12px', color: 'var(--text-muted)',
     fontWeight: '600', textTransform: 'uppercase', borderBottom: '2px solid var(--border)'
