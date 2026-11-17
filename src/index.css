@@ -141,3 +141,14 @@ body {
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+
+
+
+:root, body[data-theme="clair"] {
+  --bg-gif-activites: url('/assets/back_activite.gif');
+}
+
+body[data-theme="sombre"] {
+  --bg-gif-activites: url('/assets/back_activite-sombre.gif');
+}
