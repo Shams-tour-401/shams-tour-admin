@@ -122,14 +122,18 @@ export default function Activites() {
       <div style={styles.barreActions}>
         <div>
           <h2 style={styles.titre}>
-            Activités ({activitesFiltrees.length}
+            Total activités ({activitesFiltrees.length}
             {activitesFiltrees.length !== activites.length && ` / ${activites.length}`})
           </h2>
           <p style={styles.sousTitre}>Catalogue des activités disponibles</p>
         </div>
         {estAdmin && (
           <button onClick={ouvrirModalCreation} style={styles.btnPrimaire}>
-            ➕ Nouvelle activité
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+</svg>
+             Nouvelle activité
           </button>
         )}
       </div>
@@ -523,7 +527,7 @@ const styles = {
   loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
   barreActions: {
-    backgroundColor: 'var(--bg-surface)', padding: '20px 24px', borderRadius: '8px',
+    backgroundColor: '#0000FF', padding: '20px 24px', borderRadius: '2px',
     marginBottom: '16px', display: 'flex', justifyContent: 'space-between',
     alignItems: 'center', boxShadow: '0 2px 4px var(--shadow)'
   },
