@@ -526,7 +526,7 @@ function ModalPhotos({ activiteId, onClose }) {
 const styles = {
   loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
-  barreActions: {background: 'var(--bg-surface)', padding: '20px 24px', borderRadius: '8px',
+  barreActions: {backgroundColor: 'var(--bg-surface)', padding: '20px 24px', borderRadius: '8px',
     marginBottom: '16px', display: 'flex', justifyContent: 'space-between',
     alignItems: 'center', boxShadow: '0 2px 4px var(--shadow)'
   },
