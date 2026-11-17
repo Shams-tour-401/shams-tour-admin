@@ -565,7 +565,7 @@ const styles = {
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   barreFiltres: {
-    backgroundColor: 'var(--bg-soft)', padding: '16px 20px', borderRadius: '8px',
+    backgroundColor: 'var(--bg-bloc)', padding: '16px 20px', borderRadius: '8px',
     marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center',
     flexWrap: 'wrap', boxShadow: '0 2px 4px var(--shadow)'
   },
