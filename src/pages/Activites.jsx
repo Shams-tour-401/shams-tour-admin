@@ -575,7 +575,7 @@ const styles = {
     backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)'
   },
   select: {
-    padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '4px',
+    padding: '8px 12px', border: '1px solid var(--border)', borderRadius: '400px',
     fontSize: '13px', backgroundColor: 'var(--bg-surface)', color: 'var(--text-primary)', cursor: 'pointer'
   },
   btnReset: {
