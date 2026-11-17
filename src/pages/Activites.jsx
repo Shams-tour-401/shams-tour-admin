@@ -534,22 +534,22 @@ const styles = {
   loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
   barreActions: {
-    // Le GIF en fond
-    backgroundImage: `url(${monGif})`, 
+    // 1. Le calque semi-transparent (pour la lisibilité) + la variable CSS du GIF
+    backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), var(--bg-gif-activites)', 
     backgroundSize: 'cover', 
     backgroundPosition: 'center', 
     backgroundRepeat: 'no-repeat', 
     
-    // On utilise un pseudo-élément (voir explication ci-dessous) ou une couleur de fond de secours
-    position: 'relative',
-    overflow: 'hidden',
     padding: '20px 24px', 
     borderRadius: '8px',
     marginBottom: '16px', 
     display: 'flex', 
     justifyContent: 'space-between',
     alignItems: 'center', 
-    boxShadow: '0 2px 4px var(--shadow)'
+    boxShadow: '0 2px 4px var(--shadow)',
+    
+    // Optionnel : une transition fluide lors du changement de thème
+    transition: 'background-image 0.3s ease-in-out' 
   },
   titre: { fontSize: '20px', color: 'var(--text-primary)' },
   sousTitre: { fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' },
