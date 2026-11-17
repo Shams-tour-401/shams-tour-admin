@@ -551,8 +551,17 @@ const styles = {
     // Optionnel : une transition fluide lors du changement de thème
     transition: 'background-image 0.3s ease-in-out' 
   },
-  titre: { fontSize: '20px', color: 'var(--text-primary)' },
-  sousTitre: { fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' },
+  titre: { 
+    fontSize: '20px', 
+    color: '#ffffff', 
+    textShadow: '1px 1px 3px rgba(0,0,0,0.8)' 
+  },
+  sousTitre: { 
+    fontSize: '13px', 
+    color: '#f0f0f0', 
+    marginTop: '4px',
+    textShadow: '1px 1px 2px rgba(0,0,0,0.8)'
+  },
   btnPrimaire: {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
