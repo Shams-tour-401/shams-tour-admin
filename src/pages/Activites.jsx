@@ -135,7 +135,7 @@ export default function Activites() {
             </svg>
           </button>
         )}
-        )}
+       
       </div>
 
       <div style={styles.barreFiltres}>
