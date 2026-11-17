@@ -4,7 +4,7 @@ import { activitesService } from '../services/activites';
 import { lieuxService } from '../services/lieux';
 import { photosService } from '../services/photos'; 
 import { useAuth } from '../context/AuthContext';
-import monGif from '../assets/mon-gif.gif'; 
+import monGif from '../assets/back_activite.gif'; 
 
 export default function Activites() {
   const [activites, setActivites] = useState([]);
