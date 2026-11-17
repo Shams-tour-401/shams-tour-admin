@@ -4,6 +4,7 @@ import { activitesService } from '../services/activites';
 import { lieuxService } from '../services/lieux';
 import { photosService } from '../services/photos'; 
 import { useAuth } from '../context/AuthContext';
+import monGif from '../assets/mon-gif.gif'; 
 
 export default function Activites() {
   const [activites, setActivites] = useState([]);
@@ -532,9 +533,23 @@ function ModalPhotos({ activiteId, onClose }) {
 const styles = {
   loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
-  barreActions: {backgroundColor: 'var(--bg-surface)', padding: '10px 14px', borderRadius: '8px',
-    marginBottom: '16px', display: 'flex', justifyContent: 'space-between',
-    alignItems: 'center'
+  barreActions: {
+    // Le GIF en fond
+    backgroundImage: `url(${monGif})`, 
+    backgroundSize: 'cover', 
+    backgroundPosition: 'center', 
+    backgroundRepeat: 'no-repeat', 
+    
+    // On utilise un pseudo-élément (voir explication ci-dessous) ou une couleur de fond de secours
+    position: 'relative',
+    overflow: 'hidden',
+    padding: '20px 24px', 
+    borderRadius: '8px',
+    marginBottom: '16px', 
+    display: 'flex', 
+    justifyContent: 'space-between',
+    alignItems: 'center', 
+    boxShadow: '0 2px 4px var(--shadow)'
   },
   titre: { fontSize: '20px', color: 'var(--text-primary)' },
   sousTitre: { fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' },
