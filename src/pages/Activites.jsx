@@ -526,8 +526,7 @@ function ModalPhotos({ activiteId, onClose }) {
 const styles = {
   loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
-  barreActions: {
-    backgroundColor: '#0000FF', padding: '20px 24px', borderRadius: '2px',
+  barreActions: {'var(--bg-surface), padding: '20px 24px', borderRadius: '8px',
     marginBottom: '16px', display: 'flex', justifyContent: 'space-between',
     alignItems: 'center', boxShadow: '0 2px 4px var(--shadow)'
   },
@@ -546,7 +545,7 @@ const styles = {
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
   barreFiltres: {
-    backgroundColor: 'var(--bg-surface)', padding: '16px 20px', borderRadius: '8px',
+    backgroundColor: '#ADD8E6', padding: '16px 20px', borderRadius: '8px',
     marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center',
     flexWrap: 'wrap', boxShadow: '0 2px 4px var(--shadow)'
   },
