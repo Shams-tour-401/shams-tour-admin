@@ -16,9 +16,9 @@ export default function Activites() {
   const [photoModal, setPhotoModal] = useState(null); 
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
-  const [hoverBtn, setHoverBtn] = useState(null); // 'photo', 'modifier', ou 'desactiver'
+  const [hoverBtn, setHoverBtn] = useState(null);
 
-  //  ÉTAT POUR LA MODALE DE DÉSACTIVATION
+  // ÉTAT POUR LA MODALE DE DÉSACTIVATION
   const [activiteADesactiver, setActiviteADesactiver] = useState(null);
 
   const [recherche, setRecherche] = useState('');
@@ -76,7 +76,6 @@ export default function Activites() {
     }
   };
 
-  // ✅ DÉSACTIVATION SANS CONFIRM NATIF
   const desactiver = async (activite) => {
     try {
       await activitesService.desactiver(activite.id);
@@ -137,12 +136,11 @@ export default function Activites() {
             </svg>
           </button>
         )}
-       
       </div>
 
       <div style={styles.barreFiltres}>
-            {/* Icône SVG Bootstrap */}
- <svg 
+        <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+          <svg 
             xmlns="http://www.w3.org/2000/svg" 
             width="16" height="16" 
             fill="var(--text-muted)" 
@@ -158,6 +156,7 @@ export default function Activites() {
             onChange={(e) => setRecherche(e.target.value)}
             style={{ ...styles.recherche, paddingLeft: '36px', width: '100%' }}
           />
+        </div>
 
         <select value={filtreCategorie} onChange={(e) => setFiltreCategorie(e.target.value)} style={styles.select}>
           <option value="">Toutes les catégories</option>
@@ -302,7 +301,6 @@ export default function Activites() {
         />
       )}
 
-      {/* ✅ MODALE DE CONFIRMATION DE DÉSACTIVATION */}
       {activiteADesactiver && (
         <ModalDesactivation
           activite={activiteADesactiver}
@@ -310,44 +308,6 @@ export default function Activites() {
           onCancel={() => setActiviteADesactiver(null)}
         />
       )}
-
-            {/* MODALE DE CONFIRMATION DE SUPPRESSION */}
-      {photoASupprimer && (
-        <div style={{
-          position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, borderRadius: '8px'
-        }}>
-          <div style={{
-            backgroundColor: 'var(--bg-surface)', padding: '24px', borderRadius: '12px',
-            maxWidth: '350px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
-          }}>
-            <div style={{ color: '#E74C3C', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
-              </svg>
-            </div>
-            <h3 style={{ margin: '0 0 8px', color: 'var(--text-primary)', fontSize: '18px' }}>Supprimer cette photo ?</h3>
-            <p style={{ margin: '0 0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>
-              Cette action est définitive et ne peut pas être annulée.
-            </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button 
-                onClick={() => setPhotoASupprimer(null)} 
-                style={{ ...styles.btnSecondaire, flex: 1 }}
-              >
-                Annuler
-              </button>
-              <button 
-                onClick={confirmerSuppression} 
-                style={{ ...styles.btnDanger, flex: 1, backgroundColor: '#E74C3C' }}
-              >
-                Oui, supprimer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
     </div> 
   );
 }
@@ -381,7 +341,7 @@ function ModalDesactivation({ activite, onConfirm, onCancel }) {
   );
 }
 
-// ============ MODAL ACTIVITE (inchangé) ============
+// ============ MODAL ACTIVITE ============
 function ModalActivite({ activite, lieux, onSave, onClose }) {
   const [form, setForm] = useState({
     nom: activite?.nom || '',
@@ -489,7 +449,7 @@ function ModalActivite({ activite, lieux, onSave, onClose }) {
   );
 }
 
-// ============ MODAL PHOTOS (inchangé) ============
+// ============ MODAL PHOTOS ============
 function ModalPhotos({ activiteId, onClose }) {
   const [photosExistantes, setPhotosExistantes] = useState([]); 
   const [photosNouvelles, setPhotosNouvelles] = useState([]); 
@@ -520,18 +480,16 @@ function ModalPhotos({ activiteId, onClose }) {
     setPhotosNouvelles(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Ouvre la confirmation
   const demanderSuppression = (photo) => {
     setPhotoASupprimer(photo);
   };
 
-  // Exécute la suppression
   const confirmerSuppression = async () => {
     if (!photoASupprimer) return;
     try {
       await photosService.delete(photoASupprimer.id);
       await chargerPhotos();
-      setPhotoASupprimer(null); // Ferme la confirmation
+      setPhotoASupprimer(null);
     } catch (error) {
       alert("Erreur lors de la suppression");
     }
@@ -601,9 +559,11 @@ function ModalPhotos({ activiteId, onClose }) {
           <h4 style={{ marginBottom: '15px', borderBottom: '2px solid var(--border)', paddingBottom: '10px', fontSize: '18px', color: 'var(--text-primary)' }}>
             Photos actuelles ({photosExistantes.length})
           </h4>
+          
           {photosExistantes.length === 0 ? (
             <p style={{...styles.lectureSeule, textAlign: 'center', padding: '20px'}}>Aucune photo enregistrée pour cette activité.</p>
           ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
               {photosExistantes.map(p => (
                 <div key={p.id} style={{ position: 'relative' }}>
                   <img src={p.url} alt="activité" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }} />
@@ -659,6 +619,43 @@ function ModalPhotos({ activiteId, onClose }) {
           <img src={photoAgrandie} alt="Aperçu" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', borderRadius: '8px' }} />
         </div>
       )}
+
+      {/* MODALE DE CONFIRMATION DE SUPPRESSION DE PHOTO */}
+      {photoASupprimer && (
+        <div style={{
+          position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, borderRadius: '8px'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-surface)', padding: '24px', borderRadius: '12px',
+            maxWidth: '350px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{ color: '#E74C3C', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+              </svg>
+            </div>
+            <h3 style={{ margin: '0 0 8px', color: 'var(--text-primary)', fontSize: '18px' }}>Supprimer cette photo ?</h3>
+            <p style={{ margin: '0 0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>
+              Cette action est définitive et ne peut pas être annulée.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setPhotoASupprimer(null)} 
+                style={{ ...styles.btnSecondaire, flex: 1 }}
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={confirmerSuppression} 
+                style={{ ...styles.btnDanger, flex: 1, backgroundColor: '#E74C3C' }}
+              >
+                Oui, supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -668,12 +665,10 @@ const styles = {
   loading: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
   erreur: { padding: '20px', backgroundColor: '#FADBD8', color: '#C0392B', borderRadius: '8px', textAlign: 'center' },
   barreActions: {
-    // 1. Le calque semi-transparent (pour la lisibilité) + la variable CSS du GIF
     backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), var(--bg-gif-activites)', 
     backgroundSize: 'cover', 
     backgroundPosition: 'center', 
     backgroundRepeat: 'no-repeat', 
-    
     padding: '20px 24px', 
     borderRadius: '8px',
     marginBottom: '16px', 
@@ -681,8 +676,6 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center', 
     boxShadow: '0 2px 4px var(--shadow)',
-    
-    // Optionnel : une transition fluide lors du changement de thème
     transition: 'background-image 0.3s ease-in-out' 
   },
   titre: { 
@@ -700,7 +693,7 @@ const styles = {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
   },
-    btnIconeRond: {
+  btnIconeRond: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -709,7 +702,7 @@ const styles = {
     backgroundColor: '#C0392B',
     color: 'white',
     border: 'none',
-    borderRadius: '50%', // Transforme le carré en cercle parfait
+    borderRadius: '50%',
     cursor: 'pointer',
     boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
     transition: 'transform 0.1s ease',
@@ -770,7 +763,6 @@ const styles = {
     cursor: 'pointer', 
     color: 'var(--text-primary)',
     transition: 'all 0.2s ease-in-out'
-    
   },
   modalOverlay: {
     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -809,8 +801,6 @@ const styles = {
     display: 'flex', justifyContent: 'flex-end', gap: '12px'
   },
   lectureSeule: { fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' },
-  
-  // ✅ STYLES DE LA MODALE DE CONFIRMATION
   modalConfirm: {
     backgroundColor: 'var(--bg-surface)', borderRadius: '8px', width: '100%',
     maxWidth: '450px', overflow: 'hidden'
