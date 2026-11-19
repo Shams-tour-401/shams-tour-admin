@@ -310,6 +310,46 @@ export default function Activites() {
           onCancel={() => setActiviteADesactiver(null)}
         />
       )}
+
+            {/* MODALE DE CONFIRMATION DE SUPPRESSION */}
+      {photoASupprimer && (
+        <div style={{
+          position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, borderRadius: '8px'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-surface)', padding: '24px', borderRadius: '12px',
+            maxWidth: '350px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{ color: '#E74C3C', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+              </svg>
+            </div>
+            <h3 style={{ margin: '0 0 8px', color: 'var(--text-primary)', fontSize: '18px' }}>Supprimer cette photo ?</h3>
+            <p style={{ margin: '0 0 20px', color: 'var(--text-muted)', fontSize: '14px' }}>
+              Cette action est définitive et ne peut pas être annulée.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setPhotoASupprimer(null)} 
+                style={{ ...styles.btnSecondaire, flex: 1 }}
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={confirmerSuppression} 
+                style={{ ...styles.btnDanger, flex: 1, backgroundColor: '#E74C3C' }}
+              >
+                Oui, supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
     </div>
   );
 }
@@ -457,6 +497,7 @@ function ModalPhotos({ activiteId, onClose }) {
   const [photosNouvelles, setPhotosNouvelles] = useState([]); 
   const [uploading, setUploading] = useState(false);
   const [photoAgrandie, setPhotoAgrandie] = useState(null);
+  const [photoASupprimer, setPhotoASupprimer] = useState(null);
 
   const chargerPhotos = async () => {
     try {
@@ -481,10 +522,21 @@ function ModalPhotos({ activiteId, onClose }) {
     setPhotosNouvelles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const supprimerPhotoExistante = async (id) => {
-    if (!confirm('Supprimer définitivement cette photo ?')) return;
-    await photosService.delete(id);
-    await chargerPhotos();
+  // Ouvre la confirmation
+  const demanderSuppression = (photo) => {
+    setPhotoASupprimer(photo);
+  };
+
+  // Exécute la suppression
+  const confirmerSuppression = async () => {
+    if (!photoASupprimer) return;
+    try {
+      await photosService.delete(photoASupprimer.id);
+      await chargerPhotos();
+      setPhotoASupprimer(null); // Ferme la confirmation
+    } catch (error) {
+      alert("Erreur lors de la suppression");
+    }
   };
 
   const enregistrerPhotos = async () => {
@@ -554,12 +606,49 @@ function ModalPhotos({ activiteId, onClose }) {
           {photosExistantes.length === 0 ? (
             <p style={{...styles.lectureSeule, textAlign: 'center', padding: '20px'}}>Aucune photo enregistrée pour cette activité.</p>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '15px' }}>
               {photosExistantes.map(p => (
                 <div key={p.id} style={{ position: 'relative' }}>
                   <img src={p.url} alt="activité" style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)' }} />
-                  <button onClick={() => setPhotoAgrandie(p.url)} style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.6)', color: 'white', border: 'none', borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Voir en grand">👁️</button>
-                  <button onClick={() => supprimerPhotoExistante(p.id)} style={{ position: 'absolute', top: 10, right: 10, background: '#E74C3C', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                  
+                  {/* Bouton Voir en grand (Hover Bleu) */}
+                  <button 
+                    onClick={() => setPhotoAgrandie(p.url)} 
+                    style={{ 
+                      position: 'absolute', bottom: 10, left: 10, 
+                      background: 'rgba(0,0,0,0.6)', color: 'white', 
+                      border: 'none', borderRadius: '50%', width: '35px', height: '35px', 
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s ease'
+                    }} 
+                    title="Voir en grand"
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2f6fd6'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)'}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                      <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                    </svg>
+                  </button>
+
+                  {/* Bouton Supprimer (Hover Rouge) */}
+                  <button 
+                    onClick={() => demanderSuppression(p)} 
+                    style={{ 
+                      position: 'absolute', top: 10, right: 10, 
+                      background: '#E74C3C', color: 'white', 
+                      border: 'none', borderRadius: '50%', width: '32px', height: '32px', 
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s ease'
+                    }} 
+                    title="Supprimer la photo"
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#c0392b'; e.currentTarget.style.transform = 'scale(1.1)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#E74C3C'; e.currentTarget.style.transform = 'scale(1)' }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                      <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
