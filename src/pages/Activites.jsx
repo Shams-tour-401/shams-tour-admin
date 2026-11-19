@@ -347,10 +347,8 @@ export default function Activites() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-    </div>
+      
+    </div> 
   );
 }
 
