@@ -260,7 +260,7 @@ const styles = {
     flex: 1,
     minWidth: '200px',
     padding: '8px 12px',
-    border: '1px solid #0000FF,
+    border: '1px solid #0000FF',
     borderRadius: '4px',
     fontSize: '14px',
     outline: 'none',
@@ -269,7 +269,7 @@ const styles = {
   },
   select: {
     padding: '8px 12px',
-    border: '1px solid #FFA500,
+    border: '1px solid #FFA500',
     borderRadius: '14px',
     fontSize: '14px',
     outline: 'none',
