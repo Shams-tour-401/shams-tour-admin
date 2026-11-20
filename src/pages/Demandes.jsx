@@ -281,7 +281,7 @@ const styles = {
   dateInput: {
     padding: '8px 12px',
     border: '1px solid var(--border)',
-    borderRadius: '4px',
+    borderRadius: '14px',
     fontSize: '14px',
     outline: 'none',
     backgroundColor: 'var(--bg-surface)',
