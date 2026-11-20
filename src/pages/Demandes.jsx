@@ -238,7 +238,7 @@ const styles = {
     textAlign: 'center'
   },
   filtresBar: {
-    backgroundColor: 'var(--bg-surface)',
+    backgroundColor: 'var(--bg-bloc)',
     padding: '16px 20px',
     borderRadius: '8px',
     marginBottom: '16px',
@@ -260,16 +260,16 @@ const styles = {
     flex: 1,
     minWidth: '200px',
     padding: '8px 12px',
-    border: '1px solid var(--border)',
+    border: '1px solid #0000FF,
     borderRadius: '4px',
     fontSize: '14px',
     outline: 'none',
-    backgroundColor: 'var(--bg-bloc)',
+    backgroundColor:  'var(--bg-surface)',
     color: 'var(--text-primary)'
   },
   select: {
     padding: '8px 12px',
-    border: '1px solid var(--border)',
+    border: '1px solid #FFA500,
     borderRadius: '14px',
     fontSize: '14px',
     outline: 'none',
@@ -277,10 +277,10 @@ const styles = {
     color: 'var(--text-primary)',
     cursor: 'pointer'
   },
-  // ✅ STYLE POUR LE CHAMP DATE
+  
   dateInput: {
     padding: '8px 12px',
-    border: '1px solid var(--border)',
+    border: '1px solid #00FF00',
     borderRadius: '14px',
     fontSize: '14px',
     outline: 'none',
