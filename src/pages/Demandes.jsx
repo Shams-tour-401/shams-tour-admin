@@ -260,7 +260,9 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: '12px'
+    gap: '12px',
+    maxWidth: '300px', // <-- Limite la largeur (ajustez selon vos besoins)
+    margin: '0 auto 16px auto' // <-- Centre le bloc horizontalement
   },
   filtresGroupe: {
     display: 'flex',
