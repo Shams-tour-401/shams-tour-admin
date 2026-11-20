@@ -264,7 +264,7 @@ const styles = {
     borderRadius: '4px',
     fontSize: '14px',
     outline: 'none',
-    backgroundColor: 'var(--bg-surface)',
+    backgroundColor: 'var(--bg-bloc)',
     color: 'var(--text-primary)'
   },
   select: {
