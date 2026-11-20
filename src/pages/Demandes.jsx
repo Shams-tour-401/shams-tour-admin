@@ -238,7 +238,7 @@ const styles = {
     textAlign: 'center'
   },
   filtresBar: {
-    backgroundColor: 'var(--bg-surface)',
+    backgroundColor: 'var(--bg-bloc)'',
     padding: '16px 20px',
     borderRadius: '8px',
     marginBottom: '16px',
