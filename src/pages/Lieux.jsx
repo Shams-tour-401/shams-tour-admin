@@ -1,17 +1,15 @@
-// src/pages/Trajets.jsx
+// src/pages/Lieux.jsx
 import { useEffect, useState } from 'react';
-import { trajetsService } from '../services/trajets';
 import { lieuxService } from '../services/lieux';
-import { useAuth } from '../context/AuthContext';
+import { destinationsService } from '../services/destinations';
 
-export default function Trajets() {
-  const [trajets, setTrajets] = useState([]);
+export default function Lieux() {
   const [lieux, setLieux] = useState([]);
+  const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOuvert, setModalOuvert] = useState(false);
   const [enEdition, setEnEdition] = useState(null);
-  const { user } = useAuth();
-  const estAdmin = user?.role === 'administrateur';
+  const [filtreType, setFiltreType] = useState('');
 
   useEffect(() => {
     charger();
@@ -20,12 +18,12 @@ export default function Trajets() {
   const charger = async () => {
     try {
       setLoading(true);
-      const [trs, lxs] = await Promise.all([
-        trajetsService.getAll(),
-        lieuxService.getAll()
+      const [lxs, dests] = await Promise.all([
+        lieuxService.getAll(),
+        destinationsService.getAll()
       ]);
-      setTrajets(trs);
       setLieux(lxs);
+      setDestinations(dests);
     } catch (error) {
       console.error(error);
     } finally {
@@ -33,12 +31,16 @@ export default function Trajets() {
     }
   };
 
+  const lieuxFiltres = filtreType
+    ? lieux.filter(l => l.type === filtreType)
+    : lieux;
+
   const sauvegarder = async (form) => {
     try {
       if (enEdition) {
-        await trajetsService.update(enEdition.id, form);
+        await lieuxService.update(enEdition.id, form);
       } else {
-        await trajetsService.create(form);
+        await lieuxService.create(form);
       }
       await charger();
       setModalOuvert(false);
@@ -48,14 +50,14 @@ export default function Trajets() {
     }
   };
 
-  const supprimer = async (trajet) => {
-    if (!confirm(`Supprimer le trajet ${trajet.lieu_depart_nom} → ${trajet.lieu_arrivee_nom} ?`)) return;
-    try {
-      await trajetsService.delete(trajet.id);
-      await charger();
-    } catch (error) {
-      alert('Erreur : ' + (error.response?.data?.error || error.message));
-    }
+  const getTypeLabel = (type) => {
+    const labels = {
+      'point_rendez_vous': '📍 Point de rendez-vous',
+      'site': '🏞️ Site',
+      'restaurant': '🍽️ Restaurant',
+      'hebergement': '🏨 Hébergement'
+    };
+    return labels[type] || type;
   };
 
   if (loading) return <div style={styles.loading}>Chargement...</div>;
@@ -64,73 +66,71 @@ export default function Trajets() {
     <div>
       <div style={styles.barreActions}>
         <div>
-          <h2 style={styles.titre}>Trajets ({trajets.length})</h2>
-          <p style={styles.sousTitre}>
-            {estAdmin ? 'Durées de trajet entre les lieux' : 'Consultation des trajets (lecture seule)'}
-          </p>
+          <h2 style={styles.titre}>Lieux ({lieuxFiltres.length})</h2>
+          <p style={styles.sousTitre}>Points de rendez-vous et sites touristiques</p>
         </div>
-        {estAdmin && (
-          <button
+        <div style={styles.actionsDroite}>
+          <select
+            value={filtreType}
+            onChange={(e) => setFiltreType(e.target.value)}
+            style={styles.select}
+          >
+            <option value="">Tous les types</option>
+            <option value="point_rendez_vous">Points de rendez-vous</option>
+            <option value="site">Sites</option>
+            <option value="restaurant">Restaurants</option>
+            <option value="hebergement">Hébergements</option>
+          </select>
+          <button 
             onClick={() => { setEnEdition(null); setModalOuvert(true); }}
             style={styles.btnPrimaire}
           >
-            ➕ Nouveau trajet
+            ➕ Nouveau lieu
           </button>
-        )}
+        </div>
       </div>
 
       <div style={styles.tableContainer}>
-        {trajets.length === 0 ? (
-          <div style={styles.aucune}>Aucun trajet</div>
+        {lieuxFiltres.length === 0 ? (
+          <div style={styles.aucune}>Aucun lieu</div>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr style={styles.thead}>
-                <th style={styles.th}>Départ</th>
-                <th style={styles.th}>Arrivée</th>
-                <th style={styles.th}>Durée</th>
-                <th style={styles.th}>Type véhicule</th>
+                <th style={styles.th}>Nom</th>
+                <th style={styles.th}>Type</th>
+                <th style={styles.th}>Destination</th>
+                <th style={styles.th}>Adresse</th>
+                <th style={styles.th}>Activités</th>
                 <th style={styles.th}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {trajets.map((t) => (
-                <tr key={t.id} style={styles.tr}>
+              {lieuxFiltres.map((l) => (
+                <tr key={l.id} style={styles.tr}>
                   <td style={styles.td}>
-                    <strong>📍 {t.lieu_depart_nom}</strong>
+                    <strong>{l.nom}</strong>
                   </td>
                   <td style={styles.td}>
-                    <strong>🎯 {t.lieu_arrivee_nom}</strong>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={styles.dureeBadge}>
-                      {formatDuree(t.duree_min)}
+                    <span style={styles.typeBadge}>
+                      {getTypeLabel(l.type)}
                     </span>
                   </td>
+                  <td style={styles.td}>{l.destination_nom}</td>
                   <td style={styles.td}>
-                    <small>{t.type_vehicule || '—'}</small>
+                    <small>{l.adresse || '—'}</small>
                   </td>
                   <td style={styles.td}>
-                    {estAdmin ? (
-                      <>
-                        <button
-                          onClick={() => { setEnEdition(t); setModalOuvert(true); }}
-                          style={styles.btnIcone}
-                          title="Modifier"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => supprimer(t)}
-                          style={styles.btnIcone}
-                          title="Supprimer"
-                        >
-                          🗑️
-                        </button>
-                      </>
-                    ) : (
-                      <span style={styles.lectureSeule}>👁️ Lecture seule</span>
-                    )}
+                    <span style={styles.nbBadge}>{l.nb_activites || 0}</span>
+                  </td>
+                  <td style={styles.td}>
+                    <button 
+                      onClick={() => { setEnEdition(l); setModalOuvert(true); }} 
+                      style={styles.btnIcone}
+                      title="Modifier"
+                    >
+                      ✏️
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -139,10 +139,10 @@ export default function Trajets() {
         )}
       </div>
 
-      {modalOuvert && estAdmin && (
-        <ModalTrajet
-          trajet={enEdition}
-          lieux={lieux}
+      {modalOuvert && (
+        <ModalLieu
+          lieu={enEdition}
+          destinations={destinations}
           onSave={sauvegarder}
           onClose={() => { setModalOuvert(false); setEnEdition(null); }}
         />
@@ -151,20 +151,12 @@ export default function Trajets() {
   );
 }
 
-function formatDuree(minutes) {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m} min`;
-  if (m === 0) return `${h}h`;
-  return `${h}h${String(m).padStart(2, '0')}`;
-}
-
-function ModalTrajet({ trajet, lieux, onSave, onClose }) {
+function ModalLieu({ lieu, destinations, onSave, onClose }) {
   const [form, setForm] = useState({
-    lieu_depart_id: trajet?.lieu_depart_id || (lieux[0]?.id || ''),
-    lieu_arrivee_id: trajet?.lieu_arrivee_id || (lieux[1]?.id || ''),
-    duree_min: trajet?.duree_min || 60,
-    type_vehicule: trajet?.type_vehicule || '4x4'
+    nom: lieu?.nom || '',
+    destination_id: lieu?.destination_id || (destinations[0]?.id || ''),
+    type: lieu?.type || 'site',
+    adresse: lieu?.adresse || ''
   });
 
   const handleChange = (e) => {
@@ -172,87 +164,74 @@ function ModalTrajet({ trajet, lieux, onSave, onClose }) {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave({
-      ...form,
-      duree_min: parseInt(form.duree_min)
-    });
-  };
-
   return (
     <div style={styles.modalOverlay}>
       <div style={styles.modal}>
         <div style={styles.modalHeader}>
-          <h3>{trajet ? 'Modifier' : 'Nouveau'} trajet</h3>
+          <h3>{lieu ? 'Modifier' : 'Nouveau'} lieu</h3>
           <button onClick={onClose} style={styles.btnFermer}>✕</button>
         </div>
-        <form onSubmit={handleSubmit} style={styles.form}>
+        <form onSubmit={(e) => { e.preventDefault(); onSave(form); }} style={styles.form}>
+          <div style={styles.field}>
+            <label style={styles.label}>Nom *</label>
+            <input
+              type="text"
+              name="nom"
+              value={form.nom}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
+          </div>
+
           <div style={styles.formGrid}>
             <div style={styles.field}>
-              <label style={styles.label}>Lieu de départ *</label>
+              <label style={styles.label}>Type</label>
               <select
-                name="lieu_depart_id"
-                value={form.lieu_depart_id}
+                name="type"
+                value={form.type}
                 onChange={handleChange}
-                required
-                disabled={!!trajet}
                 style={styles.input}
               >
-                {lieux.map(l => (
-                  <option key={l.id} value={l.id}>{l.nom}</option>
-                ))}
+                <option value="point_rendez_vous">Point de rendez-vous</option>
+                <option value="site">Site</option>
+                <option value="restaurant">Restaurant</option>
+                <option value="hebergement">Hébergement</option>
               </select>
             </div>
 
             <div style={styles.field}>
-              <label style={styles.label}>Lieu d'arrivée *</label>
+              <label style={styles.label}>Destination *</label>
               <select
-                name="lieu_arrivee_id"
-                value={form.lieu_arrivee_id}
+                name="destination_id"
+                value={form.destination_id}
                 onChange={handleChange}
                 required
-                disabled={!!trajet}
                 style={styles.input}
               >
-                {lieux.map(l => (
-                  <option key={l.id} value={l.id}>{l.nom}</option>
+                {destinations.map(d => (
+                  <option key={d.id} value={d.id}>{d.nom}</option>
                 ))}
               </select>
             </div>
+          </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Durée (minutes) *</label>
-              <input
-                type="number"
-                name="duree_min"
-                value={form.duree_min}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              />
-              <small style={styles.hint}>
-                Soit {formatDuree(form.duree_min)}
-              </small>
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Type de véhicule</label>
-              <input
-                type="text"
-                name="type_vehicule"
-                value={form.type_vehicule}
-                onChange={handleChange}
-                placeholder="Ex: 4x4, bateau"
-                style={styles.input}
-              />
-            </div>
+          <div style={styles.field}>
+            <label style={styles.label}>Adresse</label>
+            <input
+              type="text"
+              name="adresse"
+              value={form.adresse}
+              onChange={handleChange}
+              placeholder="Ex: Centre-ville, Majunga"
+              style={styles.input}
+            />
           </div>
 
           <div style={styles.modalFooter}>
             <button type="button" onClick={onClose} style={styles.btnSecondaire}>Annuler</button>
             <button type="submit" style={styles.btnPrimaire}>
-              {trajet ? 'Enregistrer' : 'Créer'}
+              {lieu ? 'Enregistrer' : 'Créer'}
             </button>
           </div>
         </form>
@@ -266,10 +245,16 @@ const styles = {
   barreActions: {
     backgroundColor: 'white', padding: '20px 24px', borderRadius: '8px',
     marginBottom: '16px', display: 'flex', justifyContent: 'space-between',
-    alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+    alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+    flexWrap: 'wrap', gap: '12px'
   },
   titre: { fontSize: '20px', color: '#2C3E50' },
   sousTitre: { fontSize: '13px', color: '#7f8c8d', marginTop: '4px' },
+  actionsDroite: { display: 'flex', gap: '12px', alignItems: 'center' },
+  select: {
+    padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
+    fontSize: '13px', backgroundColor: 'white', cursor: 'pointer'
+  },
   btnPrimaire: {
     padding: '10px 20px', backgroundColor: '#C0392B', color: 'white',
     border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: '600', cursor: 'pointer'
@@ -291,15 +276,16 @@ const styles = {
   },
   tr: { borderBottom: '1px solid #ecf0f1' },
   td: { padding: '12px', fontSize: '13px', color: '#2C3E50' },
-  dureeBadge: {
-    display: 'inline-block', padding: '3px 10px', backgroundColor: '#3498DB',
-    color: 'white', borderRadius: '12px', fontSize: '12px', fontWeight: '600'
+  typeBadge: {
+    display: 'inline-block', padding: '3px 10px', backgroundColor: '#ECF0F1',
+    borderRadius: '12px', fontSize: '11px', fontWeight: '600'
   },
-  lectureSeule: {
-    fontSize: '12px', color: '#95A5A6', fontStyle: 'italic'
+  nbBadge: {
+    display: 'inline-block', padding: '2px 8px', backgroundColor: '#3498DB',
+    color: 'white', borderRadius: '10px', fontSize: '11px', fontWeight: '600'
   },
   btnIcone: {
-    padding: '6px 10px', marginRight: '4px', backgroundColor: 'transparent',
+    padding: '6px 10px', backgroundColor: 'transparent',
     border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer', fontSize: '14px'
   },
   modalOverlay: {
@@ -327,7 +313,6 @@ const styles = {
     padding: '8px 12px', border: '1px solid #ddd', borderRadius: '4px',
     fontSize: '14px', outline: 'none'
   },
-  hint: { fontSize: '11px', color: '#95A5A6', marginTop: '4px' },
   modalFooter: {
     display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px'
   }
