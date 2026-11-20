@@ -261,7 +261,7 @@ const styles = {
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: '12px',
-    maxWidth: '700px', // <-- Limite la largeur (ajustez selon vos besoins)
+    maxWidth: '800px', // <-- Limite la largeur (ajustez selon vos besoins)
     margin: '0 auto 16px auto' // <-- Centre le bloc horizontalement
   },
   filtresGroupe: {
