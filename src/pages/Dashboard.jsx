@@ -6,6 +6,7 @@ import {
   AlertCircle, ClipboardList, Bell, Phone, CheckCircle2,
   AlertTriangle, Clock, Tag, Route, ListChecks, ChevronRight, Loader2, Inbox
 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from 'recharts';
 import { demandesService } from '../services/demandes';
 import { alertesService } from '../services/alertes';
 
@@ -85,35 +86,60 @@ export default function Dashboard() {
         <ErrorBanner role="alert"><AlertCircle size={18} /><ErrorText><strong>Certaines données n'ont pas pu être chargées.</strong><ul>{erreurs.map((m) => <li key={m}>{m}</li>)}</ul></ErrorText><RetryButton type="button" onClick={chargerDonnees}>Réessayer</RetryButton></ErrorBanner>
       )}
 
-      {/* ✅ DIAGRAMME EN BANDES */}
+      {/* DIAGRAMME EN BANDES */}    
       <ChartCard>
         <ChartTitle>Répartition des demandes</ChartTitle>
-        <ChartBars>
-          {barres.map((b) => {
-            const pourcentage = (b.valeur / maxValeur) * 100;
-            const Icon = b.Icon;
-            return (
-              <BarRow key={b.label}>
-                <BarLabel>
-                  <BarIcon style={{ backgroundColor: b.couleur }}>
-                    <Icon size={14} />
-                  </BarIcon>
-                  <span>{b.label}</span>
-                </BarLabel>
-                <BarTrack>
-                  <BarFill
-                    style={{
-                      width: `${Math.max(pourcentage, 2)}%`,
-                      backgroundColor: b.couleur
-                    }}
-                  >
-                    <span>{b.valeur}</span>
-                  </BarFill>
-                </BarTrack>
-              </BarRow>
-            );
-          })}
-        </ChartBars>
+        <div style={{ width: '100%', height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={barres}
+              margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              
+              {/* Axe X : les valeurs numériques de 0 à 50, par pas de 5 */}
+              <XAxis 
+                type="number" 
+                domain={[0, 50]} 
+                ticks={[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50]} 
+                stroke="var(--text-muted)" 
+                tick={{ fontSize: 12 }}
+              />
+              
+              {/* Axe Y : les catégories (Total, Nouvelles, etc.) */}
+              <YAxis 
+                type="category" 
+                dataKey="label" 
+                stroke="var(--text-muted)"
+                tick={{ fontSize: 12, fontWeight: 600, fill: 'var(--text-primary)' }}
+                width={100}
+              />
+              
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--bg-surface)', 
+                  border: '1px solid var(--border)', 
+                  borderRadius: '8px',
+                  color: 'var(--text-primary)'
+                }}
+                formatter={(value) => [`${value} demandes`, 'Nombre']}
+              />
+              
+              {/* La courbe */}
+              <Line 
+                type="monotone" 
+                dataKey="valeur" 
+                stroke="#C0392B" 
+                strokeWidth={3} 
+                dot={{ r: 6, fill: '#C0392B', strokeWidth: 2, stroke: '#fff' }}
+                activeDot={{ r: 8 }}
+              >
+                {/* Affiche le chiffre à côté de chaque point */}
+                <LabelList dataKey="valeur" position="right" fill="var(--text-primary)" fontSize={12} fontWeight="bold" />
+              </Line>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </ChartCard>
 
       {alertes.total > 0 && (
@@ -227,85 +253,6 @@ const ChartTitle = styled.h2`
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-`;
-const ChartBars = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-`;
-const BarRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    align-items: stretch; /* Étire pour que la barre prenne toute la largeur */
-    gap: 8px;
-  }
-`;
-const BarLabel = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 180px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-
-  @media (max-width: 640px) {
-    min-width: auto;
-    font-size: 13px; 
-  }
-`;
-const BarIcon = styled.span`
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  color: #fff;
-  flex-shrink: 0;
-`;
-const BarTrack = styled.div`
-  flex: 1;
-  height: 32px;
-  background: var(--bg-soft);
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  width: 100%; 
-
-  @media (max-width: 640px) {
-    height: 28px; 
-  }
-`;
-const BarFill = styled.div`
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 12px;
-  border-radius: 8px;
-  transition: width 0.8s ease;
-  min-width: 40px;
-  
-  @media (max-width: 640px) {
-    min-width: 32px;
-    padding: 0 8px;
-    font-size: 11px;
-  }
-
-  span {
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    @media (max-width: 640px) {
-      font-size: 11px;
-    }
-  }
 `;
 
 const AlertesSection = styled.section`margin-bottom: 24px; width: 100%;`;
