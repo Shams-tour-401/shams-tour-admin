@@ -233,14 +233,16 @@ const ChartBars = styled.div`
   flex-direction: column;
   gap: 18px;
 `;
+
 const BarRow = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+
   @media (max-width: 640px) {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+    align-items: stretch; /* Étire pour que la barre prenne toute la largeur */
+    gap: 8px;
   }
 `;
 const BarLabel = styled.div`
@@ -251,8 +253,10 @@ const BarLabel = styled.div`
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
+
   @media (max-width: 640px) {
     min-width: auto;
+    font-size: 13px; /* Texte un peu plus petit */
   }
 `;
 const BarIcon = styled.span`
@@ -272,6 +276,11 @@ const BarTrack = styled.div`
   border-radius: 8px;
   overflow: hidden;
   position: relative;
+  width: 100%; /* ✅ Force la largeur complète sur mobile */
+
+  @media (max-width: 640px) {
+    height: 28px; /* Un peu plus fin sur mobile */
+  }
 `;
 const BarFill = styled.div`
   height: 100%;
@@ -282,11 +291,21 @@ const BarFill = styled.div`
   border-radius: 8px;
   transition: width 0.8s ease;
   min-width: 40px;
+  
+  @media (max-width: 640px) {
+    min-width: 32px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
   span {
     color: #fff;
     font-size: 13px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+    @media (max-width: 640px) {
+      font-size: 11px;
+    }
   }
 `;
 
