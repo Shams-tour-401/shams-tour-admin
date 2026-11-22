@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from 'react'; 
 import { circuitsService } from '../services/circuits';
 import { activitesService } from '../services/activites';
+import { lieuxService } from '../services/lieux'; // ✅ NOUVEL IMPORT
 import { useAuth } from '../context/AuthContext';
 
 export default function Circuits() {
@@ -14,7 +15,6 @@ export default function Circuits() {
   const { user } = useAuth();
   const estAdmin = user?.role === 'administrateur';
 
-  // ✅ ÉTAT POUR LA MODALE DE SUPPRESSION DE CIRCUIT
   const [circuitASupprimer, setCircuitASupprimer] = useState(null);
 
   const [recherche, setRecherche] = useState('');
@@ -84,7 +84,6 @@ export default function Circuits() {
     }
   };
 
-  // ✅ SUPPRESSION SANS CONFIRM NATIF
   const supprimer = async (circuit) => {
     try {
       await circuitsService.delete(circuit.id);
@@ -249,7 +248,6 @@ export default function Circuits() {
                             🚀
                           </button>
                         )}
-                        {/* ✅ OUVRE LA MODALE PERSONNALISÉE */}
                         <button onClick={() => setCircuitASupprimer(c)} style={styles.btnIcone} title="Supprimer">
                           🗑️
                         </button>
@@ -283,7 +281,6 @@ export default function Circuits() {
         />
       )}
 
-      {/* ✅ MODALE DE CONFIRMATION DE SUPPRESSION DE CIRCUIT */}
       {circuitASupprimer && (
         <ModalConfirmation
           titre="Confirmer la suppression"
@@ -426,19 +423,28 @@ function ModalCircuit({ circuit, onSave, onClose }) {
 
 function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
   const [activites, setActivites] = useState([]);
+  const [lieux, setLieux] = useState([]); // ✅ NOUVEAU
   const [modalAjoutElement, setModalAjoutElement] = useState(null);
-  
-  // ✅ ÉTAT POUR LA MODALE DE SUPPRESSION D'ÉLÉMENT
   const [elementASupprimer, setElementASupprimer] = useState(null);
 
   useEffect(() => {
     chargerActivites();
+    chargerLieux(); // ✅ NOUVEAU
   }, []);
 
   const chargerActivites = async () => {
     try {
       const data = await activitesService.getAll();
       setActivites(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const chargerLieux = async () => {
+    try {
+      const data = await lieuxService.getAll();
+      setLieux(data);
     } catch (error) {
       console.error(error);
     }
@@ -454,7 +460,6 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
     }
   };
 
-  // ✅ SUPPRESSION SANS CONFIRM NATIF
   const supprimerElement = async (elementId) => {
     try {
       await circuitsService.supprimerElement(elementId);
@@ -507,7 +512,6 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
                         {el.duree_min && ` (${el.duree_min} min)`}
                       </span>
                       {estAdmin && (
-                        
                         <button onClick={() => setElementASupprimer(el)} style={styles.btnSuppr}>✕</button>
                       )}
                     </li>
@@ -522,12 +526,12 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
       {modalAjoutElement && estAdmin && (
         <ModalAjoutElement
           activites={activites}
+          lieux={lieux} // ✅ Passer les lieux
           onSave={(data) => ajouterElement(modalAjoutElement, data)}
           onClose={() => setModalAjoutElement(null)}
         />
       )}
 
-      {/* ✅ MODALE DE CONFIRMATION DE SUPPRESSION D'ÉLÉMENT */}
       {elementASupprimer && (
         <ModalConfirmation
           titre="Supprimer l'élément"
@@ -541,19 +545,30 @@ function ModalDetailCircuit({ circuit, estAdmin, onClose, onRefresh }) {
   );
 }
 
-function ModalAjoutElement({ activites, onSave, onClose }) {
+// ✅ MODAL AJOUT ELEMENT MODIFIÉ POUR LES TRAJETS
+function ModalAjoutElement({ activites, lieux, onSave, onClose }) {
   const [type, setType] = useState('activite');
   const [activiteId, setActiviteId] = useState('');
+  const [lieuDepartId, setLieuDepartId] = useState('');
+  const [lieuArriveeId, setLieuArriveeId] = useState('');
   const [duree, setDuree] = useState(60);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = { type, duree_min: parseInt(duree) };
+
     if (type === 'activite' && activiteId) {
       data.activite_id = parseInt(activiteId);
       const act = activites.find(a => a.id === parseInt(activiteId));
       if (act) data.duree_min = act.duree_min;
     }
+
+    // ✅ Si c'est un trajet, on demande les lieux
+    if (type === 'trajet') {
+      data.lieu_depart_id = parseInt(lieuDepartId);
+      data.lieu_arrivee_id = parseInt(lieuArriveeId);
+    }
+
     onSave(data);
   };
 
@@ -585,6 +600,30 @@ function ModalAjoutElement({ activites, onSave, onClose }) {
                 ))}
               </select>
             </div>
+          )}
+
+          {/* ✅ CHAMPS POUR LES TRAJETS */}
+          {type === 'trajet' && (
+            <>
+              <div style={styles.field}>
+                <label style={styles.label}>Lieu de départ *</label>
+                <select value={lieuDepartId} onChange={(e) => setLieuDepartId(e.target.value)} required style={styles.input}>
+                  <option value="">Sélectionner...</option>
+                  {lieux.map(l => (
+                    <option key={l.id} value={l.id}>{l.nom}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={styles.field}>
+                <label style={styles.label}>Lieu d'arrivée *</label>
+                <select value={lieuArriveeId} onChange={(e) => setLieuArriveeId(e.target.value)} required style={styles.input}>
+                  <option value="">Sélectionner...</option>
+                  {lieux.map(l => (
+                    <option key={l.id} value={l.id}>{l.nom}</option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
 
           {type !== 'activite' && (
@@ -735,8 +774,6 @@ const styles = {
     background: 'none', border: 'none', color: '#C0392B',
     cursor: 'pointer', fontSize: '14px', fontWeight: 'bold'
   },
-  
-  // ✅ STYLES DE LA MODALE DE CONFIRMATION
   modalConfirm: {
     backgroundColor: 'var(--bg-surface)', borderRadius: '8px', width: '100%',
     maxWidth: '450px', overflow: 'hidden'
