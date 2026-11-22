@@ -69,12 +69,12 @@ export default function Dashboard() {
 
   if (loading) return <Loading><Spinner size={18} />Chargement...</Loading>;
 
-  // Données du diagramme en bandes
+  // ✅ DONNÉES DU DIAGRAMME EN BANDES
   const barres = [
-    { label: 'Total demandes', valeur: stats.total, couleur: '#5a4339', Icon: ClipboardList },
-    { label: 'Nouvelles', valeur: stats.demande_recue, couleur: '#b8321f', Icon: Bell },
-    { label: 'À contacter', valeur: stats.a_contacter, couleur: '#e08a1e', Icon: Phone },
-    { label: 'Confirmées', valeur: stats.confirmee, couleur: '#1e8a3a', Icon: CheckCircle2 }
+    { label: 'Total demandes', valeur: stats.total, couleur: '#4b5d70', Icon: ClipboardList },
+    { label: 'Nouvelles', valeur: stats.demande_recue, couleur: '#2f6fd6', Icon: Bell },
+    { label: 'À contacter', valeur: stats.a_contacter, couleur: '#E67E22', Icon: Phone },
+    { label: 'Confirmées', valeur: stats.confirmee, couleur: '#27AE60', Icon: CheckCircle2 }
   ];
 
   const maxValeur = Math.max(...barres.map(b => b.valeur), 1);
@@ -85,7 +85,7 @@ export default function Dashboard() {
         <ErrorBanner role="alert"><AlertCircle size={18} /><ErrorText><strong>Certaines données n'ont pas pu être chargées.</strong><ul>{erreurs.map((m) => <li key={m}>{m}</li>)}</ul></ErrorText><RetryButton type="button" onClick={chargerDonnees}>Réessayer</RetryButton></ErrorBanner>
       )}
 
-      {/* Diagramme en bandes */}
+      {/* ✅ DIAGRAMME EN BANDES */}
       <ChartCard>
         <ChartTitle>Répartition des demandes</ChartTitle>
         <ChartBars>
@@ -96,7 +96,7 @@ export default function Dashboard() {
               <BarRow key={b.label}>
                 <BarLabel>
                   <BarIcon style={{ backgroundColor: b.couleur }}>
-                    <Icon size={15} />
+                    <Icon size={14} />
                   </BarIcon>
                   <span>{b.label}</span>
                 </BarLabel>
@@ -172,7 +172,7 @@ function AlerteCard({ tone, Icon, titre, description, count, children }) {
 
 function StatutBadge({ statut }) {
   const config = {
-    'demande_recue': { label: 'Demande reçue', tone: 'brand' },
+    'demande_recue': { label: 'Demande reçue', tone: 'blue' },
     'a_contacter': { label: 'À contacter', tone: 'amber' },
     'disponibilites_a_verifier': { label: 'Dispo. à vérifier', tone: 'yellow' },
     'proposition_a_valider': { label: 'Prop. à valider', tone: 'violet' },
@@ -183,16 +183,14 @@ function StatutBadge({ statut }) {
   return <Badge $tone={c.tone}>{c.label}</Badge>;
 }
 
-/* ------------------------------------------------------------------ */
-/* Styles — thème crème / rouge brique (comme l'app M3)               */
-/* ------------------------------------------------------------------ */
+/* ---------------------- Styles ---------------------- */
 
 const TONES = {
-  neutral: { fg: '#6b5d54', bg: '#f1ebe2' },
-  brand: { fg: '#b8321f', bg: '#fbeae6' },
-  green: { fg: '#1e7a37', bg: '#e6f5ea' },
-  amber: { fg: '#b45309', bg: '#fff0dc' },
-  yellow: { fg: '#a16207', bg: '#fdf3cf' },
+  neutral: { fg: '#4b5d70', bg: '#eef2f6' },
+  blue: { fg: '#1d5fbf', bg: '#e6f0ff' },
+  green: { fg: '#0f7a3d', bg: '#e3f8ea' },
+  amber: { fg: '#b45309', bg: '#fff1e0' },
+  yellow: { fg: '#a16207', bg: '#fef7d6' },
   red: { fg: '#c0182b', bg: '#ffe8ea' },
   violet: { fg: '#7a1fc4', bg: '#f3e8ff' }
 };
@@ -202,131 +200,38 @@ const toneBg = ({ $tone }) => (TONES[$tone] || TONES.neutral).bg;
 const spin = keyframes`to { transform: rotate(360deg); }`;
 
 const Page = styled.div`
-  /* Palette locale : crème / rouge brique */
-  --brand: #b8321f;
-  --brand-hover: #a22b1a;
-  --brand-soft: #fbeae6;
-  --bg-surface: #ffffff;
-  --bg-soft: #faf5ec;
-  --border: #eadfd0;
-  --text-primary: #241914;
-  --text-secondary: #4a3f39;
-  --text-muted: #8a7e76;
-  --shadow-card: 0 2px 4px rgba(120, 70, 40, 0.04), 0 10px 28px rgba(120, 70, 40, 0.08);
-
-  width: 100%;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  font-family: Roboto, 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-
+  width: 100%; max-width: 100%; display: flex; flex-direction: column;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  color: var(--text-primary); -webkit-font-smoothing: antialiased;
   &, & *, & *::before, & *::after { box-sizing: border-box; }
   a { text-decoration: none; }
 `;
+const ErrorBanner = styled.div`display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; padding: 14px 16px; margin-bottom: 20px; color: #b42318; background: #fef3f2; border: 1px solid #fecdca; border-radius: 12px; svg { flex-shrink: 0; margin-top: 2px; }`;
+const ErrorText = styled.div`flex: 1 1 240px; min-width: 0; font-size: 14px; ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; word-break: break-word; }`;
+const RetryButton = styled.button`padding: 8px 14px; font-family: inherit; font-size: 13px; font-weight: 600; color: #fff; background: #2f6fd6; border: none; border-radius: 10px; cursor: pointer; &:hover { background: #2760bf; }`;
+const Loading = styled.div`display: flex; align-items: center; justify-content: center; gap: 8px; padding: 64px 16px; font-size: 14px; color: var(--text-muted);`;
+const Spinner = styled(Loader2)`animation: ${spin} 0.8s linear infinite;`;
 
-const ErrorBanner = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 18px;
-  margin-bottom: 20px;
-  color: #b42318;
-  background: #fef3f2;
-  border: 1px solid #fecdca;
-  border-radius: 20px;
-
-  svg { flex-shrink: 0; margin-top: 2px; }
-`;
-
-const ErrorText = styled.div`
-  flex: 1 1 240px;
-  min-width: 0;
-  font-size: 14px;
-
-  ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; word-break: break-word; }
-`;
-
-const RetryButton = styled.button`
-  padding: 9px 18px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  background: var(--brand);
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  box-shadow: 0 6px 14px rgba(184, 50, 31, 0.25);
-  transition: background-color 0.15s ease;
-
-  &:hover { background: var(--brand-hover); }
-  &:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(184, 50, 31, 0.3); }
-`;
-
-const Loading = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 64px 16px;
-  font-size: 14px;
-  color: #8a7e76;
-`;
-
-const Spinner = styled(Loader2)`
-  animation: ${spin} 0.8s linear infinite;
-  @media (prefers-reduced-motion: reduce) { animation-duration: 2s; }
-`;
-
-/* ------------------------- Diagramme en bandes ------------------------- */
-
+/* ✅ STYLES DU DIAGRAMME EN BANDES */
 const ChartCard = styled.section`
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  margin-bottom: 20px;
-  padding: 20px 16px;
   background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-card);
-
-  /* disque chaud décoratif (comme la carte « Nouveau ») */
-  &::before {
-    content: '';
-    position: absolute;
-    top: -90px;
-    right: -90px;
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    background: #fdf0dc;
-    pointer-events: none;
-  }
-
-  > * { position: relative; }
-
-  @media (min-width: 640px) {
-    margin-bottom: 24px;
-    padding: 24px 28px;
-  }
+  border: none;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  width: 100%;
+  transition: background-color 0.3s ease;
 `;
-
 const ChartTitle = styled.h2`
   margin: 0 0 20px;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-primary);
 `;
-
 const ChartBars = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 `;
 
 const BarRow = styled.div`
@@ -336,325 +241,114 @@ const BarRow = styled.div`
 
   @media (max-width: 640px) {
     flex-direction: column;
-    align-items: stretch;
+    align-items: stretch; /* Étire pour que la barre prenne toute la largeur */
     gap: 8px;
   }
 `;
-
 const BarLabel = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 190px;
+  min-width: 180px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-secondary);
 
   @media (max-width: 640px) {
     min-width: auto;
-    font-size: 13px;
+    font-size: 13px; /* Texte un peu plus petit */
   }
 `;
-
 const BarIcon = styled.span`
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  border-radius: 6px;
   color: #fff;
-  border-radius: 50%;
+  flex-shrink: 0;
 `;
-
 const BarTrack = styled.div`
-  position: relative;
   flex: 1;
-  width: 100%;
   height: 32px;
-  overflow: hidden;
   background: var(--bg-soft);
-  border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  width: 100%; /* ✅ Force la largeur complète sur mobile */
 
   @media (max-width: 640px) {
-    height: 28px;
+    height: 28px; /* Un peu plus fin sur mobile */
   }
 `;
-
 const BarFill = styled.div`
   height: 100%;
-  min-width: 40px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding: 0 12px;
-  border-radius: 999px;
+  border-radius: 8px;
   transition: width 0.8s ease;
-
+  min-width: 40px;
+  
   @media (max-width: 640px) {
-    min-width: 34px;
-    padding: 0 10px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
+    min-width: 32px;
+    padding: 0 8px;
+    font-size: 11px;
   }
 
   span {
+    color: #fff;
     font-size: 13px;
     font-weight: 700;
-    color: #fff;
     font-variant-numeric: tabular-nums;
-
-    @media (max-width: 640px) { font-size: 12px; }
+    @media (max-width: 640px) {
+      font-size: 11px;
+    }
   }
 `;
 
-/* ------------------------------ Alertes ------------------------------ */
-
-const AlertesSection = styled.section`
-  width: 100%;
-  margin-bottom: 20px;
-
-  @media (min-width: 640px) { margin-bottom: 24px; }
-`;
-
+const AlertesSection = styled.section`margin-bottom: 24px; width: 100%;`;
 const AlertesTitre = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 14px;
-  padding: 0 4px;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 
-  svg { flex-shrink: 0; color: var(--brand); }
-`;
-
-const AlertesTotal = styled.span`
-  padding: 2px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  background: var(--brand);
-  border-radius: 999px;
-`;
-
-const AlertesGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-  width: 100%;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+  svg {
+    color: #b45309;
+    flex-shrink: 0;
   }
 `;
-
-const AlerteBox = styled.div`
-  min-width: 0;
-  padding: 16px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-card);
-`;
-
-const AlerteHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const AlerteIcone = styled.span`
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: ${toneFg};
-  background: ${toneBg};
-  border-radius: 50%;
-`;
-
-const AlerteNom = styled.strong`
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-`;
-
-const AlerteCount = styled.span`
-  margin-left: auto;
-  min-width: 26px;
-  padding: 2px 9px;
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  color: ${toneFg};
-  background: ${toneBg};
-  border-radius: 999px;
-  font-variant-numeric: tabular-nums;
-`;
-
-const AlerteDesc = styled.p`
-  margin: 8px 0 10px;
-  font-size: 12px;
-  color: var(--text-muted);
-`;
-
-const AlerteListe = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: 13px;
-`;
-
-const AlerteItem = styled.li`
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 9px 0;
-  border-top: 1px solid var(--border);
-`;
-
-const AlerteLink = styled(Link)`
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-  color: var(--text-primary);
-  transition: color 0.15s ease;
-
-  &:hover { color: var(--brand); }
-`;
-
-const AlerteMeta = styled.small`
-  flex-shrink: 0;
-  font-size: 12px;
-  color: var(--text-muted);
-`;
-
-/* ------------------------- Dernières demandes ------------------------- */
-
-const Section = styled.section`
-  width: 100%;
-  overflow: hidden;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-card);
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px;
-
-  @media (min-width: 640px) { padding: 18px 24px; }
-`;
-
-const SectionTitle = styled.h2`
-  margin: 0;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text-primary);
-`;
-
-const VoirTout = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--brand);
-  background: var(--brand-soft);
-  border-radius: 999px;
-  white-space: nowrap;
-  transition: gap 0.15s ease, background-color 0.15s ease;
-
-  &:hover { gap: 5px; background: #f7dcd6; }
-`;
-
-const Empty = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 48px 16px;
-  color: #c4b5a5;
-
-  p { margin: 0; font-size: 14px; color: var(--text-muted); }
-`;
-
-const TableWrapper = styled.div`
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  min-width: 640px;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  padding: 11px 16px;
-  text-align: left;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-  background: var(--bg-soft);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-
-  @media (min-width: 640px) { &:first-child { padding-left: 24px; } }
-`;
-
-const Tr = styled.tr`
-  border-bottom: 1px solid var(--border);
-  transition: background-color 0.12s ease;
-
-  &:last-child { border-bottom: none; }
-  &:hover { background: var(--bg-soft); }
-`;
-
-const Td = styled.td`
-  padding: 14px 16px;
-  font-size: 14px;
-  font-weight: ${({ $strong }) => ($strong ? 600 : 400)};
-  color: ${({ $muted, $strong }) => ($muted ? 'var(--text-muted)' : $strong ? 'var(--text-primary)' : 'var(--text-secondary)')};
-  white-space: nowrap;
-
-  @media (min-width: 640px) { &:first-child { padding-left: 24px; } }
-`;
-
-const RefLink = styled(Link)`
-  font-weight: 700;
-  color: var(--brand);
-  font-variant-numeric: tabular-nums;
-  transition: color 0.15s ease;
-
-  &:hover { color: var(--brand-hover); text-decoration: underline; }
-`;
-
-const Badge = styled.span`
-  display: inline-block;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: ${toneFg};
-  background: ${toneBg};
-  border-radius: 999px;
-`;
+const AlertesTotal = styled.span`padding: 1px 8px; font-size: 11px; font-weight: 700; color: #fff; background: #e5283c; border-radius: 999px;`;
+const AlertesGrid = styled.div`display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; @media (min-width: 768px) { grid-template-columns: repeat(2, 1fr); }`;
+const AlerteBox = styled.div`padding: 16px; background: var(--bg-soft); border: none; border-radius: 12px;`;
+const AlerteHeader = styled.div`display: flex; align-items: center; gap: 10px;`;
+const AlerteIcone = styled.span`width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: ${toneFg}; background: ${toneBg}; border-radius: 8px;`;
+const AlerteNom = styled.strong`font-size: 15px; font-weight: 600; color: var(--text-primary);`;
+const AlerteCount = styled.span`margin-left: auto; min-width: 24px; padding: 2px 8px; font-size: 11px; font-weight: 700; text-align: center; color: ${toneFg}; background: ${toneBg}; border-radius: 999px; font-variant-numeric: tabular-nums;`;
+const AlerteDesc = styled.p`margin: 8px 0 10px; font-size: 12px; color: var(--text-muted);`;
+const AlerteListe = styled.ul`list-style: none; margin: 0; padding: 0; font-size: 13px;`;
+const AlerteItem = styled.li`display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border);`;
+const AlerteLink = styled(Link)`min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: var(--text-primary); transition: color 0.15s ease; &:hover { color: #2f6fd6; }`;
+const AlerteMeta = styled.small`flex-shrink: 0; font-size: 12px; color: var(--text-muted);`;
+const Section = styled.section`background: var(--bg-surface); border: none; border-radius: 12px; overflow: hidden; width: 100%;`;
+const SectionHeader = styled.div`display: flex; align-items: center; justify-content: space-between; padding: 16px; @media (min-width: 640px) { padding: 16px 20px; }`;
+const SectionTitle = styled.h2`margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary);`;
+const VoirTout = styled(Link)`display: inline-flex; align-items: center; gap: 2px; font-size: 13px; font-weight: 500; color: #2f6fd6; transition: gap 0.15s ease, color 0.15s ease; &:hover { gap: 5px; color: #2760bf; }`;
+const Empty = styled.div`display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 48px 16px; color: #9db0c4; p { margin: 0; font-size: 14px; color: var(--text-muted); }`;
+const TableWrapper = styled.div`overflow-x: auto; -webkit-overflow-scrolling: touch;`;
+const Table = styled.table`width: 100%; min-width: 640px; border-collapse: collapse;`;
+const Th = styled.th`padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); white-space: nowrap; @media (min-width: 640px) { &:first-child { padding-left: 20px; } }`;
+const Tr = styled.tr`border-bottom: 1px solid var(--border); transition: background-color 0.12s ease; &:last-child { border-bottom: none; } &:hover { background: var(--bg-soft); }`;
+const Td = styled.td`padding: 14px 16px; font-size: 14px; font-weight: ${({ $strong }) => ($strong ? 600 : 400)}; color: ${({ $muted, $strong }) => $muted ? 'var(--text-muted)' : $strong ? 'var(--text-primary)' : 'var(--text-secondary)'}; white-space: nowrap; @media (min-width: 640px) { &:first-child { padding-left: 20px; } }`;
+const RefLink = styled(Link)`font-weight: 600; color: #1f4e79; font-variant-numeric: tabular-nums; transition: color 0.15s ease; &:hover { color: #2f6fd6; }`;
+const Badge = styled.span`display: inline-block; padding: 3px 10px; font-size: 12px; font-weight: 500; color: ${toneFg}; background: ${toneBg}; border-radius: 999px;`;
