@@ -39,6 +39,9 @@ export default function Login() {
             <BrandName>SHAMS TOUR</BrandName>
             <BrandSub>Administration</BrandSub>
           </div>
+          <StatusPill>
+            <Dot /> En ligne
+          </StatusPill>
         </Brand>
 
         <Form onSubmit={handleSubmit}>
@@ -56,7 +59,7 @@ export default function Login() {
             <Label htmlFor="identifiant">Identifiant</Label>
             <InputWrapper>
               <InputIcon>
-                <User size={16} />
+                <User size={18} />
               </InputIcon>
               <Input
                 id="identifiant"
@@ -75,7 +78,7 @@ export default function Login() {
             <Label htmlFor="motDePasse">Mot de passe</Label>
             <InputWrapper>
               <InputIcon>
-                <Lock size={16} />
+                <Lock size={18} />
               </InputIcon>
               <Input
                 id="motDePasse"
@@ -93,7 +96,7 @@ export default function Login() {
                 aria-label={afficherMdp ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                 tabIndex={-1}
               >
-                {afficherMdp ? <EyeOff size={16} /> : <Eye size={16} />}
+                {afficherMdp ? <EyeOff size={18} /> : <Eye size={18} />}
               </Toggle>
             </InputWrapper>
           </Field>
@@ -101,7 +104,7 @@ export default function Login() {
           <SubmitButton type="submit" disabled={loading}>
             {loading ? (
               <>
-                <Spinner size={16} />
+                <Spinner size={18} />
                 Connexion...
               </>
             ) : (
@@ -121,7 +124,7 @@ export default function Login() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Styles                                                             */
+/* Styles — thème crème / rouge brique (comme l'app M3)               */
 /* ------------------------------------------------------------------ */
 
 const spin = keyframes`
@@ -129,19 +132,23 @@ const spin = keyframes`
 `;
 
 const Container = styled.div`
-  --navy: #1f4e79;
-  --accent: #2f6fd6;
-  --accent-hover: #2760bf;
-  --ink: #1b2a3a;
-  --text: #3d4f63;
-  --muted: #6b7c8f;
-  --border: #dbe5f0;
+  --brand: #b8321f;
+  --brand-hover: #a22b1a;
+  --brand-soft: #fbeae6;
+  --ink: #241914;
+  --text: #4a3f39;
+  --muted: #8a7e76;
+  --border: #eadfd0;
   --surface: #ffffff;
-  --bg: #e8f0f9;
+  --bg: #faf5ec;
+  --sun: #fdf0dc;
+  --ok: #1e8a3a;
   --danger: #b42318;
   --danger-bg: #fef3f2;
   --danger-border: #fecdca;
 
+  position: relative;
+  overflow: hidden;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
@@ -150,10 +157,23 @@ const Container = styled.div`
   justify-content: center;
   gap: 20px;
   padding: 24px 16px;
-  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  font-family: Roboto, 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   background: var(--bg);
+
+  /* grand disque chaud en arrière-plan, comme sur la carte « Nouveau » */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    background: var(--sun);
+    pointer-events: none;
+  }
 
   &,
   & *,
@@ -168,12 +188,13 @@ const Container = styled.div`
 `;
 
 const Card = styled.div`
+  position: relative;
   width: 100%;
   max-width: 420px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 2px 4px rgba(31, 78, 121, 0.04), 0 12px 32px rgba(31, 78, 121, 0.1);
+  border-radius: 28px;
+  box-shadow: 0 2px 4px rgba(120, 70, 40, 0.04), 0 16px 36px rgba(120, 70, 40, 0.1);
   overflow: hidden;
 `;
 
@@ -199,21 +220,44 @@ const Logo = styled.div`
   font-size: 22px;
   font-weight: 700;
   color: #fff;
-  background: var(--navy);
-  border-radius: 10px;
+  background: var(--brand);
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--border), 0 4px 10px rgba(184, 50, 31, 0.25);
 `;
 
 const BrandName = styled.div`
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: var(--navy);
+  color: var(--ink);
 `;
 
 const BrandSub = styled.div`
   margin-top: 2px;
   font-size: 13px;
   color: var(--muted);
+`;
+
+const StatusPill = styled.span`
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ok);
+  background: #eaf6ed;
+  border-radius: 999px;
+  white-space: nowrap;
+`;
+
+const Dot = styled.span`
+  width: 7px;
+  height: 7px;
+  background: var(--ok);
+  border-radius: 50%;
 `;
 
 const Form = styled.form`
@@ -226,10 +270,10 @@ const Form = styled.form`
 
 const FormTitle = styled.h2`
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   letter-spacing: -0.01em;
-  color: var(--navy);
+  color: var(--brand);
 `;
 
 const FormText = styled.p`
@@ -243,14 +287,14 @@ const ErrorBox = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 10px 14px;
   margin-bottom: 16px;
   font-size: 13px;
   line-height: 1.4;
   color: var(--danger);
   background: var(--danger-bg);
   border: 1px solid var(--danger-border);
-  border-radius: 10px;
+  border-radius: 16px;
 
   svg {
     flex-shrink: 0;
@@ -264,9 +308,9 @@ const Field = styled.div`
 
 const Label = styled.label`
   display: block;
-  margin-bottom: 6px;
+  margin: 0 0 6px 6px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink);
 `;
 
@@ -277,42 +321,43 @@ const InputWrapper = styled.div`
 const InputIcon = styled.span`
   position: absolute;
   top: 50%;
-  left: 12px;
+  left: 16px;
   transform: translateY(-50%);
   display: flex;
-  color: #8fa2b6;
+  color: #a39689;
   pointer-events: none;
   transition: color 0.15s ease;
 
   ${InputWrapper}:focus-within & {
-    color: var(--accent);
+    color: var(--brand);
   }
 `;
 
 const Input = styled.input`
   width: 100%;
-  height: 44px;
-  padding: 0 ${({ $withToggle }) => ($withToggle ? '44px' : '12px')} 0 38px;
+  height: 48px;
+  padding: 0 ${({ $withToggle }) => ($withToggle ? '48px' : '16px')} 0 46px;
   font-family: inherit;
   font-size: 16px; /* évite le zoom auto sur iOS */
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 999px;
   outline: none;
+  box-shadow: 0 2px 6px rgba(120, 70, 40, 0.05);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &::placeholder {
-    color: #a9b8c8;
+    color: #b8ab9e;
   }
 
   &:hover {
-    border-color: #c5d3e3;
+    border-color: #dccbb5;
   }
 
   &:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px rgba(47, 111, 214, 0.15);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 4px rgba(184, 50, 31, 0.14);
   }
 
   @media (min-width: 480px) {
@@ -323,48 +368,48 @@ const Input = styled.input`
 const Toggle = styled.button`
   position: absolute;
   top: 50%;
-  right: 6px;
+  right: 8px;
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8fa2b6;
+  color: #a39689;
   background: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 50%;
   cursor: pointer;
   transition: color 0.15s ease, background-color 0.15s ease;
 
   &:hover {
-    color: var(--navy);
-    background: #eef3f9;
+    color: var(--brand);
+    background: var(--brand-soft);
   }
 `;
 
 const SubmitButton = styled.button`
   width: 100%;
-  height: 44px;
+  height: 50px;
   margin-top: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: #fff;
-  background: var(--accent);
+  background: var(--brand);
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(31, 78, 121, 0.2);
+  box-shadow: 0 8px 18px rgba(184, 50, 31, 0.28);
   transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: var(--accent-hover);
-    box-shadow: 0 6px 16px rgba(47, 111, 214, 0.3);
+    background: var(--brand-hover);
+    box-shadow: 0 10px 22px rgba(184, 50, 31, 0.38);
   }
 
   &:active:not(:disabled) {
@@ -373,7 +418,7 @@ const SubmitButton = styled.button`
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 4px rgba(47, 111, 214, 0.3);
+    box-shadow: 0 0 0 4px rgba(184, 50, 31, 0.3);
   }
 
   &:disabled {
@@ -392,21 +437,22 @@ const Spinner = styled(Loader2)`
 
 const Hint = styled.p`
   margin: 20px 0 0;
-  padding: 10px 12px;
+  padding: 10px 14px;
   font-size: 12px;
   text-align: center;
   color: var(--muted);
-  background: #f4f8fc;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
+  background: var(--bg);
+  border: 1px dashed #dccbb5;
+  border-radius: 999px;
 
   strong {
-    color: var(--navy);
-    font-weight: 600;
+    color: var(--brand);
+    font-weight: 700;
   }
 `;
 
 const Footer = styled.p`
+  position: relative;
   margin: 0;
   font-size: 12px;
   color: var(--muted);
